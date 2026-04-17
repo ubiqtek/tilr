@@ -1,0 +1,47 @@
+name: Tilr
+options:
+  bundleIdPrefix: io.ubiqtek
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: io.ubiqtek.tilr
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+
+packages:
+  HotKey:
+    url: https://github.com/soffes/HotKey
+    from: "0.2.0"
+  TOMLKit:
+    url: https://github.com/LebJe/TOMLKit
+    from: "0.5.0"
+
+targets:
+  Tilr:
+    type: application
+    platform: macOS
+    sources: Sources/Tilr
+    info:
+      path: Sources/Tilr/Info.plist
+      properties:
+        LSUIElement: true
+        NSPrincipalClass: NSApplication
+        CFBundleName: Tilr
+        CFBundleDisplayName: Tilr
+        CFBundleIdentifier: io.ubiqtek.tilr
+        CFBundleVersion: "1"
+        CFBundleShortVersionString: "0.0.1"
+        NSHighResolutionCapable: true
+        CFBundleIconFile: AppIcon
+    dependencies:
+      - package: HotKey
+      - package: TOMLKit
+    entitlements:
+      path: Sources/Tilr/Tilr.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
