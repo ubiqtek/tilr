@@ -9,4 +9,5 @@ extension Logger {
     static let config   = Logger(subsystem: subsystem, category: "config")
     static let state    = Logger(subsystem: subsystem, category: "state")
     static let popup    = Logger(subsystem: subsystem, category: "popup")
+    static let socket   = Logger(subsystem: subsystem, category: "socket")
 }

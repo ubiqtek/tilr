@@ -15,13 +15,14 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 0 | Skeleton | ✅ | 2026-04-17 |
 | 1 | Popup alert | ✅ | 2026-04-17 |
 | 2 | Hotkey → popup | ✅ | 2026-04-17 |
-| 3 | Config loading | ⬜ | — |
-| 4 | Hotkeys from config | ⬜ | — |
-| 5 | State file | ⬜ | — |
-| 6 | Menu bar title | ⬜ | — |
-| 7 | Polish | ⬜ | — |
+| 3 | CLI scaffolding + health | ✅ | 2026-04-18 |
+| 4 | Config loading | ⬜ | — |
+| 5 | Hotkeys from config | ⬜ | — |
+| 6 | State file | ⬜ | — |
+| 7 | Menu bar title | ⬜ | — |
+| 8 | Polish | ⬜ | — |
 
-**Current focus:** Delta 3 — Config loading
+**Current focus:** Delta 4 — Config loading
 
 ---
 
@@ -71,7 +72,54 @@ lands — check boxes, add a dated note, link the commit/PR.
 
 ---
 
-## Delta 3 — Config loading
+## Delta 3 — CLI scaffolding + health
+
+**Goal:** `tilr` CLI binary exists, can query app health via Unix-domain
+socket, and can stream logs. No config dependency — stands alone for
+debugging.
+
+### Target layout
+
+- App target renamed `Tilr` → `TilrApp`, `PRODUCT_NAME=Tilr` → `Tilr.app`
+- New target `TilrCLI`, `PRODUCT_NAME=tilr` → `tilr` binary
+- New shared sources dir `Sources/Shared/` compiled into both targets
+
+### Protocol
+
+- Unix-domain socket at `~/Library/Application Support/tilr/tilr.sock`
+- Newline-delimited JSON request/response
+- First commands:
+  - `status` → `{ok, pid, uptimeSeconds, spacesCount, activeSpace}`
+
+### CLI commands (via Swift ArgumentParser)
+
+- `tilr status`
+  - App running → prints health table, exit 0
+  - App not running (ECONNREFUSED / ENOENT) → prints
+    `Tilr.app is not running.\n\n  Start with: open -a Tilr.app`, exit 1
+- `tilr logs`
+  - Wraps `/usr/bin/log stream --predicate 'subsystem == "io.ubiqtek.tilr"' --style compact`
+  - No IPC — works whether app is running or not
+- `tilr logs --last 100` (nice-to-have, via `log show`)
+
+### Deliverables
+
+- [x] Rename app target in `project.yml`; add CLI target
+- [x] Add `swift-argument-parser` SPM dependency to CLI target
+- [x] `Sources/Shared/Protocol.swift` — `TilrRequest`, `TilrResponse`, `StatusData` Codable types
+- [x] `Sources/Tilr/SocketServer.swift` — POSIX Unix-domain socket listener, dispatches to `CommandHandler`
+- [x] `Sources/Tilr/CommandHandler.swift` — handles `status`
+- [x] `AppDelegate` wires up `SocketServer.start()` in `applicationDidFinishLaunching`, `unlink` on `applicationWillTerminate` + SIGINT/SIGTERM handlers
+- [x] `Sources/TilrCLI/TilrCLI.swift` — ArgumentParser root + `Status` + `Logs` subcommands
+- [x] `Sources/TilrCLI/SocketClient.swift` — connect, send, read response
+- [x] `justfile`: `build-cli`, `install-cli` recipes; existing recipes still target `Tilr.app`
+- [x] Acceptance: `tilr status` works with app running and without; `tilr logs` streams live output
+
+**Notes:** The CLI entry point must not use `@main` in a file named `main.swift` (Swift treats that file as top-level entry automatically). Renamed to `TilrCLI.swift`.
+
+---
+
+## Delta 4 — Config loading
 
 **Goal:** config parsed, validated, sensible error if malformed.
 
@@ -80,12 +128,13 @@ lands — check boxes, add a dated note, link the commit/PR.
 - [ ] Reads `~/.config/tilr/config.toml` on launch
 - [ ] Writes default config if missing
 - [ ] Logs parsed spaces; clear error on malformed TOML
+- [ ] `tilr status` reports `spacesCount` from loaded config
 
 **Notes:**
 
 ---
 
-## Delta 4 — Hotkeys from config
+## Delta 5 — Hotkeys from config
 
 **Goal:** config-driven hotkeys, popup shows space name.
 
@@ -97,7 +146,7 @@ lands — check boxes, add a dated note, link the commit/PR.
 
 ---
 
-## Delta 5 — State file
+## Delta 6 — State file
 
 **Goal:** state survives restart; active space restored on launch.
 
@@ -105,12 +154,13 @@ lands — check boxes, add a dated note, link the commit/PR.
 - [ ] Loads/saves `~/Library/Application Support/tilr/state.toml`
 - [ ] Hotkey fire → `StateStore.setActive(name)` persists & publishes
 - [ ] Never writes to user `config.toml`
+- [ ] `tilr status` reports `activeSpace`; new CLI command `tilr switch <name>`
 
 **Notes:**
 
 ---
 
-## Delta 6 — Menu bar title
+## Delta 7 — Menu bar title
 
 **Goal:** menu bar always shows current space name in brackets.
 
@@ -122,7 +172,7 @@ lands — check boxes, add a dated note, link the commit/PR.
 
 ---
 
-## Delta 7 — Polish
+## Delta 8 — Polish
 
 **Goal:** shippable starter.
 

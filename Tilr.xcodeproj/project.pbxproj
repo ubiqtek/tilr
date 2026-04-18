@@ -7,37 +7,58 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		060EBB1EDFEF8E3D2466E2CB /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = FA0C476B6D9F90218EF6BEEF /* HotKey */; };
-		080EA7E8F0DCB84741BE2375 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */; };
-		489F0B5C9CF664CF66E6CC18 /* TOMLKit in Frameworks */ = {isa = PBXBuildFile; productRef = A5E98ABFE5509E424437AE96 /* TOMLKit */; };
-		7558ED970DE35AB0C7798F07 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC864E8DB4EFA2E99ACD386F /* Logging.swift */; };
-		A33F65D4F6F596F70FDE8A9A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */; };
-		B5359C47F2D1C98AFD9EB3FC /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */; };
-		EB75CFCCCBDD08D46051F6F1 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B84695773403E5189D2283 /* main.swift */; };
-		ECEF7AFD8B2769BB7E4D26EF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D591EB97A8285386E320E7A1 /* AppDelegate.swift */; };
-		F7FD8C1A9D7389B8A964D1E5 /* PopupWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C26C3A022E722BB2141506 /* PopupWindow.swift */; };
+		07B350237A28183D14F28172 /* TilrCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */; };
+		0904FA541B1A8BC6924CF077 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107A98FA7DFAD3B0C72DF305 /* Protocol.swift */; };
+		0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D591EB97A8285386E320E7A1 /* AppDelegate.swift */; };
+		1757134B0FBBE8F270642C77 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 37F0E62234354AFC0109FC05 /* HotKey */; };
+		3487264C1D9A996204B83EB0 /* SocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DA24F8994DA197871EC4F7 /* SocketClient.swift */; };
+		34EB5BA4E7A81B262464D261 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B84695773403E5189D2283 /* main.swift */; };
+		47841DC6765B676345C49ADF /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */; };
+		4B6CB820CB7A0661BAB40021 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */; };
+		4C627C20925E32CE59343BE3 /* SocketServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */; };
+		8EFB57F4C04046C26FB5AFC8 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */; };
+		B6C816A29F4059B6D013DE52 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107A98FA7DFAD3B0C72DF305 /* Protocol.swift */; };
+		C3F3599B193202D73F6FF5D9 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC864E8DB4EFA2E99ACD386F /* Logging.swift */; };
+		CBA5C00A789C86F4237796D9 /* PopupWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C26C3A022E722BB2141506 /* PopupWindow.swift */; };
+		DEE9083EB76D4D4B6402EACF /* TOMLKit in Frameworks */ = {isa = PBXBuildFile; productRef = 219923429066FE116D7FBF21 /* TOMLKit */; };
+		F3F1430FD3A5751E0DB9562C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */; };
+		FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyManager.swift; sourceTree = "<group>"; };
+		107A98FA7DFAD3B0C72DF305 /* Protocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
+		1D466C78546253ED43ED5A1B /* TilrCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = TilrCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A6D361035A8E67B904B35F /* Tilr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tilr.entitlements; sourceTree = "<group>"; };
 		42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketServer.swift; sourceTree = "<group>"; };
 		A2C26C3A022E722BB2141506 /* PopupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWindow.swift; sourceTree = "<group>"; };
+		A2DA24F8994DA197871EC4F7 /* SocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClient.swift; sourceTree = "<group>"; };
+		A31BA873E7DDD31C99FD1C25 /* TilrApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TilrApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilrCLI.swift; sourceTree = "<group>"; };
 		B7B84695773403E5189D2283 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		D591EB97A8285386E320E7A1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		E919A189AE5D345CC082628A /* Tilr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tilr.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC864E8DB4EFA2E99ACD386F /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
+		F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHandler.swift; sourceTree = "<group>"; };
 		F61A5A6D3F4E72C5233592B5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		FCCB557501ABDAD4D84251B2 /* Frameworks */ = {
+		69181A6F9B398AEF4E61C527 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				060EBB1EDFEF8E3D2466E2CB /* HotKey in Frameworks */,
-				489F0B5C9CF664CF66E6CC18 /* TOMLKit in Frameworks */,
+				1757134B0FBBE8F270642C77 /* HotKey in Frameworks */,
+				DEE9083EB76D4D4B6402EACF /* TOMLKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		76B927C778BE6F975D8094A7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8EFB57F4C04046C26FB5AFC8 /* ArgumentParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -47,9 +68,21 @@
 		099D0009317806730ABA46D1 = {
 			isa = PBXGroup;
 			children = (
+				DF070FAEB67DC5C1AC7390DF /* Shared */,
 				630CCF912635A633CA4B848C /* Tilr */,
+				26A13A3B9040FFBD2EEC8439 /* TilrCLI */,
 				67FA1E9D789E26191A18D2BF /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		26A13A3B9040FFBD2EEC8439 /* TilrCLI */ = {
+			isa = PBXGroup;
+			children = (
+				A2DA24F8994DA197871EC4F7 /* SocketClient.swift */,
+				B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */,
+			);
+			name = TilrCLI;
+			path = Sources/TilrCLI;
 			sourceTree = "<group>";
 		};
 		630CCF912635A633CA4B848C /* Tilr */ = {
@@ -57,12 +90,14 @@
 			children = (
 				D591EB97A8285386E320E7A1 /* AppDelegate.swift */,
 				42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */,
+				F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */,
 				0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */,
 				F61A5A6D3F4E72C5233592B5 /* Info.plist */,
 				EC864E8DB4EFA2E99ACD386F /* Logging.swift */,
 				B7B84695773403E5189D2283 /* main.swift */,
 				0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */,
 				A2C26C3A022E722BB2141506 /* PopupWindow.swift */,
+				8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */,
 				32A6D361035A8E67B904B35F /* Tilr.entitlements */,
 			);
 			name = Tilr;
@@ -72,34 +107,63 @@
 		67FA1E9D789E26191A18D2BF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E919A189AE5D345CC082628A /* Tilr.app */,
+				A31BA873E7DDD31C99FD1C25 /* TilrApp.app */,
+				1D466C78546253ED43ED5A1B /* TilrCLI */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DF070FAEB67DC5C1AC7390DF /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				107A98FA7DFAD3B0C72DF305 /* Protocol.swift */,
+			);
+			name = Shared;
+			path = Sources/Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		787B31C3BEAC11FCC471D3C7 /* Tilr */ = {
+		035154A5253B50ABE1C82A31 /* TilrApp */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 481A554383B12B58FCA31660 /* Build configuration list for PBXNativeTarget "Tilr" */;
+			buildConfigurationList = 2A95D07D8CD26CC78A3D10AA /* Build configuration list for PBXNativeTarget "TilrApp" */;
 			buildPhases = (
-				B776BBB29CB716E24541E8B8 /* Sources */,
-				3937303BA2D351ACAE54F0C4 /* Resources */,
-				FCCB557501ABDAD4D84251B2 /* Frameworks */,
+				7C59EFB9C2645341A470B714 /* Sources */,
+				D00CB0A05C4361D0E4EE48F9 /* Resources */,
+				69181A6F9B398AEF4E61C527 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = Tilr;
+			name = TilrApp;
 			packageProductDependencies = (
-				FA0C476B6D9F90218EF6BEEF /* HotKey */,
-				A5E98ABFE5509E424437AE96 /* TOMLKit */,
+				37F0E62234354AFC0109FC05 /* HotKey */,
+				219923429066FE116D7FBF21 /* TOMLKit */,
 			);
-			productName = Tilr;
-			productReference = E919A189AE5D345CC082628A /* Tilr.app */;
+			productName = TilrApp;
+			productReference = A31BA873E7DDD31C99FD1C25 /* TilrApp.app */;
 			productType = "com.apple.product-type.application";
+		};
+		4FEC5CAE213FF6DE0F80B5B7 /* TilrCLI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BC2096E0CE52002F94DCE88C /* Build configuration list for PBXNativeTarget "TilrCLI" */;
+			buildPhases = (
+				6F8C1B92535CDBCFA961BBE8 /* Sources */,
+				76B927C778BE6F975D8094A7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TilrCLI;
+			packageProductDependencies = (
+				1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */,
+			);
+			productName = TilrCLI;
+			productReference = 1D466C78546253ED43ED5A1B /* TilrCLI */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
@@ -110,7 +174,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
-					787B31C3BEAC11FCC471D3C7 = {
+					035154A5253B50ABE1C82A31 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					4FEC5CAE213FF6DE0F80B5B7 = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
@@ -126,6 +194,7 @@
 			mainGroup = 099D0009317806730ABA46D1;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				940C447B9C929759FB9C09E5 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				4B39B152B04927F0102DD965 /* XCRemoteSwiftPackageReference "HotKey" */,
 				3505DAD389638450058DD336 /* XCRemoteSwiftPackageReference "TOMLKit" */,
 			);
@@ -134,39 +203,67 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				787B31C3BEAC11FCC471D3C7 /* Tilr */,
+				035154A5253B50ABE1C82A31 /* TilrApp */,
+				4FEC5CAE213FF6DE0F80B5B7 /* TilrCLI */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		3937303BA2D351ACAE54F0C4 /* Resources */ = {
+		D00CB0A05C4361D0E4EE48F9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A33F65D4F6F596F70FDE8A9A /* Assets.xcassets in Resources */,
+				F3F1430FD3A5751E0DB9562C /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		B776BBB29CB716E24541E8B8 /* Sources */ = {
+		6F8C1B92535CDBCFA961BBE8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				ECEF7AFD8B2769BB7E4D26EF /* AppDelegate.swift in Sources */,
-				080EA7E8F0DCB84741BE2375 /* HotKeyManager.swift in Sources */,
-				7558ED970DE35AB0C7798F07 /* Logging.swift in Sources */,
-				B5359C47F2D1C98AFD9EB3FC /* MenuBarController.swift in Sources */,
-				F7FD8C1A9D7389B8A964D1E5 /* PopupWindow.swift in Sources */,
-				EB75CFCCCBDD08D46051F6F1 /* main.swift in Sources */,
+				0904FA541B1A8BC6924CF077 /* Protocol.swift in Sources */,
+				3487264C1D9A996204B83EB0 /* SocketClient.swift in Sources */,
+				07B350237A28183D14F28172 /* TilrCLI.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7C59EFB9C2645341A470B714 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */,
+				FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */,
+				4B6CB820CB7A0661BAB40021 /* HotKeyManager.swift in Sources */,
+				C3F3599B193202D73F6FF5D9 /* Logging.swift in Sources */,
+				47841DC6765B676345C49ADF /* MenuBarController.swift in Sources */,
+				CBA5C00A789C86F4237796D9 /* PopupWindow.swift in Sources */,
+				B6C816A29F4059B6D013DE52 /* Protocol.swift in Sources */,
+				4C627C20925E32CE59343BE3 /* SocketServer.swift in Sources */,
+				34EB5BA4E7A81B262464D261 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		0AC2734DDD2764E8976AE4F2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ubiqtek.tilr-cli";
+				PRODUCT_NAME = tilr;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
 		13118ADDA37AEBC072FA9537 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -233,36 +330,6 @@
 			};
 			name = Debug;
 		};
-		28741D7B1A8069DE9EAB4B52 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Sources/Tilr/Tilr.entitlements;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = Sources/Tilr/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
-		59935271961C6FCCEAE2378D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Sources/Tilr/Tilr.entitlements;
-				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = Sources/Tilr/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				SDKROOT = macosx;
-			};
-			name = Release;
-		};
 		845EBDBA5E7671065BC41232 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -322,14 +389,69 @@
 			};
 			name = Release;
 		};
+		A81FB526AB40D1ADD849E16B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/Tilr/Tilr.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Sources/Tilr/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_NAME = Tilr;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		B61C2DED50E3F8D342E1F7AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ubiqtek.tilr-cli";
+				PRODUCT_NAME = tilr;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C887E500C925D516BEC8CFCF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/Tilr/Tilr.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Sources/Tilr/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_NAME = Tilr;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		481A554383B12B58FCA31660 /* Build configuration list for PBXNativeTarget "Tilr" */ = {
+		2A95D07D8CD26CC78A3D10AA /* Build configuration list for PBXNativeTarget "TilrApp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				28741D7B1A8069DE9EAB4B52 /* Debug */,
-				59935271961C6FCCEAE2378D /* Release */,
+				C887E500C925D516BEC8CFCF /* Debug */,
+				A81FB526AB40D1ADD849E16B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BC2096E0CE52002F94DCE88C /* Build configuration list for PBXNativeTarget "TilrCLI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0AC2734DDD2764E8976AE4F2 /* Debug */,
+				B61C2DED50E3F8D342E1F7AC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -362,15 +484,28 @@
 				minimumVersion = 0.2.0;
 			};
 		};
+		940C447B9C929759FB9C09E5 /* XCRemoteSwiftPackageReference "swift-argument-parser" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-argument-parser";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		A5E98ABFE5509E424437AE96 /* TOMLKit */ = {
+		1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 940C447B9C929759FB9C09E5 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
+			productName = ArgumentParser;
+		};
+		219923429066FE116D7FBF21 /* TOMLKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3505DAD389638450058DD336 /* XCRemoteSwiftPackageReference "TOMLKit" */;
 			productName = TOMLKit;
 		};
-		FA0C476B6D9F90218EF6BEEF /* HotKey */ = {
+		37F0E62234354AFC0109FC05 /* HotKey */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4B39B152B04927F0102DD965 /* XCRemoteSwiftPackageReference "HotKey" */;
 			productName = HotKey;

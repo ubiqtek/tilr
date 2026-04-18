@@ -20,12 +20,17 @@ packages:
   TOMLKit:
     url: https://github.com/LebJe/TOMLKit
     from: "0.5.0"
+  ArgumentParser:
+    url: https://github.com/apple/swift-argument-parser
+    from: "1.3.0"
 
 targets:
-  Tilr:
+  TilrApp:
     type: application
     platform: macOS
-    sources: Sources/Tilr
+    sources:
+      - Sources/Tilr
+      - Sources/Shared
     info:
       path: Sources/Tilr/Info.plist
       properties:
@@ -45,3 +50,20 @@ targets:
       path: Sources/Tilr/Tilr.entitlements
       properties:
         com.apple.security.app-sandbox: false
+    settings:
+      base:
+        PRODUCT_NAME: Tilr
+
+  TilrCLI:
+    type: tool
+    platform: macOS
+    sources:
+      - Sources/TilrCLI
+      - Sources/Shared
+    dependencies:
+      - package: ArgumentParser
+        product: ArgumentParser
+    settings:
+      base:
+        PRODUCT_NAME: tilr
+        PRODUCT_BUNDLE_IDENTIFIER: io.ubiqtek.tilr-cli

@@ -21,13 +21,17 @@ final class MenuBarController {
         helpItem.isEnabled = true
         menu.addItem(helpItem)
         menu.addItem(.separator())
-        let quitItem = NSMenuItem(title: "Quit Tilr", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "")
-        quitItem.image = nil
+        let quitItem = NSMenuItem(title: "Quit Tilr", action: #selector(quitApp), keyEquivalent: "")
+        quitItem.target = self
         menu.addItem(quitItem)
         return menu
     }
 
     @objc private func showHelp() {
         popup.show("⌘⌥Space   Status", duration: 3.0)
+    }
+
+    @objc private func quitApp() {
+        NSApp.terminate(nil)
     }
 }
