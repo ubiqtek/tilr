@@ -64,6 +64,12 @@ struct Logs: ParsableCommand {
         let proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/bin/sh")
         proc.arguments = ["-c", pipeline]
+
+        signal(SIGINT, SIG_IGN)
+        let sigintSource = DispatchSource.makeSignalSource(signal: SIGINT, queue: .global())
+        sigintSource.setEventHandler { proc.terminate() }
+        sigintSource.resume()
+
         try proc.run()
         proc.waitUntilExit()
     }
