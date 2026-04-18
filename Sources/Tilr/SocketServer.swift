@@ -96,9 +96,10 @@ final class SocketServer {
             return
         }
 
-        let response = handler.handle(request)
+        let (response, postSend) = handler.handle(request)
         guard var data = try? JSONEncoder().encode(response) else { return }
         data.append(UInt8(ascii: "\n"))
         data.withUnsafeBytes { _ = send(client, $0.baseAddress!, data.count, 0) }
+        postSend?()
     }
 }

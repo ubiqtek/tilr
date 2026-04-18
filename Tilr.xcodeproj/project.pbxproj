@@ -37,6 +37,7 @@
 		E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
 		F3F1430FD3A5751E0DB9562C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */; };
 		FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */; };
+		FF9FD54EC2C8784098181184 /* StateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CFF8717BEC727DF941EACD5 /* StateStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 		1D466C78546253ED43ED5A1B /* TilrCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = TilrCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A6D361035A8E67B904B35F /* Tilr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tilr.entitlements; sourceTree = "<group>"; };
 		42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6CFF8717BEC727DF941EACD5 /* StateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateStore.swift; sourceTree = "<group>"; };
 		7FDED848C352E215A608FDDE /* ConfigLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigLoader.swift; sourceTree = "<group>"; };
 		8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketServer.swift; sourceTree = "<group>"; };
 		A2C26C3A022E722BB2141506 /* PopupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWindow.swift; sourceTree = "<group>"; };
@@ -129,6 +131,7 @@
 				0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */,
 				A2C26C3A022E722BB2141506 /* PopupWindow.swift */,
 				8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */,
+				6CFF8717BEC727DF941EACD5 /* StateStore.swift */,
 				32A6D361035A8E67B904B35F /* Tilr.entitlements */,
 			);
 			name = Tilr;
@@ -331,6 +334,7 @@
 				CBA5C00A789C86F4237796D9 /* PopupWindow.swift in Sources */,
 				B6C816A29F4059B6D013DE52 /* Protocol.swift in Sources */,
 				4C627C20925E32CE59343BE3 /* SocketServer.swift in Sources */,
+				FF9FD54EC2C8784098181184 /* StateStore.swift in Sources */,
 				34EB5BA4E7A81B262464D261 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

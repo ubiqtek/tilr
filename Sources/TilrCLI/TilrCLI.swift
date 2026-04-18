@@ -7,7 +7,7 @@ struct Tilr: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "tilr",
         abstract: "Tilr CLI — query and control the Tilr menu bar app.",
-        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, ReloadConfig.self, System.self, Context.self],
+        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, Displays.self, ReloadConfig.self, System.self, Context.self],
         defaultSubcommand: Status.self
     )
 }
@@ -60,8 +60,7 @@ struct Logs: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Stream app logs.")
 
     func run() throws {
-        signal(SIGINT, SIG_DFL)
-        let pipeline = #"/usr/bin/log stream --predicate 'subsystem == "io.ubiqtek.tilr"' --level debug | awk 'NR>1 { type=$4; msg=""; for(i=8;i<=NF;i++) msg=msg (i==8?"":OFS) $i; cat=""; rest=msg; if (match(msg, /\[[^]]+\] /)) { cat=substr(msg,RSTART+1,RLENGTH-3); rest=substr(msg,RSTART+RLENGTH) } if (length(cat)>30) cat=substr(cat,1,30); printf "%-8s %-30s %s\n", type, cat, rest; fflush() }'"#
+        let pipeline = #"trap 'kill 0' EXIT; /usr/bin/log stream --predicate 'subsystem == "io.ubiqtek.tilr"' --level debug --style compact | awk '$1 ~ /^[0-9]{4}-/ { abbr=$3; type=(abbr=="I"?"Info":abbr=="Db"?"Debug":abbr=="E"?"Error":abbr=="Fa"?"Fault":"Default"); msg=""; for(i=5;i<=NF;i++) msg=msg (i==5?"":OFS) $i; cat=""; rest=msg; if (match(msg, /\[[^]]+\] /)) { cat=substr(msg,RSTART+1,RLENGTH-3); rest=substr(msg,RSTART+RLENGTH) }; if (length(cat)>30) cat=substr(cat,1,30); printf "%-8s %-30s %s\n", type, cat, rest; fflush() }'"#
         let proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/bin/sh")
         proc.arguments = ["-c", pipeline]
@@ -104,6 +103,11 @@ struct ConfigHelp: ParsableCommand {
             switchToSpace: <modifier>     # modifier + space id = hotkey, e.g. cmd+opt → cmd+opt+1
             moveAppToSpace: <modifier>    # e.g. cmd+shift+opt → cmd+shift+opt+1
 
+          displays:
+            "1":                          # Tilr display ID (1 = first screen by index order)
+              name: <label>              # user-chosen label, e.g. "Main"
+              defaultSpace: <name|id>    # space to activate on launch (name or single-char id)
+
           spaces:
             <Name>:                       # display name shown in menu bar and popup
               id: <0-9|a-z>              # single char; appended to modifier to form hotkey
@@ -121,6 +125,8 @@ struct ConfigHelp: ParsableCommand {
           tilr spaces add <name> <id> [bundle-ids...]
           tilr spaces set-layout <name-or-id> --type sidebar [--main <bundle-id>] [--ratio <float>]
           tilr spaces set-layout <name-or-id> --type fill-screen [--main <bundle-id>]
+          tilr displays list
+          tilr displays configure <id> <name> <default-space>
         """)
     }
 }
@@ -172,6 +178,9 @@ struct ReloadConfig: ParsableCommand {
             response = try client.send(TilrRequest(cmd: "reload-config"))
         } catch SocketError.notRunning {
             print("Tilr.app is not running.\n\n  Start with: open -a Tilr.app")
+            throw ExitCode(1)
+        } catch {
+            print("Error: \(error)")
             throw ExitCode(1)
         }
         if response.ok {
@@ -318,6 +327,80 @@ struct SpacesDelete: ParsableCommand {
     }
 }
 
+// MARK: - Displays
+
+struct Displays: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Manage display configuration.",
+        subcommands: [DisplaysList.self, DisplaysConfigure.self]
+    )
+}
+
+struct DisplaysList: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "list", abstract: "List displays with Tilr configuration.")
+
+    func run() throws {
+        let config = try ConfigStore.load()
+        let screens = NSScreen.screens
+
+        let idW = 4, nameW = 12, systemW = 26
+        print(pad("ID", idW) + pad("Tilr Name", nameW) + pad("System Name", systemW) + "Default Space")
+        print(String(repeating: "-", count: 2).padding(toLength: idW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 9).padding(toLength: nameW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 11).padding(toLength: systemW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 13))
+
+        for (i, screen) in screens.enumerated() {
+            let displayId = "\(i + 1)"
+            let displayConfig = config.displays[displayId]
+            let tilrName = displayConfig?.name ?? "—"
+            let systemName = screen.localizedName
+            let defaultSpace = displayConfig?.defaultSpace ?? "—"
+            print(pad(displayId, idW) + pad(tilrName, nameW) + pad(systemName, systemW) + defaultSpace)
+        }
+    }
+
+    private func pad(_ s: String, _ width: Int) -> String {
+        s.padding(toLength: max(s.count, width), withPad: " ", startingAt: 0)
+            .padding(toLength: width, withPad: " ", startingAt: 0)
+    }
+}
+
+struct DisplaysConfigure: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "configure", abstract: "Set name and default space for a display.")
+
+    @Argument var id: Int
+    @Argument var name: String
+    @Argument var defaultSpace: String
+
+    func run() throws {
+        var config = try ConfigStore.load()
+
+        // Validate that the display ID corresponds to a real screen
+        let screenCount = NSScreen.screens.count
+        guard id >= 1, id <= screenCount else {
+            print("Error: display \(id) does not exist (found \(screenCount) screen(s))")
+            throw ExitCode(1)
+        }
+
+        // Resolve the space: single char → by id, else → by name
+        let resolvedName: String?
+        if defaultSpace.count == 1 {
+            resolvedName = config.spaces.first(where: { $0.value.id == defaultSpace })?.key
+        } else {
+            resolvedName = config.spaces[defaultSpace] != nil ? defaultSpace : nil
+        }
+        guard let spaceName = resolvedName else {
+            print("Error: no space found for '\(defaultSpace)'")
+            throw ExitCode(1)
+        }
+
+        config.displays["\(id)"] = DisplayConfig(name: name, defaultSpace: spaceName)
+        try ConfigStore.save(config)
+        print("Display \(id) configured: name=\(name), defaultSpace=\(spaceName)")
+    }
+}
+
 // MARK: - Context
 
 struct Context: ParsableCommand {
@@ -364,6 +447,8 @@ struct Context: ParsableCommand {
             CommandEntry(cmd: "tilr spaces add <name> <id> [bundle-ids...]", desc: "Add a space; id is single char 0-9 or a-z"),
             CommandEntry(cmd: "tilr spaces delete <name-or-id>", desc: "Delete a space"),
             CommandEntry(cmd: "tilr spaces set-layout <name-or-id> --type sidebar|fill-screen [--main <bundle-id>] [--ratio <float>]", desc: "Set window layout for a space (sidebar: ratio split; fill-screen: all apps full-screen)"),
+            CommandEntry(cmd: "tilr displays list", desc: "List displays with Tilr ID, user name, system name, and default space"),
+            CommandEntry(cmd: "tilr displays configure <id> <name> <default-space>", desc: "Set user label and default space for a display; id is integer 1-N"),
             CommandEntry(cmd: "tilr system", desc: "List running apps (name + bundle ID) and displays"),
         ]
 

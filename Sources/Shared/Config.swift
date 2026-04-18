@@ -2,11 +2,52 @@ import Foundation
 
 public struct TilrConfig: Codable {
     public var keyboardShortcuts: KeyboardShortcuts
+    public var popups: PopupConfig
+    public var displays: [String: DisplayConfig]
     public var spaces: [String: SpaceDefinition]
 
-    public init(keyboardShortcuts: KeyboardShortcuts = .default, spaces: [String: SpaceDefinition] = [:]) {
+    public init(
+        keyboardShortcuts: KeyboardShortcuts = .default,
+        popups: PopupConfig = .default,
+        displays: [String: DisplayConfig] = [:],
+        spaces: [String: SpaceDefinition] = [:]
+    ) {
         self.keyboardShortcuts = keyboardShortcuts
+        self.popups = popups
+        self.displays = displays
         self.spaces = spaces
+    }
+
+    enum CodingKeys: String, CodingKey { case keyboardShortcuts, popups, displays, spaces }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        keyboardShortcuts = try c.decode(KeyboardShortcuts.self, forKey: .keyboardShortcuts)
+        popups = try c.decodeIfPresent(PopupConfig.self, forKey: .popups) ?? .default
+        displays = try c.decodeIfPresent([String: DisplayConfig].self, forKey: .displays) ?? [:]
+        spaces = try c.decode([String: SpaceDefinition].self, forKey: .spaces)
+    }
+}
+
+public struct DisplayConfig: Codable {
+    public var name: String?
+    public var defaultSpace: String?
+
+    public init(name: String? = nil, defaultSpace: String? = nil) {
+        self.name = name
+        self.defaultSpace = defaultSpace
+    }
+}
+
+public struct PopupConfig: Codable {
+    public var whenSwitchingSpaces: Bool
+    public var whenMovingApps: Bool
+
+    public static let `default` = PopupConfig(whenSwitchingSpaces: true, whenMovingApps: true)
+
+    public init(whenSwitchingSpaces: Bool = true, whenMovingApps: Bool = true) {
+        self.whenSwitchingSpaces = whenSwitchingSpaces
+        self.whenMovingApps = whenMovingApps
     }
 }
 

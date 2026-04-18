@@ -8,7 +8,7 @@ final class PopupWindow {
     private var hideTimer: Timer?
 
     func show(_ message: String, duration: TimeInterval = 1.2) {
-        Logger.popup.debug("show: \(message, privacy: .public)")
+        Logger.popup.info("show space: \(message, privacy: .public)")
         hideTimer?.invalidate()
         panel?.close()
 
@@ -23,9 +23,11 @@ final class PopupWindow {
             panel.animator().alphaValue = 1
         }
 
-        hideTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
+        let timer = Timer(timeInterval: duration, repeats: false) { [weak self] _ in
             self?.dismiss()
         }
+        RunLoop.main.add(timer, forMode: .common)
+        hideTimer = timer
     }
 
     private func dismiss() {
@@ -33,9 +35,9 @@ final class PopupWindow {
         NSAnimationContext.runAnimationGroup({ ctx in
             ctx.duration = 0.15
             panel.animator().alphaValue = 0
-        }, completionHandler: {
+        }, completionHandler: { [weak self] in
             panel.close()
-            self.panel = nil
+            self?.panel = nil
         })
     }
 
