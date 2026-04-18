@@ -7,7 +7,7 @@ struct Tilr: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "tilr",
         abstract: "Tilr CLI — query and control the Tilr menu bar app.",
-        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, ReloadConfig.self, System.self],
+        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, ReloadConfig.self, System.self, Context.self],
         defaultSubcommand: Status.self
     )
 }
@@ -110,13 +110,17 @@ struct ConfigHelp: ParsableCommand {
               apps:                      # bundle IDs to show/hide when activating this space
                 - <bundle-id>
               layout:                    # optional window layout
-                type: sidebar            # only supported type currently
+                type: sidebar            # sidebar: main pane + sidebars at a fixed ratio
                 main: <bundle-id>        # app occupying the large (main) pane
                 ratio: 0.65             # fraction of screen width for main pane (0.0–1.0)
+
+                type: fill-screen        # fill-screen: all apps fill the entire screen; OS picks foreground
+                main: <bundle-id>        # app brought to focus when the space activates (no ratio)
 
         Commands:
           tilr spaces add <name> <id> [bundle-ids...]
           tilr spaces set-layout <name-or-id> --type sidebar [--main <bundle-id>] [--ratio <float>]
+          tilr spaces set-layout <name-or-id> --type fill-screen [--main <bundle-id>]
         """)
     }
 }
@@ -223,7 +227,13 @@ struct SpacesList: ParsableCommand {
 
         let idW = 4, nameW = 11, hotkeyW = 13, appsW = 35
         let header = pad("ID", idW) + pad("Name", nameW) + pad("Hotkey", hotkeyW) + pad("Apps", appsW) + "Layout"
+        let separator = String(repeating: "-", count: 2).padding(toLength: idW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 9).padding(toLength: nameW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 11).padding(toLength: hotkeyW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 33).padding(toLength: appsW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 10)
         print(header)
+        print(separator)
 
         for (name, space) in sorted {
             let hotkey = "\(config.keyboardShortcuts.switchToSpace)+\(space.id)"
@@ -232,7 +242,17 @@ struct SpacesList: ParsableCommand {
             if space.apps.isEmpty {
                 appsCol = "—"
             } else {
-                appsCol = space.apps.map { appName(for: $0) }.joined(separator: ", ")
+                let names = space.apps.map { appName(for: $0) }
+                if let mainBundleId = space.layout?.main,
+                   let mainIdx = space.apps.firstIndex(of: mainBundleId) {
+                    let mainDisplayName = names[mainIdx]
+                    var rest = names
+                    rest.remove(at: mainIdx)
+                    let parts = ["[\(mainDisplayName)]"] + rest
+                    appsCol = parts.joined(separator: ", ")
+                } else {
+                    appsCol = names.joined(separator: ", ")
+                }
             }
 
             let layoutCol: String
@@ -295,6 +315,79 @@ struct SpacesDelete: ParsableCommand {
         config.spaces.removeValue(forKey: name)
         try ConfigStore.save(config)
         print("Deleted space '\(name)' (id: \(spaceId))")
+    }
+}
+
+// MARK: - Context
+
+struct Context: ParsableCommand {
+    static let configuration = CommandConfiguration(abstract: "Print a compact JSON briefing about Tilr for an AI agent.")
+
+    func run() throws {
+        let config = try? ConfigStore.load()
+        let configPath = ConfigPaths.configFile.path
+        let socketPath = TilrPaths.socket.path
+
+        // Build spaces array sorted by id
+        struct SpaceEntry: Encodable {
+            let id: String
+            let name: String
+            let hotkey: String
+            let apps: [String]
+            let layout: String?
+        }
+
+        var spacesEntries: [SpaceEntry] = []
+        if let config {
+            let sorted = config.spaces.sorted { $0.value.id < $1.value.id }
+            for (name, space) in sorted {
+                let hotkey = "\(config.keyboardShortcuts.switchToSpace)+\(space.id)"
+                let apps = space.apps.map { appName(for: $0) }
+                let layout: String? = space.layout.map { $0.type.rawValue }
+                spacesEntries.append(SpaceEntry(id: space.id, name: name, hotkey: hotkey, apps: apps, layout: layout))
+            }
+        }
+
+        // Build commands array
+        struct CommandEntry: Encodable {
+            let cmd: String
+            let desc: String
+        }
+        let commands: [CommandEntry] = [
+            CommandEntry(cmd: "tilr context", desc: "Print this JSON summary"),
+            CommandEntry(cmd: "tilr status", desc: "Check if Tilr.app is running; exit 0=running, 1=not running"),
+            CommandEntry(cmd: "tilr logs", desc: "Stream live app logs"),
+            CommandEntry(cmd: "tilr reload-config", desc: "Tell running app to reload config file"),
+            CommandEntry(cmd: "tilr config", desc: "Show raw config YAML and path"),
+            CommandEntry(cmd: "tilr config help", desc: "Show config format reference"),
+            CommandEntry(cmd: "tilr spaces list", desc: "List spaces as a table"),
+            CommandEntry(cmd: "tilr spaces add <name> <id> [bundle-ids...]", desc: "Add a space; id is single char 0-9 or a-z"),
+            CommandEntry(cmd: "tilr spaces delete <name-or-id>", desc: "Delete a space"),
+            CommandEntry(cmd: "tilr spaces set-layout <name-or-id> --type sidebar|fill-screen [--main <bundle-id>] [--ratio <float>]", desc: "Set window layout for a space (sidebar: ratio split; fill-screen: all apps full-screen)"),
+            CommandEntry(cmd: "tilr system", desc: "List running apps (name + bundle ID) and displays"),
+        ]
+
+        // Top-level encodable struct
+        struct ContextPayload: Encodable {
+            let description: String
+            let config: String
+            let socket: String
+            let spaces: [SpaceEntry]
+            let commands: [CommandEntry]
+        }
+
+        let payload = ContextPayload(
+            description: "Tilr: macOS workspace manager. Use the CLI to inspect and control spaces. The app must be running for hotkeys and socket commands (status, reload-config) to work.",
+            config: configPath,
+            socket: socketPath,
+            spaces: spacesEntries,
+            commands: commands
+        )
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = []
+        let data = try encoder.encode(payload)
+        print(String(data: data, encoding: .utf8)!)
     }
 }
 

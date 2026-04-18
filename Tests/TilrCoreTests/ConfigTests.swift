@@ -80,4 +80,25 @@ final class ConfigTests: XCTestCase {
         let bad = "spaces: [this is not valid yaml for a dict: {"
         XCTAssertThrowsError(try YAMLDecoder().decode(TilrConfig.self, from: bad))
     }
+
+    func testFillScreenLayout() throws {
+        let yaml = """
+        keyboardShortcuts:
+          switchToSpace: cmd+opt
+          moveAppToSpace: cmd+shift+opt
+        spaces:
+          Reference:
+            id: "r"
+            apps:
+              - app.zen-browser.zen
+            layout:
+              type: fill-screen
+              main: app.zen-browser.zen
+        """
+        let config = try YAMLDecoder().decode(TilrConfig.self, from: yaml)
+        let layout = config.spaces["Reference"]?.layout
+        XCTAssertEqual(layout?.type, .fillScreen)
+        XCTAssertEqual(layout?.main, "app.zen-browser.zen")
+        XCTAssertNil(layout?.ratio)
+    }
 }

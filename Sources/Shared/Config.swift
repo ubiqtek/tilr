@@ -74,6 +74,7 @@ public struct Layout: Codable {
 
 public enum LayoutType: String, Codable {
     case sidebar
+    case fillScreen = "fill-screen"
 }
 
 public extension TilrConfig {
