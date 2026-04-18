@@ -8,10 +8,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let socketServer = SocketServer()
     private var sigintSource: DispatchSourceSignal?
     private var sigtermSource: DispatchSourceSignal?
+    private var config: TilrConfig?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.app.info("Tilr starting")
         socketServer.start()
+        config = ConfigLoader.load()
+        socketServer.commandHandler.config = config
         let popup = PopupWindow()
         menuBarController = MenuBarController(popup: popup)
         hotKeyManager = HotKeyManager(popup: popup)

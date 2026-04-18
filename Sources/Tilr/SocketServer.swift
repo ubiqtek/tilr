@@ -6,7 +6,8 @@ final class SocketServer {
     private var fd: Int32 = -1
     private var source: DispatchSourceRead?
     private let queue = DispatchQueue(label: "io.ubiqtek.tilr.socket", qos: .utility)
-    private let handler = CommandHandler()
+    let commandHandler = CommandHandler()
+    private var handler: CommandHandler { commandHandler }
 
     func start() {
         let socketPath = TilrPaths.socket.path

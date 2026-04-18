@@ -1,5 +1,5 @@
 {
-  "originHash" : "796920885e97a65bc7453e5685d515fbfc8e299c3187fd11b69f0f2cd45b9988",
+  "originHash" : "6ebc797c6433cb618f217e78cd7ad09bbe568bf128b506479b0518e53fec018d",
   "pins" : [
     {
       "identity" : "hotkey",
@@ -20,12 +20,12 @@
       }
     },
     {
-      "identity" : "tomlkit",
+      "identity" : "yams",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/LebJe/TOMLKit",
+      "location" : "https://github.com/jpsim/Yams",
       "state" : {
-        "revision" : "ec6198d37d495efc6acd4dffbd262cdca7ff9b3f",
-        "version" : "0.6.0"
+        "revision" : "3d6871d5b4a5cd519adf233fbb576e0a2af71c17",
+        "version" : "5.4.0"
       }
     }
   ],

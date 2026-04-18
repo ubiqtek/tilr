@@ -9,18 +9,32 @@
 /* Begin PBXBuildFile section */
 		07B350237A28183D14F28172 /* TilrCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */; };
 		0904FA541B1A8BC6924CF077 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107A98FA7DFAD3B0C72DF305 /* Protocol.swift */; };
+		0B38CE60432BB7869AD2C6AB /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
 		0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D591EB97A8285386E320E7A1 /* AppDelegate.swift */; };
 		1757134B0FBBE8F270642C77 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 37F0E62234354AFC0109FC05 /* HotKey */; };
+		17CB9065CB4E3C1DCA8E17CF /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
+		2D55E81C071208DFE4E3B8B7 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
+		2D5EF2D6EDE2C1F6D8676944 /* ConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD73C3E61369CF9E9A088950 /* ConfigTests.swift */; };
 		3487264C1D9A996204B83EB0 /* SocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DA24F8994DA197871EC4F7 /* SocketClient.swift */; };
+		34B29F9D09169D21B43E2960 /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
 		34EB5BA4E7A81B262464D261 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B84695773403E5189D2283 /* main.swift */; };
 		47841DC6765B676345C49ADF /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */; };
 		4B6CB820CB7A0661BAB40021 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */; };
 		4C627C20925E32CE59343BE3 /* SocketServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */; };
+		6D3FCEDF811B35AC17F6930D /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
+		7CE12D1A18EC94B3F94ACC67 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = F5B9438894D8D7F5E60A0A8C /* Yams */; };
+		84DCEB885A50EC3B9174EECC /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = F4A7A23332D8A25DFB330647 /* Yams */; };
+		8AB61F432FB89B597D76959B /* ConfigLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FDED848C352E215A608FDDE /* ConfigLoader.swift */; };
 		8EFB57F4C04046C26FB5AFC8 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */; };
+		A0AD88187A1F38BDA085A1C8 /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
+		A82AD978B5B34EED78AAF494 /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
+		B368092F5A42CCD5D0025C23 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107A98FA7DFAD3B0C72DF305 /* Protocol.swift */; };
 		B6C816A29F4059B6D013DE52 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107A98FA7DFAD3B0C72DF305 /* Protocol.swift */; };
 		C3F3599B193202D73F6FF5D9 /* Logging.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC864E8DB4EFA2E99ACD386F /* Logging.swift */; };
 		CBA5C00A789C86F4237796D9 /* PopupWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C26C3A022E722BB2141506 /* PopupWindow.swift */; };
-		DEE9083EB76D4D4B6402EACF /* TOMLKit in Frameworks */ = {isa = PBXBuildFile; productRef = 219923429066FE116D7FBF21 /* TOMLKit */; };
+		DEE9083EB76D4D4B6402EACF /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 3F44E00F2A10F0ED11AB89E1 /* Yams */; };
+		E0DE4DCD84C06EBEC86DAC66 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
+		E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
 		F3F1430FD3A5751E0DB9562C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */; };
 		FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */; };
 /* End PBXBuildFile section */
@@ -28,16 +42,22 @@
 /* Begin PBXFileReference section */
 		0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyManager.swift; sourceTree = "<group>"; };
+		0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
 		107A98FA7DFAD3B0C72DF305 /* Protocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
 		1D466C78546253ED43ED5A1B /* TilrCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = TilrCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A6D361035A8E67B904B35F /* Tilr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tilr.entitlements; sourceTree = "<group>"; };
 		42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		7FDED848C352E215A608FDDE /* ConfigLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigLoader.swift; sourceTree = "<group>"; };
 		8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketServer.swift; sourceTree = "<group>"; };
 		A2C26C3A022E722BB2141506 /* PopupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWindow.swift; sourceTree = "<group>"; };
 		A2DA24F8994DA197871EC4F7 /* SocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClient.swift; sourceTree = "<group>"; };
 		A31BA873E7DDD31C99FD1C25 /* TilrApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TilrApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A58A3D2379A1546D9821F1BE /* TilrCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TilrCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA4954960D225425A4DC46AB /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilrCLI.swift; sourceTree = "<group>"; };
 		B7B84695773403E5189D2283 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		CD73C3E61369CF9E9A088950 /* ConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigTests.swift; sourceTree = "<group>"; };
+		CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigPaths.swift; sourceTree = "<group>"; };
 		D591EB97A8285386E320E7A1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		EC864E8DB4EFA2E99ACD386F /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
 		F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandHandler.swift; sourceTree = "<group>"; };
@@ -45,12 +65,20 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2D371F72A2B76DB959D72A08 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CE12D1A18EC94B3F94ACC67 /* Yams in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		69181A6F9B398AEF4E61C527 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				1757134B0FBBE8F270642C77 /* HotKey in Frameworks */,
-				DEE9083EB76D4D4B6402EACF /* TOMLKit in Frameworks */,
+				DEE9083EB76D4D4B6402EACF /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +87,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8EFB57F4C04046C26FB5AFC8 /* ArgumentParser in Frameworks */,
+				84DCEB885A50EC3B9174EECC /* Yams in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +100,7 @@
 				DF070FAEB67DC5C1AC7390DF /* Shared */,
 				630CCF912635A633CA4B848C /* Tilr */,
 				26A13A3B9040FFBD2EEC8439 /* TilrCLI */,
+				EEB4C44C504803B256653EA7 /* TilrCoreTests */,
 				67FA1E9D789E26191A18D2BF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -91,6 +121,7 @@
 				D591EB97A8285386E320E7A1 /* AppDelegate.swift */,
 				42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */,
 				F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */,
+				7FDED848C352E215A608FDDE /* ConfigLoader.swift */,
 				0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */,
 				F61A5A6D3F4E72C5233592B5 /* Info.plist */,
 				EC864E8DB4EFA2E99ACD386F /* Logging.swift */,
@@ -109,6 +140,7 @@
 			children = (
 				A31BA873E7DDD31C99FD1C25 /* TilrApp.app */,
 				1D466C78546253ED43ED5A1B /* TilrCLI */,
+				A58A3D2379A1546D9821F1BE /* TilrCoreTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -116,10 +148,22 @@
 		DF070FAEB67DC5C1AC7390DF /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				AA4954960D225425A4DC46AB /* Config.swift */,
+				CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */,
+				0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */,
 				107A98FA7DFAD3B0C72DF305 /* Protocol.swift */,
 			);
 			name = Shared;
 			path = Sources/Shared;
+			sourceTree = "<group>";
+		};
+		EEB4C44C504803B256653EA7 /* TilrCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				CD73C3E61369CF9E9A088950 /* ConfigTests.swift */,
+			);
+			name = TilrCoreTests;
+			path = Tests/TilrCoreTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,7 +184,7 @@
 			name = TilrApp;
 			packageProductDependencies = (
 				37F0E62234354AFC0109FC05 /* HotKey */,
-				219923429066FE116D7FBF21 /* TOMLKit */,
+				3F44E00F2A10F0ED11AB89E1 /* Yams */,
 			);
 			productName = TilrApp;
 			productReference = A31BA873E7DDD31C99FD1C25 /* TilrApp.app */;
@@ -160,10 +204,30 @@
 			name = TilrCLI;
 			packageProductDependencies = (
 				1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */,
+				F4A7A23332D8A25DFB330647 /* Yams */,
 			);
 			productName = TilrCLI;
 			productReference = 1D466C78546253ED43ED5A1B /* TilrCLI */;
 			productType = "com.apple.product-type.tool";
+		};
+		D1E0AEA9CF0330D5B65704AC /* TilrCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FAF5FEEFB1AF949E67BEFB27 /* Build configuration list for PBXNativeTarget "TilrCoreTests" */;
+			buildPhases = (
+				06A79CDA363AA52DE6A8B5B0 /* Sources */,
+				2D371F72A2B76DB959D72A08 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TilrCoreTests;
+			packageProductDependencies = (
+				F5B9438894D8D7F5E60A0A8C /* Yams */,
+			);
+			productName = TilrCoreTests;
+			productReference = A58A3D2379A1546D9821F1BE /* TilrCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -182,6 +246,10 @@
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
+					D1E0AEA9CF0330D5B65704AC = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = FEE8844F3A022D8386A71FDA /* Build configuration list for PBXProject "Tilr" */;
@@ -196,7 +264,7 @@
 			packageReferences = (
 				940C447B9C929759FB9C09E5 /* XCRemoteSwiftPackageReference "swift-argument-parser" */,
 				4B39B152B04927F0102DD965 /* XCRemoteSwiftPackageReference "HotKey" */,
-				3505DAD389638450058DD336 /* XCRemoteSwiftPackageReference "TOMLKit" */,
+				C90611D224975A7DD26723CA /* XCRemoteSwiftPackageReference "Yams" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 67FA1E9D789E26191A18D2BF /* Products */;
@@ -205,6 +273,7 @@
 			targets = (
 				035154A5253B50ABE1C82A31 /* TilrApp */,
 				4FEC5CAE213FF6DE0F80B5B7 /* TilrCLI */,
+				D1E0AEA9CF0330D5B65704AC /* TilrCoreTests */,
 			);
 		};
 /* End PBXProject section */
@@ -221,10 +290,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		06A79CDA363AA52DE6A8B5B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D3FCEDF811B35AC17F6930D /* Config.swift in Sources */,
+				A0AD88187A1F38BDA085A1C8 /* ConfigPaths.swift in Sources */,
+				0B38CE60432BB7869AD2C6AB /* ConfigStore.swift in Sources */,
+				2D5EF2D6EDE2C1F6D8676944 /* ConfigTests.swift in Sources */,
+				B368092F5A42CCD5D0025C23 /* Protocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6F8C1B92535CDBCFA961BBE8 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2D55E81C071208DFE4E3B8B7 /* Config.swift in Sources */,
+				34B29F9D09169D21B43E2960 /* ConfigPaths.swift in Sources */,
+				17CB9065CB4E3C1DCA8E17CF /* ConfigStore.swift in Sources */,
 				0904FA541B1A8BC6924CF077 /* Protocol.swift in Sources */,
 				3487264C1D9A996204B83EB0 /* SocketClient.swift in Sources */,
 				07B350237A28183D14F28172 /* TilrCLI.swift in Sources */,
@@ -237,6 +321,10 @@
 			files = (
 				0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */,
 				FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */,
+				E0DE4DCD84C06EBEC86DAC66 /* Config.swift in Sources */,
+				8AB61F432FB89B597D76959B /* ConfigLoader.swift in Sources */,
+				E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */,
+				A82AD978B5B34EED78AAF494 /* ConfigStore.swift in Sources */,
 				4B6CB820CB7A0661BAB40021 /* HotKeyManager.swift in Sources */,
 				C3F3599B193202D73F6FF5D9 /* Logging.swift in Sources */,
 				47841DC6765B676345C49ADF /* MenuBarController.swift in Sources */,
@@ -389,6 +477,22 @@
 			};
 			name = Release;
 		};
+		8C41876415AEC9802D879EBB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ubiqtek.tilr-core-tests";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
 		A81FB526AB40D1ADD849E16B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -404,6 +508,22 @@
 				SDKROOT = macosx;
 			};
 			name = Release;
+		};
+		B39C2A0224BE02BCE5BBA1D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ubiqtek.tilr-core-tests";
+				SDKROOT = macosx;
+			};
+			name = Debug;
 		};
 		B61C2DED50E3F8D342E1F7AC /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -456,6 +576,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		FAF5FEEFB1AF949E67BEFB27 /* Build configuration list for PBXNativeTarget "TilrCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B39C2A0224BE02BCE5BBA1D8 /* Debug */,
+				8C41876415AEC9802D879EBB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		FEE8844F3A022D8386A71FDA /* Build configuration list for PBXProject "Tilr" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -468,14 +597,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		3505DAD389638450058DD336 /* XCRemoteSwiftPackageReference "TOMLKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/LebJe/TOMLKit";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.5.0;
-			};
-		};
 		4B39B152B04927F0102DD965 /* XCRemoteSwiftPackageReference "HotKey" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/soffes/HotKey";
@@ -492,6 +613,14 @@
 				minimumVersion = 1.3.0;
 			};
 		};
+		C90611D224975A7DD26723CA /* XCRemoteSwiftPackageReference "Yams" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jpsim/Yams";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -500,15 +629,25 @@
 			package = 940C447B9C929759FB9C09E5 /* XCRemoteSwiftPackageReference "swift-argument-parser" */;
 			productName = ArgumentParser;
 		};
-		219923429066FE116D7FBF21 /* TOMLKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3505DAD389638450058DD336 /* XCRemoteSwiftPackageReference "TOMLKit" */;
-			productName = TOMLKit;
-		};
 		37F0E62234354AFC0109FC05 /* HotKey */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 4B39B152B04927F0102DD965 /* XCRemoteSwiftPackageReference "HotKey" */;
 			productName = HotKey;
+		};
+		3F44E00F2A10F0ED11AB89E1 /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C90611D224975A7DD26723CA /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
+		};
+		F4A7A23332D8A25DFB330647 /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C90611D224975A7DD26723CA /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
+		};
+		F5B9438894D8D7F5E60A0A8C /* Yams */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C90611D224975A7DD26723CA /* XCRemoteSwiftPackageReference "Yams" */;
+			productName = Yams;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

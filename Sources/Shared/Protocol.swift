@@ -19,9 +19,10 @@ public struct StatusData: Codable {
 public struct TilrResponse: Codable {
     public let ok: Bool
     public let status: StatusData?
+    public let message: String?
     public let error: String?
-    public init(ok: Bool, status: StatusData? = nil, error: String? = nil) {
-        self.ok = ok; self.status = status; self.error = error
+    public init(ok: Bool, status: StatusData? = nil, message: String? = nil, error: String? = nil) {
+        self.ok = ok; self.status = status; self.message = message; self.error = error
     }
 }
 

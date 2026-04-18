@@ -17,9 +17,9 @@ packages:
   HotKey:
     url: https://github.com/soffes/HotKey
     from: "0.2.0"
-  TOMLKit:
-    url: https://github.com/LebJe/TOMLKit
-    from: "0.5.0"
+  Yams:
+    url: https://github.com/jpsim/Yams
+    from: "5.0.0"
   ArgumentParser:
     url: https://github.com/apple/swift-argument-parser
     from: "1.3.0"
@@ -45,7 +45,7 @@ targets:
         CFBundleIconFile: AppIcon
     dependencies:
       - package: HotKey
-      - package: TOMLKit
+      - package: Yams
     entitlements:
       path: Sources/Tilr/Tilr.entitlements
       properties:
@@ -63,7 +63,21 @@ targets:
     dependencies:
       - package: ArgumentParser
         product: ArgumentParser
+      - package: Yams
     settings:
       base:
         PRODUCT_NAME: tilr
         PRODUCT_BUNDLE_IDENTIFIER: io.ubiqtek.tilr-cli
+
+  TilrCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Tests/TilrCoreTests
+      - Sources/Shared
+    dependencies:
+      - package: Yams
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.ubiqtek.tilr-core-tests
+        GENERATE_INFOPLIST_FILE: YES
