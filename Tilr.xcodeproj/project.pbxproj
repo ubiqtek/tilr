@@ -36,6 +36,7 @@
 		DEE9083EB76D4D4B6402EACF /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 3F44E00F2A10F0ED11AB89E1 /* Yams */; };
 		E0DE4DCD84C06EBEC86DAC66 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
 		E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
+		032DAF69E4754BCB9E55B879 /* AppWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 507CA0523DE34F70B9CEF1DF /* AppWindowManager.swift */; };
 		EAD8FE660F8955E7E69CDD3A /* UserNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90384F2DAE9BC22F1BB5EBF /* UserNotifier.swift */; };
 		F3F1430FD3A5751E0DB9562C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */; };
 		FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */; };
@@ -61,6 +62,7 @@
 		B7B84695773403E5189D2283 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		CD73C3E61369CF9E9A088950 /* ConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigTests.swift; sourceTree = "<group>"; };
 		CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigPaths.swift; sourceTree = "<group>"; };
+		507CA0523DE34F70B9CEF1DF /* AppWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppWindowManager.swift; sourceTree = "<group>"; };
 		D591EB97A8285386E320E7A1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E90384F2DAE9BC22F1BB5EBF /* UserNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotifier.swift; sourceTree = "<group>"; };
 		EC864E8DB4EFA2E99ACD386F /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 			children = (
 				331BA5ACDFB0F4CFC957B1A7 /* ActivationReason.swift */,
 				D591EB97A8285386E320E7A1 /* AppDelegate.swift */,
+				507CA0523DE34F70B9CEF1DF /* AppWindowManager.swift */,
 				42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */,
 				F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */,
 				0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */,
@@ -327,6 +330,7 @@
 			files = (
 				C39854C517831B944B5A4645 /* ActivationReason.swift in Sources */,
 				0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */,
+				032DAF69E4754BCB9E55B879 /* AppWindowManager.swift in Sources */,
 				FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */,
 				E0DE4DCD84C06EBEC86DAC66 /* Config.swift in Sources */,
 				E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */,

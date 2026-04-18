@@ -1,4 +1,5 @@
 import AppKit
+import OSLog
 import SwiftUI
 
 final class PopupWindow {
@@ -30,13 +31,24 @@ final class PopupWindow {
 
     private func dismiss() {
         guard let panel else { return }
-        NSAnimationContext.runAnimationGroup({ ctx in
+        Logger.app.debug("popup dismiss starting")
+
+        // Capture strong ref and clear self.panel up front so subsequent show()
+        // calls don't see a stale panel.
+        let capturedPanel = panel
+        self.panel = nil
+
+        // Animate the fade out for UX. Completion handler is NOT relied upon —
+        // a fallback timer guarantees the close even when Tilr is backgrounded
+        // (NSAnimationContext completion handlers are flaky for background apps).
+        NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.15
-            panel.animator().alphaValue = 0
-        }, completionHandler: { [weak self] in
-            panel.close()
-            self?.panel = nil
-        })
+            capturedPanel.animator().alphaValue = 0
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            capturedPanel.close()
+        }
     }
 
     private func makePanel(message: String) -> NSPanel {

@@ -7,7 +7,7 @@ struct Tilr: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "tilr",
         abstract: "Tilr CLI — query and control the Tilr menu bar app.",
-        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, Displays.self, ReloadConfig.self, System.self, Context.self],
+        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, Displays.self, ReloadConfig.self, System.self, Context.self, Doctor.self],
         defaultSubcommand: Status.self
     )
 }
@@ -473,6 +473,140 @@ struct Context: ParsableCommand {
         encoder.outputFormatting = []
         let data = try encoder.encode(payload)
         print(String(data: data, encoding: .utf8)!)
+    }
+}
+
+// MARK: - Doctor
+
+struct Doctor: ParsableCommand {
+    static let configuration = CommandConfiguration(abstract: "Detect stray Tilr and log-stream processes.")
+
+    @Flag(name: .long, help: "Kill any stray processes found.")
+    var clean: Bool = false
+
+    func run() throws {
+        let tilrPIDs = findProcesses(pgrepArgs: ["-x", "Tilr"])
+        let logPIDs = findProcesses(pgrepArgs: ["-f", #"log stream.*io\.ubiqtek\.tilr"#])
+
+        // Exclude this CLI process itself (shouldn't match either search, but be safe)
+        let selfPID = getpid()
+        let filteredTilr = tilrPIDs.filter { $0 != selfPID }
+        let filteredLog = logPIDs.filter { $0 != selfPID }
+
+        let allPIDs = filteredTilr + filteredLog
+
+        if allPIDs.isEmpty {
+            print("No stray processes. You're clean.")
+            return
+        }
+
+        // Print Tilr processes
+        print("Tilr processes:")
+        if filteredTilr.isEmpty {
+            print("  (none)")
+        } else {
+            for pid in filteredTilr {
+                let cmd = commandLine(for: pid)
+                print("  PID \(pid)  \(cmd)")
+            }
+        }
+
+        print("")
+
+        // Print log stream processes
+        print("log stream processes (io.ubiqtek.tilr):")
+        if filteredLog.isEmpty {
+            print("  (none)")
+        } else {
+            for pid in filteredLog {
+                let cmd = commandLine(for: pid)
+                print("  PID \(pid)  \(cmd)")
+            }
+        }
+
+        print("")
+        print("\(allPIDs.count) stray process(es) found.")
+
+        if clean {
+            print("")
+            killProcesses(allPIDs)
+        } else {
+            print("")
+            print("Run `tilr doctor --clean` to kill them.")
+        }
+    }
+
+    // MARK: - Helpers
+
+    /// Run pgrep with the given arguments and return the list of matched PIDs.
+    private func findProcesses(pgrepArgs: [String]) -> [Int32] {
+        let proc = Process()
+        proc.executableURL = URL(fileURLWithPath: "/usr/bin/pgrep")
+        proc.arguments = pgrepArgs
+        let pipe = Pipe()
+        proc.standardOutput = pipe
+        proc.standardError = Pipe() // suppress error output
+        do {
+            try proc.run()
+        } catch {
+            return []
+        }
+        proc.waitUntilExit()
+        let output = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        return output
+            .split(separator: "\n")
+            .compactMap { Int32($0.trimmingCharacters(in: .whitespaces)) }
+    }
+
+    /// Return the full command line for a PID using `ps -p <pid> -o args=`.
+    private func commandLine(for pid: Int32) -> String {
+        let proc = Process()
+        proc.executableURL = URL(fileURLWithPath: "/bin/ps")
+        proc.arguments = ["-p", "\(pid)", "-o", "args="]
+        let pipe = Pipe()
+        proc.standardOutput = pipe
+        proc.standardError = Pipe()
+        do {
+            try proc.run()
+        } catch {
+            return "(unknown)"
+        }
+        proc.waitUntilExit()
+        let raw = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        return raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "(unknown)" : raw.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Send SIGTERM to each PID, wait 0.3s, then SIGKILL any survivors.
+    private func killProcesses(_ pids: [Int32]) {
+        var living = pids
+        for pid in living {
+            if kill(pid, SIGTERM) == 0 {
+                print("Sent SIGTERM to PID \(pid)")
+            } else {
+                print("Could not signal PID \(pid) (already gone?)")
+            }
+        }
+
+        // Wait ~0.3s for graceful exit
+        Thread.sleep(forTimeInterval: 0.3)
+
+        // Check survivors
+        living = living.filter { isRunning($0) }
+        if !living.isEmpty {
+            print("")
+            print("The following PIDs did not exit; sending SIGKILL:")
+            for pid in living {
+                if kill(pid, SIGKILL) == 0 {
+                    print("  SIGKILL -> PID \(pid)")
+                }
+            }
+        }
+    }
+
+    /// Return true if a process with the given PID still exists.
+    private func isRunning(_ pid: Int32) -> Bool {
+        // kill(pid, 0) succeeds (returns 0) if the process exists
+        return kill(pid, 0) == 0
     }
 }
 

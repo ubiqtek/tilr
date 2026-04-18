@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var userNotifier: UserNotifier?
     private var menuBarController: MenuBarController?
     private var hotKeyManager: HotKeyManager?
+    private var appWindowManager: AppWindowManager?
     private var socketServer: SocketServer?
     private var sigintSource: DispatchSourceSignal?
     private var sigtermSource: DispatchSourceSignal?
@@ -19,9 +20,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.service = svc
 
         let popup = PopupWindow()
-        userNotifier   = UserNotifier(configStore: configStore, service: svc, popup: popup)
+        userNotifier      = UserNotifier(configStore: configStore, service: svc, popup: popup)
         menuBarController = MenuBarController(service: svc)
-        hotKeyManager  = HotKeyManager(configStore: configStore, service: svc)
+        hotKeyManager     = HotKeyManager(configStore: configStore, service: svc)
+        appWindowManager  = AppWindowManager(configStore: configStore, service: svc)
 
         let server = SocketServer(configStore: configStore, service: svc)
         self.socketServer = server
@@ -37,6 +39,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         socketServer?.stop()
         menuBarController = nil
         hotKeyManager = nil
+        appWindowManager = nil
         userNotifier = nil
     }
 

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tilr spaces *)",
+      "Bash(tilr config *)",
+      "Bash(tilr doctor *)",
+      "Bash(tilr context *)"
+    ]
+  }
+}

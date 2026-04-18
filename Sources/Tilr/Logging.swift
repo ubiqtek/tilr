@@ -10,4 +10,5 @@ extension Logger {
     static let config   = Logger(subsystem: subsystem, category: "config")
     static let state    = Logger(subsystem: subsystem, category: "state")
     static let socket   = Logger(subsystem: subsystem, category: "socket")
+    static let windows  = Logger(subsystem: subsystem, category: "windows")
 }
