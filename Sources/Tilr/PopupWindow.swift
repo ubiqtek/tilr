@@ -1,5 +1,4 @@
 import AppKit
-import OSLog
 import SwiftUI
 
 final class PopupWindow {
@@ -8,7 +7,6 @@ final class PopupWindow {
     private var hideTimer: Timer?
 
     func show(_ message: String, duration: TimeInterval = 1.2) {
-        Logger.popup.info("show space: \(message, privacy: .public)")
         hideTimer?.invalidate()
         panel?.close()
 

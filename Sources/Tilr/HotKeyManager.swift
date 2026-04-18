@@ -1,26 +1,40 @@
 import AppKit
+import Combine
 import HotKey
 import OSLog
 
 final class HotKeyManager {
 
     private var hotKeys: [HotKey] = []
-    private let popup: PopupWindow
-    private let config: TilrConfig
-    private let stateStore: StateStore
+    private let configStore: ConfigStore
+    private let service: SpaceService
+    private var cancellable: AnyCancellable?
 
-    init(popup: PopupWindow, config: TilrConfig, stateStore: StateStore) {
-        self.popup = popup
-        self.config = config
-        self.stateStore = stateStore
-        register()
+    init(configStore: ConfigStore, service: SpaceService) {
+        self.configStore = configStore
+        self.service = service
+        register(config: configStore.current)
+
+        cancellable = configStore.$current
+            .dropFirst()  // skip the initial value — already registered above
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] newConfig in
+                self?.reregister(config: newConfig)
+            }
     }
 
-    private func register() {
+    private func reregister(config: TilrConfig) {
+        hotKeys.removeAll()
+        register(config: config)
+    }
+
+    private func register(config: TilrConfig) {
+        // Overview hotkey: cmd+opt+space → notification "Tilr"
         let overview = HotKey(key: .space, modifiers: [.command, .option])
         overview.keyDownHandler = { [weak self] in
-            Logger.hotkey.debug("cmd+opt+space fired (overview)")
-            self?.popup.show("Tilr")
+            DispatchQueue.main.async {
+                self?.service.sendNotification("Tilr")
+            }
         }
         hotKeys.append(overview)
 
@@ -34,14 +48,12 @@ final class HotKeyManager {
             let hotKey = HotKey(keyCombo: combo)
             hotKey.keyDownHandler = { [weak self] in
                 guard let self else { return }
-                Logger.hotkey.debug("Hotkey fired for space '\(spaceName, privacy: .public)'")
-                self.stateStore.setActiveSpace(spaceName)
-                if self.config.popups.whenSwitchingSpaces {
-                    self.popup.show(spaceName)
+                DispatchQueue.main.async {
+                    self.service.switchToSpace(spaceName, reason: .hotkey)
                 }
             }
             hotKeys.append(hotKey)
-            Logger.hotkey.info("Registered \(self.config.keyboardShortcuts.switchToSpace, privacy: .public)+\(space.id, privacy: .public) for space '\(spaceName, privacy: .public)'")
+            Logger.hotkey.info("Registered \(config.keyboardShortcuts.switchToSpace, privacy: .public)+\(space.id, privacy: .public) for space '\(spaceName, privacy: .public)'")
         }
     }
 

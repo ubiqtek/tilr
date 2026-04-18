@@ -2,26 +2,21 @@ import AppKit
 import Combine
 import OSLog
 
+@MainActor
 final class MenuBarController {
 
     private let statusItem: NSStatusItem
-    private let popup: PopupWindow
     private var cancellable: AnyCancellable?
 
-    init(popup: PopupWindow, stateStore: StateStore) {
-        self.popup = popup
+    init(service: SpaceService) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.title = "Tilr"
         statusItem.menu = buildMenu()
 
-        cancellable = stateStore.$activeSpace
+        cancellable = service.onSpaceActivated
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] space in
-                if let space {
-                    self?.statusItem.button?.title = "[\(space)]"
-                } else {
-                    self?.statusItem.button?.title = "Tilr"
-                }
+            .sink { [weak self] event in
+                self?.statusItem.button?.title = "[\(event.name)]"
             }
 
         Logger.menuBar.info("Menu bar ready")
@@ -41,7 +36,8 @@ final class MenuBarController {
     }
 
     @objc private func showHelp() {
-        popup.show("⌘⌥Space   Status", duration: 3.0)
+        // Help is shown via the menu bar; no popup reference needed here.
+        // If a future help popup is needed, wire through SpaceService.onNotification.
     }
 
     @objc private func quitApp() {

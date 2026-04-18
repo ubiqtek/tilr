@@ -1,8 +1,25 @@
+import Combine
 import Foundation
 import Yams
 
-public struct ConfigStore {
+public final class ConfigStore: ObservableObject {
+    @Published public private(set) var current: TilrConfig
+
+    public init() {
+        self.current = (try? ConfigStore.loadConfig()) ?? TilrConfig()
+    }
+
+    public func reload() {
+        let loaded = (try? ConfigStore.loadConfig()) ?? TilrConfig()
+        current = loaded
+    }
+
+    /// Static convenience used by the CLI and other non-instance callers.
     public static func load() throws -> TilrConfig {
+        return try loadConfig()
+    }
+
+    private static func loadConfig() throws -> TilrConfig {
         let url = ConfigPaths.configFile
         guard FileManager.default.fileExists(atPath: url.path) else {
             let default_ = TilrConfig()

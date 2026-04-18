@@ -17,12 +17,13 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 2 | Hotkey → popup | ✅ | 2026-04-17 |
 | 3 | CLI scaffolding + health | ✅ | 2026-04-18 |
 | 4 | Config loading | ✅ | 2026-04-18 |
-| 5 | Hotkeys from config | ⬜ | — |
+| 5 | Hotkeys from config + menu bar title + popup config | ✅ | 2026-04-18 |
+| 5b | Display config + default space | ✅ | 2026-04-18 |
 | 6 | State file | ⬜ | — |
 | 7 | Menu bar title | ⬜ | — |
 | 8 | Polish | ⬜ | — |
 
-**Current focus:** Delta 5 — Hotkeys from config
+**Current focus:** Delta 6 — State file
 
 ---
 
