@@ -4,7 +4,6 @@ import OSLog
 struct FillScreenLayout: LayoutStrategy {
 
     func apply(name: String, space: SpaceDefinition, config: TilrConfig, screen: NSScreen) {
-        Logger.layout.info("applying layout 'fill-screen'")
         guard AXIsProcessTrusted() else {
             Logger.layout.info("layout 'fill-screen': AX permission not granted — skipping positioning")
             return

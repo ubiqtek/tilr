@@ -114,7 +114,6 @@ final class SidebarResizeObserver {
         if isMain {
             let newRatio = (frame.width / sf.width).clamped(to: 0.1...0.9)
             ratioOverride[spaceName] = newRatio
-            Logger.layout.info("resize: main dragged → ratio=\(newRatio, privacy: .public) for space '\(spaceName, privacy: .public)'")
 
             let sidebarFrame = CGRect(
                 x: sf.minX + sf.width * newRatio,
@@ -132,7 +131,6 @@ final class SidebarResizeObserver {
             let draggedBundleID = sidebarWindowElements[idx].bundleID
             let newRatio = ((frame.origin.x - sf.origin.x) / sf.width).clamped(to: 0.1...0.9)
             ratioOverride[spaceName] = newRatio
-            Logger.layout.info("resize: sidebar '\(draggedBundleID, privacy: .public)' dragged → ratio=\(newRatio, privacy: .public) for space '\(spaceName, privacy: .public)'")
 
             let mainFrame = CGRect(x: sf.minX, y: sf.minY, width: sf.width * newRatio, height: sf.height)
             let sidebarFrame = CGRect(

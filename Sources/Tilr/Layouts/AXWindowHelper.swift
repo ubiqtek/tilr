@@ -37,3 +37,39 @@ func setWindowFrame(bundleID: String, frame: CGRect) -> Bool {
 
     return posResult == .success && sizeResult == .success
 }
+
+/// Sets or clears the hidden state of all running instances of an app.
+/// Guards both paths with `isHidden` to avoid no-op focus steal on unhide
+/// and needless hide() calls. After the initial call, schedules up to 2
+/// retries (~300 ms apart) if the actual state doesn't match the intent —
+/// some apps (Ghostty, Zen, Marq) don't honour the first hide/unhide
+/// AppleEvent reliably.
+@MainActor
+func setAppHidden(bundleID: String, hidden: Bool) {
+    let instances = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+    for app in instances {
+        if hidden {
+            guard !app.isHidden else { continue }
+            app.hide()
+        } else {
+            guard app.isHidden else { continue }
+            app.unhide()
+        }
+        scheduleHiddenStateRetry(app: app, desiredHidden: hidden, attemptsRemaining: 2)
+    }
+}
+
+@MainActor
+private func scheduleHiddenStateRetry(app: NSRunningApplication, desiredHidden: Bool, attemptsRemaining: Int) {
+    guard attemptsRemaining > 0 else { return }
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak app] in
+        guard let app else { return }
+        if app.isHidden == desiredHidden { return }
+        if desiredHidden {
+            app.hide()
+        } else {
+            app.unhide()
+        }
+        scheduleHiddenStateRetry(app: app, desiredHidden: desiredHidden, attemptsRemaining: attemptsRemaining - 1)
+    }
+}

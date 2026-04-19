@@ -7,7 +7,6 @@ final class SidebarLayout: LayoutStrategy {
     private let resizeObserver = SidebarResizeObserver()
 
     func apply(name: String, space: SpaceDefinition, config: TilrConfig, screen: NSScreen) {
-        Logger.layout.info("applying layout 'sidebar'")
         guard AXIsProcessTrusted() else {
             Logger.layout.info("layout 'sidebar': AX permission not granted — skipping positioning")
             return
