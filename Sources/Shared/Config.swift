@@ -3,29 +3,41 @@ import Foundation
 public struct TilrConfig: Codable {
     public var keyboardShortcuts: KeyboardShortcuts
     public var popups: PopupConfig
+    public var accessibility: AccessibilityConfig
     public var displays: [String: DisplayConfig]
     public var spaces: [String: SpaceDefinition]
 
     public init(
         keyboardShortcuts: KeyboardShortcuts = .default,
         popups: PopupConfig = .default,
+        accessibility: AccessibilityConfig = .default,
         displays: [String: DisplayConfig] = [:],
         spaces: [String: SpaceDefinition] = [:]
     ) {
         self.keyboardShortcuts = keyboardShortcuts
         self.popups = popups
+        self.accessibility = accessibility
         self.displays = displays
         self.spaces = spaces
     }
 
-    enum CodingKeys: String, CodingKey { case keyboardShortcuts, popups, displays, spaces }
+    enum CodingKeys: String, CodingKey { case keyboardShortcuts, popups, accessibility, displays, spaces }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         keyboardShortcuts = try c.decode(KeyboardShortcuts.self, forKey: .keyboardShortcuts)
         popups = try c.decodeIfPresent(PopupConfig.self, forKey: .popups) ?? .default
+        accessibility = try c.decodeIfPresent(AccessibilityConfig.self, forKey: .accessibility) ?? .default
         displays = try c.decodeIfPresent([String: DisplayConfig].self, forKey: .displays) ?? [:]
         spaces = try c.decode([String: SpaceDefinition].self, forKey: .spaces)
+    }
+}
+
+public struct AccessibilityConfig: Codable {
+    public var promptOnLaunch: Bool
+    public static let `default` = AccessibilityConfig(promptOnLaunch: true)
+    public init(promptOnLaunch: Bool = true) {
+        self.promptOnLaunch = promptOnLaunch
     }
 }
 

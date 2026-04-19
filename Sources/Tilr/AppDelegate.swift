@@ -16,6 +16,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.app.info("Tilr starting")
 
+        let axTrusted: Bool
+        if configStore.current.accessibility.promptOnLaunch {
+            let axOptions = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
+            axTrusted = AXIsProcessTrustedWithOptions(axOptions)
+        } else {
+            axTrusted = AXIsProcessTrusted()
+            if !axTrusted {
+                Logger.windows.warning("AX permission not granted — grant access in System Settings → Privacy & Security → Accessibility")
+            }
+        }
+        Logger.windows.info("AX trusted: \(axTrusted, privacy: .public)")
+
         let svc = SpaceService(configStore: configStore)
         self.service = svc
 

@@ -15,6 +15,7 @@ final class AppWindowManager {
 
     private let configStore: ConfigStore
     private var cancellables = Set<AnyCancellable>()
+    private var axWarningLogged = false
 
     init(configStore: ConfigStore, service: SpaceService) {
         self.configStore = configStore
@@ -49,17 +50,27 @@ final class AppWindowManager {
 
         // Hide apps in other spaces (skip if already hidden).
         for bundleID in hidingApps {
-            for app in NSRunningApplication.runningApplications(withBundleIdentifier: bundleID) {
+            let instances = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+            if instances.count > 1 {
+                Logger.windows.debug("multiple instances (\(instances.count, privacy: .public)) for bundle '\(bundleID, privacy: .public)'")
+            }
+            for app in instances {
                 guard !app.isHidden else { continue }
-                _ = app.hide()
+                let result = app.hide()
+                Logger.windows.debug("hide result for '\(bundleID, privacy: .public)': \(result, privacy: .public)")
             }
         }
 
         // Show apps in this space (skip if already visible).
         for bundleID in thisSpaceApps {
-            for app in NSRunningApplication.runningApplications(withBundleIdentifier: bundleID) {
+            let instances = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+            if instances.count > 1 {
+                Logger.windows.debug("multiple instances (\(instances.count, privacy: .public)) for bundle '\(bundleID, privacy: .public)'")
+            }
+            for app in instances {
                 guard app.isHidden else { continue }
-                _ = app.unhide()
+                let result = app.unhide()
+                Logger.windows.debug("unhide result for '\(bundleID, privacy: .public)': \(result, privacy: .public)")
             }
         }
 
@@ -71,6 +82,29 @@ final class AppWindowManager {
                 Logger.windows.info("layout.main app '\(mainBundleID, privacy: .public)' is not running — skipping activate")
             }
         }
+
+        applyLayout(name: name, config: config)
+    }
+
+    private func applyLayout(name: String, config: TilrConfig) {
+        guard let space = config.spaces[name], let layout = space.layout else { return }
+
+        guard AXIsProcessTrusted() else {
+            if !axWarningLogged {
+                Logger.windows.warning("AX permission not granted — layout positioning skipped")
+                axWarningLogged = true
+            }
+            return
+        }
+
+        let screen = NSScreen.main ?? NSScreen.screens[0]
+
+        let strategy: LayoutStrategy = switch layout.type {
+        case .sidebar:    SidebarLayout()
+        case .fillScreen: FillScreenLayout()
+        }
+
+        strategy.apply(space: space, config: config, screen: screen)
     }
 
     /// Returns a bracket-enclosed list of local-ised app names (falling back

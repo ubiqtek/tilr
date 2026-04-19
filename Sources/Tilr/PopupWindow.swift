@@ -31,8 +31,6 @@ final class PopupWindow {
 
     private func dismiss() {
         guard let panel else { return }
-        Logger.app.debug("popup dismiss starting")
-
         // Capture strong ref and clear self.panel up front so subsequent show()
         // calls don't see a stale panel.
         let capturedPanel = panel
