@@ -77,14 +77,30 @@ Ports and adaptors. One pure domain service, many adaptors around it.
   │  - hide non-space     │   │  - reads ConfigStore │   │  - updates menu bar  │
   │    apps               │   │    for popup policy  │   │    title             │
   │  - show space's apps  │   │  - owns PopupWindow  │   │                      │
-  │  - apply layout       │   │                      │   │                      │
-  │  (NSRunningApp + AX)  │   │                      │   │                      │
-  └───────────────────────┘   └──────────┬───────────┘   └──────────────────────┘
-                                         │ show(message)
-                                         ▼
-                                 ┌────────────────┐
-                                 │   PopupWindow  │  (dumb view — no logic,
-                                 └────────────────┘   no logging, no config)
+  │  ──────────────────── │   │                      │   │                      │
+  │  - dispatch to        │   │                      │   │                      │
+  │    LayoutStrategy     │   │                      │   │                      │
+  └────────┬──────────────┘   └──────────┬───────────┘   └──────────────────────┘
+           │ per space.layout.type       │ show(message)
+           │                             ▼
+           ├──────────────┬──────────────┐
+           ▼              ▼              │
+  ┌─────────────────┐  ┌──────────────────┐
+  │ SidebarLayout   │  │FillScreenLayout  │
+  │ (class, AX)     │  │(struct, AX)      │
+  │ owns observer   │  │                  │
+  └────────┬────────┘  └──────────────────┘
+           │ owns
+           ▼
+  ┌─────────────────────────────┐
+  │ SidebarResizeObserver       │
+  │  - AXObserver lifecycle     │
+  │  - session ratio dict       │
+  │  - re-entrance guard        │
+  └─────────────────────────────┘
+                                              ┌────────────────┐
+                                              │   PopupWindow  │  (dumb view — no logic,
+                                              └────────────────┘   no logging, no config)
 ```
 
 ## Layer responsibilities
@@ -96,10 +112,13 @@ Ports and adaptors. One pure domain service, many adaptors around it.
 | Input adaptor | `HotKeyManager` | Carbon key events → `SpaceService` commands. Holds `ConfigStore` to know which keys to register; re-registers when config changes. |
 | Input adaptor | `CommandHandler` | Socket commands → `SpaceService` / `ConfigStore`. No UI references. |
 | Domain | `SpaceService` | The only place space changes happen. `@MainActor`. Owns `StateStore` privately (in-memory + `state.toml` persistence). Exposes `activeSpace` read-only. Emits events. Does no I/O besides state persistence. Owns all domain logging. |
-| Output adaptor | `AppWindowManager` | Subscribes to `onSpaceActivated`. Reads the `Space` definition from `ConfigStore` and applies it: hides apps not in the space, shows apps that are, runs the layout engine to position windows. Talks to `NSRunningApplication` and Accessibility APIs. |
+| Output adaptor | `AppWindowManager` | Subscribes to `onSpaceActivated`. Reads the `Space` definition from `ConfigStore` and applies it: hides apps not in the space, shows apps that are, dispatches to a `LayoutStrategy` (`SidebarLayout` or `FillScreenLayout`) to position windows. Talks to `NSRunningApplication`; positioning APIs live in the strategies. |
 | Output adaptor | `UserNotifier` | Subscribes to `onSpaceActivated` and `onNotification`. Reads `ConfigStore.popups` to decide whether to show a popup per reason. Owns `PopupWindow`. Future home for sounds/haptics. |
 | Output adaptor | `MenuBarController` | Subscribes to `onSpaceActivated`. Updates menu bar title. |
 | Leaf view | `PopupWindow` | Pure view. No subscriptions, no config awareness, no logging. |
+| Layout strategy | `SidebarLayout` | `@MainActor final class`. Long-lived instance held by `AppWindowManager`. Checks AX trust; if granted, positions `main` at `ratio` width and stacks non-main apps in the remaining right column using the AX API. Owns `SidebarResizeObserver`. |
+| Layout strategy | `FillScreenLayout` | Stateless struct. Checks AX trust; sizes every running space app to the full screen frame. |
+| Layout support | `SidebarResizeObserver` | Owns `AXObserver` lifecycle for the active sidebar space; stores session-only ratio overrides keyed by space name; re-tiles siblings on drag-to-resize with a re-entrance guard. |
 
 ## Activation reasons
 
@@ -218,10 +237,13 @@ only the references it needs:
 | `SpaceService` | `ConfigStore`, private `StateStore` |
 | `HotKeyManager` | `ConfigStore`, `SpaceService` |
 | `CommandHandler` | `ConfigStore`, `SpaceService` |
-| `AppWindowManager` | `ConfigStore`, service subscription |
+| `AppWindowManager` | `ConfigStore`, `SidebarLayout`, `FillScreenLayout`, service subscription |
 | `UserNotifier` | `ConfigStore`, `PopupWindow`, service subscriptions |
 | `MenuBarController` | service subscription |
 | `PopupWindow` | nothing — pure sink |
+| `SidebarLayout` | `SidebarResizeObserver` |
+| `FillScreenLayout` | nothing (stateless struct) |
+| `SidebarResizeObserver` | session ratio dict, live `AXObserver` handles |
 
 ## Invariants
 
@@ -239,6 +261,10 @@ only the references it needs:
 7. Config is read live via `ConfigStore`, so runtime config changes take
    effect with no re-wiring.
 8. `PopupWindow` is a leaf — it has no upward dependencies and no logging.
+9. Layout strategies are always wired up as collaborators of
+   `AppWindowManager`. Whether AX positioning actually runs is decided by each
+   strategy at `apply` time via `AXIsProcessTrusted()` — not by conditional
+   wiring. Missing AX trust is an expected state logged at `.info`, not an error.
 
 ## Logger categories
 
@@ -246,8 +272,13 @@ only the references it needs:
 |---|---|
 | `Logger.app` | Lifecycle (launch, terminate, signal handling). |
 | `Logger.space` | Domain events: space switches, config apply. **All space-change logging lives here.** |
+| `Logger.config` | Config loading / reload. |
+| `Logger.state` | State file I/O. |
 | `Logger.hotkey` | Hotkey registration and warnings. No per-press logging. |
+| `Logger.menuBar` | Menu bar title updates. |
 | `Logger.socket` | Socket server lifecycle and command dispatch. |
+| `Logger.windows` | `AppWindowManager` hide/show of apps. |
+| `Logger.layout` | Layout strategies and resize observer: positioning, drag-to-resize, AX trust state. |
 | ~~`Logger.popup`~~ | **Removed.** The popup is a pure view. |
 
 ## Live config reload

@@ -1,5 +1,6 @@
 import AppKit
 
+@MainActor
 protocol LayoutStrategy {
-    func apply(space: SpaceDefinition, config: TilrConfig, screen: NSScreen)
+    func apply(name: String, space: SpaceDefinition, config: TilrConfig, screen: NSScreen)
 }

@@ -41,6 +41,7 @@
 		DEE9083EB76D4D4B6402EACF /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 3F44E00F2A10F0ED11AB89E1 /* Yams */; };
 		E0DE4DCD84C06EBEC86DAC66 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
 		E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
+		E377ED23CAD122AF26638FAB /* SidebarResizeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4EB64639CC193477ED3D56 /* SidebarResizeObserver.swift */; };
 		EAD8FE660F8955E7E69CDD3A /* UserNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90384F2DAE9BC22F1BB5EBF /* UserNotifier.swift */; };
 		F3F1430FD3A5751E0DB9562C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */; };
 		FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */; };
@@ -59,6 +60,7 @@
 		42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8A5000BC4CB2632C66661403 /* SidebarLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarLayout.swift; sourceTree = "<group>"; };
 		8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketServer.swift; sourceTree = "<group>"; };
+		8F4EB64639CC193477ED3D56 /* SidebarResizeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarResizeObserver.swift; sourceTree = "<group>"; };
 		A2C26C3A022E722BB2141506 /* PopupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWindow.swift; sourceTree = "<group>"; };
 		A2DA24F8994DA197871EC4F7 /* SocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClient.swift; sourceTree = "<group>"; };
 		A31BA873E7DDD31C99FD1C25 /* TilrApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TilrApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -136,6 +138,7 @@
 				3269A5CC9642D65D8DBB09AA /* FillScreenLayout.swift */,
 				F9AABDC9DDB1FFCAEEC2F271 /* LayoutStrategy.swift */,
 				8A5000BC4CB2632C66661403 /* SidebarLayout.swift */,
+				8F4EB64639CC193477ED3D56 /* SidebarResizeObserver.swift */,
 			);
 			path = Layouts;
 			sourceTree = "<group>";
@@ -364,6 +367,7 @@
 				CBA5C00A789C86F4237796D9 /* PopupWindow.swift in Sources */,
 				B6C816A29F4059B6D013DE52 /* Protocol.swift in Sources */,
 				BAC485F2BDA8B61C51D834AE /* SidebarLayout.swift in Sources */,
+				E377ED23CAD122AF26638FAB /* SidebarResizeObserver.swift in Sources */,
 				4C627C20925E32CE59343BE3 /* SocketServer.swift in Sources */,
 				974ED4F42FBB8CC66FE95B5B /* SpaceService.swift in Sources */,
 				EAD8FE660F8955E7E69CDD3A /* UserNotifier.swift in Sources */,

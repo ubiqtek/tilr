@@ -15,7 +15,8 @@ final class AppWindowManager {
 
     private let configStore: ConfigStore
     private var cancellables = Set<AnyCancellable>()
-    private var axWarningLogged = false
+    private let sidebarLayout = SidebarLayout()
+    private let fillScreenLayout = FillScreenLayout()
 
     init(configStore: ConfigStore, service: SpaceService) {
         self.configStore = configStore
@@ -89,25 +90,21 @@ final class AppWindowManager {
     private func applyLayout(name: String, config: TilrConfig) {
         guard let space = config.spaces[name], let layout = space.layout else { return }
 
-        guard AXIsProcessTrusted() else {
-            if !axWarningLogged {
-                Logger.windows.warning("AX permission not granted — layout positioning skipped")
-                axWarningLogged = true
-            }
-            return
-        }
-
         let screen = NSScreen.main ?? NSScreen.screens[0]
 
-        let strategy: LayoutStrategy = switch layout.type {
-        case .sidebar:    SidebarLayout()
-        case .fillScreen: FillScreenLayout()
+        let strategy: LayoutStrategy
+        switch layout.type {
+        case .sidebar:
+            strategy = sidebarLayout
+        case .fillScreen:
+            sidebarLayout.stopObserving()
+            strategy = fillScreenLayout
         }
 
-        strategy.apply(space: space, config: config, screen: screen)
+        strategy.apply(name: name, space: space, config: config, screen: screen)
     }
 
-    /// Returns a bracket-enclosed list of local-ised app names (falling back
+    /// Returns a bracket-enclosed list of localised app names (falling back
     /// to the bundle ID) for use in log messages.
     private func appDisplayNames(for bundleIDs: Set<String>) -> String {
         let names = bundleIDs.sorted().map { bundleID -> String in

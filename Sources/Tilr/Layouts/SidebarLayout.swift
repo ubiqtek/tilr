@@ -1,12 +1,20 @@
 import AppKit
 import OSLog
 
-struct SidebarLayout: LayoutStrategy {
+@MainActor
+final class SidebarLayout: LayoutStrategy {
 
-    func apply(space: SpaceDefinition, config: TilrConfig, screen: NSScreen) {
+    private let resizeObserver = SidebarResizeObserver()
+
+    func apply(name: String, space: SpaceDefinition, config: TilrConfig, screen: NSScreen) {
+        Logger.layout.info("applying layout 'sidebar'")
+        guard AXIsProcessTrusted() else {
+            Logger.layout.info("layout 'sidebar': AX permission not granted — skipping positioning")
+            return
+        }
         guard let layout = space.layout else { return }
 
-        let ratio = layout.ratio ?? 0.65
+        let ratio = resizeObserver.ratio(for: name) ?? layout.ratio ?? 0.65
         let sf = screen.frame
         let mainBundleID = layout.main
 
@@ -19,25 +27,37 @@ struct SidebarLayout: LayoutStrategy {
         let mainIsVisible = mainBundleID.map { id in runningApps.contains(id) } ?? false
         let sidebarBundleIDs = runningApps.filter { $0 != mainBundleID }
 
-        let mainFrame    = CGRect(x: sf.minX,                y: sf.minY, width: sf.width * ratio,           height: sf.height)
-        let sidebarFrame = CGRect(x: sf.minX + sf.width * ratio, y: sf.minY, width: sf.width * (1 - ratio), height: sf.height)
+        let mainFrame    = CGRect(x: sf.minX,                    y: sf.minY, width: sf.width * ratio,           height: sf.height)
+        let sidebarFrame = CGRect(x: sf.minX + sf.width * ratio, y: sf.minY, width: sf.width * (1 - ratio),     height: sf.height)
 
         if mainIsVisible && !sidebarBundleIDs.isEmpty, let mainID = mainBundleID {
-            setWindowFrame(bundleID: mainID, frame: mainFrame)
+            resizeObserver.setFrameAndSuppress(bundleID: mainID, frame: mainFrame)
             for bundleID in sidebarBundleIDs {
-                setWindowFrame(bundleID: bundleID, frame: sidebarFrame)
+                resizeObserver.setFrameAndSuppress(bundleID: bundleID, frame: sidebarFrame)
             }
             let sidebarNames = sidebarBundleIDs.map { $0.components(separatedBy: ".").last ?? $0 }.joined(separator: ", ")
             let mainName = mainID.components(separatedBy: ".").last ?? mainID
-            Logger.windows.info("applied sidebar layout: main=\(mainName, privacy: .public), ratio=\(ratio, privacy: .public), sidebars=[\(sidebarNames, privacy: .public)]")
+            Logger.layout.info("applied sidebar layout: main=\(mainName, privacy: .public), ratio=\(ratio, privacy: .public), sidebars=[\(sidebarNames, privacy: .public)]")
         } else if mainIsVisible, let mainID = mainBundleID {
-            setWindowFrame(bundleID: mainID, frame: sf)
-            Logger.windows.info("applied sidebar layout: main alone → fill")
+            resizeObserver.setFrameAndSuppress(bundleID: mainID, frame: sf)
+            Logger.layout.info("applied sidebar layout: main alone → fill")
         } else if !sidebarBundleIDs.isEmpty {
             for bundleID in sidebarBundleIDs {
-                setWindowFrame(bundleID: bundleID, frame: sf)
+                resizeObserver.setFrameAndSuppress(bundleID: bundleID, frame: sf)
             }
-            Logger.windows.info("applied sidebar layout: sidebars alone → fill")
+            Logger.layout.info("applied sidebar layout: sidebars alone → fill")
         }
+
+        resizeObserver.startObserving(
+            space: space,
+            name: name,
+            screen: screen,
+            mainBundleID: mainBundleID,
+            sidebarBundleIDs: sidebarBundleIDs
+        )
+    }
+
+    func stopObserving() {
+        resizeObserver.stopObserving()
     }
 }

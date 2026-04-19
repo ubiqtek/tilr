@@ -3,7 +3,12 @@ import OSLog
 
 struct FillScreenLayout: LayoutStrategy {
 
-    func apply(space: SpaceDefinition, config: TilrConfig, screen: NSScreen) {
+    func apply(name: String, space: SpaceDefinition, config: TilrConfig, screen: NSScreen) {
+        Logger.layout.info("applying layout 'fill-screen'")
+        guard AXIsProcessTrusted() else {
+            Logger.layout.info("layout 'fill-screen': AX permission not granted — skipping positioning")
+            return
+        }
         let sf = screen.frame
 
         let runningApps = space.apps.filter { bundleID in
@@ -17,6 +22,6 @@ struct FillScreenLayout: LayoutStrategy {
         }
 
         let names = runningApps.map { $0.components(separatedBy: ".").last ?? $0 }.joined(separator: ", ")
-        Logger.windows.info("applied fill-screen layout: [\(names, privacy: .public)]")
+        Logger.layout.info("applied fill-screen layout: [\(names, privacy: .public)]")
     }
 }
