@@ -48,6 +48,9 @@ final class SidebarLayout: LayoutStrategy {
         }
 
         if config.layouts.resizeObserverEnabled {
+            if mainIsVisible && !sidebarBundleIDs.isEmpty {
+                resizeObserver.setExpectedFrames(mainFrame: mainFrame, sidebarFrame: sidebarFrame)
+            }
             resizeObserver.startObserving(
                 space: space,
                 name: name,

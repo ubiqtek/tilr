@@ -85,10 +85,6 @@ final class AppWindowManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
             self?.service.sendNotification("moving \(appName) → \(targetName)")
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
-            guard let self, self.currentSpaceName == targetName else { return }
-            self.applyLayout(name: targetName, config: self.configStore.current)
-        }
     }
 
     // MARK: - Private

@@ -20,19 +20,23 @@ func setWindowFrame(bundleID: String, frame: CGRect) -> Bool {
     }
 
     let axWindow = windowRef as! AXUIElement
+    Logger.layout.info("AX: setting '\(bundleID, privacy: .public)' to x=\(frame.origin.x) y=\(frame.origin.y) w=\(frame.size.width) h=\(frame.size.height)")
+
+    // Set size first, then position. If we set position first, macOS Sequoia window
+    // tiling can snap the window back to x=0 when the subsequent size change makes
+    // the window look like a tile candidate (e.g. ~35% width).
+    var size = frame.size
+    guard let sizeValue = AXValueCreate(.cgSize, &size) else { return false }
+    let sizeResult = AXUIElementSetAttributeValue(axWindow, kAXSizeAttribute as CFString, sizeValue)
+    if sizeResult != .success {
+        Logger.layout.info("AX: set size failed for '\(bundleID, privacy: .public)' (err \(sizeResult.rawValue, privacy: .public))")
+    }
 
     var point = frame.origin
     guard let posValue = AXValueCreate(.cgPoint, &point) else { return false }
     let posResult = AXUIElementSetAttributeValue(axWindow, kAXPositionAttribute as CFString, posValue)
     if posResult != .success {
         Logger.layout.info("AX: set position failed for '\(bundleID, privacy: .public)' (err \(posResult.rawValue, privacy: .public))")
-    }
-
-    var size = frame.size
-    guard let sizeValue = AXValueCreate(.cgSize, &size) else { return false }
-    let sizeResult = AXUIElementSetAttributeValue(axWindow, kAXSizeAttribute as CFString, sizeValue)
-    if sizeResult != .success {
-        Logger.layout.info("AX: set size failed for '\(bundleID, privacy: .public)' (err \(sizeResult.rawValue, privacy: .public))")
     }
 
     return posResult == .success && sizeResult == .success
