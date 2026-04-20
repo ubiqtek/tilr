@@ -47,13 +47,17 @@ final class SidebarLayout: LayoutStrategy {
             Logger.layout.info("applied sidebar layout: sidebars alone → fill")
         }
 
-        resizeObserver.startObserving(
-            space: space,
-            name: name,
-            screen: screen,
-            mainBundleID: mainBundleID,
-            sidebarBundleIDs: sidebarBundleIDs
-        )
+        if config.layouts.resizeObserverEnabled {
+            resizeObserver.startObserving(
+                space: space,
+                name: name,
+                screen: screen,
+                mainBundleID: mainBundleID,
+                sidebarBundleIDs: sidebarBundleIDs
+            )
+        } else {
+            resizeObserver.stopObserving()
+        }
     }
 
     func stopObserving() {

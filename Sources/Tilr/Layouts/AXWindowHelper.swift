@@ -39,37 +39,68 @@ func setWindowFrame(bundleID: String, frame: CGRect) -> Bool {
 }
 
 /// Sets or clears the hidden state of all running instances of an app.
-/// Guards both paths with `isHidden` to avoid no-op focus steal on unhide
-/// and needless hide() calls. After the initial call, schedules up to 2
-/// retries (~300 ms apart) if the actual state doesn't match the intent —
-/// some apps (Ghostty, Zen, Marq) don't honour the first hide/unhide
-/// AppleEvent reliably.
+/// The hide path is guarded by `isHidden`. The unhide path is not — this
+/// matches the Hammerspoon reference implementation and produces more
+/// reliable unhide behaviour in practice. After the initial call, schedules
+/// up to 2 retries (~300 ms apart) if the actual state doesn't match the
+/// intent — some apps (Ghostty, Zen, Marq) don't honour the first
+/// hide/unhide AppleEvent reliably.
 @MainActor
 func setAppHidden(bundleID: String, hidden: Bool) {
     let instances = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
     for app in instances {
         if hidden {
             guard !app.isHidden else { continue }
+            let wasHidden = app.isHidden
             app.hide()
+            Logger.layout.info("hide-diag: \(bundleID, privacy: .public) intended=hidden isHidden_before=\(wasHidden, privacy: .public) isHidden_after=\(app.isHidden, privacy: .public)")
         } else {
-            guard app.isHidden else { continue }
+            let wasHidden = app.isHidden
             app.unhide()
+            Logger.layout.info("hide-diag: \(bundleID, privacy: .public) intended=visible isHidden_before=\(wasHidden, privacy: .public) isHidden_after=\(app.isHidden, privacy: .public)")
         }
-        scheduleHiddenStateRetry(app: app, desiredHidden: hidden, attemptsRemaining: 2)
+        scheduleHiddenStateRetry(bundleID: bundleID, desiredHidden: hidden, attemptsRemaining: 2)
     }
 }
 
 @MainActor
-private func scheduleHiddenStateRetry(app: NSRunningApplication, desiredHidden: Bool, attemptsRemaining: Int) {
+private func scheduleHiddenStateRetry(bundleID: String, desiredHidden: Bool, attemptsRemaining: Int) {
     guard attemptsRemaining > 0 else { return }
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak app] in
-        guard let app else { return }
-        if app.isHidden == desiredHidden { return }
-        if desiredHidden {
+    let isFinalAttempt = attemptsRemaining == 1
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        let apps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+        guard let app = apps.first else { return }
+
+        let attemptNumber = 3 - attemptsRemaining
+        let current = app.isHidden
+        Logger.layout.info(
+            "hide-diag retry\(attemptNumber, privacy: .public): \(bundleID, privacy: .public) isHidden=\(current, privacy: .public) intended=\(desiredHidden ? "hidden" : "visible", privacy: .public) willRetry=\(current != desiredHidden, privacy: .public)"
+        )
+        if current == desiredHidden { return }
+
+        if isFinalAttempt {
+            setHiddenViaSystemEvents(bundleID: bundleID, hidden: desiredHidden)
+        } else if desiredHidden {
             app.hide()
         } else {
             app.unhide()
         }
-        scheduleHiddenStateRetry(app: app, desiredHidden: desiredHidden, attemptsRemaining: attemptsRemaining - 1)
+        scheduleHiddenStateRetry(bundleID: bundleID, desiredHidden: desiredHidden, attemptsRemaining: attemptsRemaining - 1)
+    }
+}
+
+private func setHiddenViaSystemEvents(bundleID: String, hidden: Bool) {
+    guard let name = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first?.localizedName else { return }
+    let escapedName = name.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
+    let visibleValue = hidden ? "false" : "true"
+    let source = "tell application \"System Events\" to set visible of process \"\(escapedName)\" to \(visibleValue)"
+
+    let task = Process()
+    task.launchPath = "/usr/bin/osascript"
+    task.arguments = ["-e", source]
+    do {
+        try task.run()
+    } catch {
+        // Fire-and-forget last-resort; swallow errors silently.
     }
 }

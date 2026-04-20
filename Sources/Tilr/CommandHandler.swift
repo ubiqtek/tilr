@@ -5,11 +5,13 @@ final class CommandHandler {
     private let startDate: Date
     private let configStore: ConfigStore
     private let service: SpaceService
+    private weak var appWindowManager: AppWindowManager?
 
-    init(configStore: ConfigStore, service: SpaceService) {
+    init(configStore: ConfigStore, service: SpaceService, appWindowManager: AppWindowManager? = nil) {
         self.startDate = Date()
         self.configStore = configStore
         self.service = service
+        self.appWindowManager = appWindowManager
     }
 
     /// Returns the response and an optional post-send action.
@@ -22,14 +24,19 @@ final class CommandHandler {
         case "status":
             let uptime = Int(Date().timeIntervalSince(startDate))
             // Read @MainActor state synchronously from the background queue.
-            let (activeSpace, spacesCount) = DispatchQueue.main.sync {
-                (service.activeSpace, configStore.current.spaces.count)
+            let (activeSpace, spacesCount, fillScreenLast) = DispatchQueue.main.sync {
+                (
+                    service.activeSpace,
+                    configStore.current.spaces.count,
+                    appWindowManager?.fillScreenLastAppSnapshot() ?? [:]
+                )
             }
             let data = StatusData(
                 pid: ProcessInfo.processInfo.processIdentifier,
                 uptimeSeconds: uptime,
                 spacesCount: spacesCount,
-                activeSpace: activeSpace
+                activeSpace: activeSpace,
+                fillScreenLastApp: fillScreenLast
             )
             return (TilrResponse(ok: true, status: data), nil)
 

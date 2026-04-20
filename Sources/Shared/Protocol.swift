@@ -10,9 +10,12 @@ public struct StatusData: Codable {
     public let uptimeSeconds: Int
     public let spacesCount: Int
     public let activeSpace: String?
-    public init(pid: Int32, uptimeSeconds: Int, spacesCount: Int, activeSpace: String?) {
+    public let fillScreenLastApp: [String: String]?
+
+    public init(pid: Int32, uptimeSeconds: Int, spacesCount: Int, activeSpace: String?, fillScreenLastApp: [String: String]? = nil) {
         self.pid = pid; self.uptimeSeconds = uptimeSeconds
         self.spacesCount = spacesCount; self.activeSpace = activeSpace
+        self.fillScreenLastApp = fillScreenLastApp
     }
 }
 

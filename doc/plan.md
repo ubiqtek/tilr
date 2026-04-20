@@ -18,6 +18,7 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 8 | Moving apps to a space | ⬜ | — |
 | 9 | State file | ⬜ | — |
 | 10 | Polish | ⬜ | — |
+| 11 | Follow focus on CMD-TAB | ⬜ | — |
 
 **Current focus:** Delta 7 — App layout
 
@@ -616,6 +617,26 @@ When the user drags the edge of the main window or a sidebar window in a `sideba
 - [ ] About dialog polished
 
 **Notes:**
+
+---
+
+## Delta 11 — Follow focus on CMD-TAB
+
+**Goal:** when the user CMD-TABs (or otherwise activates) an app that lives
+in a different space than the currently active one, automatically switch to
+that app's space so the rest of its space's apps come with it.
+
+- [ ] Register an `NSWorkspace.didActivateApplicationNotification` observer
+- [ ] On activation: look up the app's bundle ID in `config.spaces`,
+      find the space that contains it, call `SpaceService.activate(name:)`
+- [ ] Guard against recursion: while we're activating a space, ignore
+      activation events triggered by our own `app.activate()` call (matches
+      Hammerspoon's `activatingSpace` re-entrancy flag with a ~0.5s window)
+- [ ] Skip when the app belongs to the current active space (no-op)
+- [ ] Skip when the app belongs to no configured space
+
+**Reference:** Hammerspoon `focusWatcher` in
+`~/projects/dotfiles/home/hammerspoon/init.lua` (~line 652).
 
 ---
 

@@ -240,7 +240,22 @@ struct SpacesList: ParsableCommand {
             return
         }
 
+        // Best-effort: fetch runtime fillScreenLastApp map from the running app.
+        // If Tilr isn't running or the call fails, the map is empty and no '*' is shown.
+        var fillScreenLastApp: [String: String] = [:]
+        do {
+            let client = SocketClient()
+            let response = try client.send(TilrRequest(cmd: "status"))
+            if response.ok, let data = response.status, let map = data.fillScreenLastApp {
+                fillScreenLastApp = map
+            }
+        } catch {
+            // silently ignore — the table still prints without stars
+        }
+
         let idW = 4, nameW = 11, hotkeyW = 13, appsW = 35
+        print("[] = layout main, * = last foreground (fill-screen only)")
+        print("")
         let header = pad("ID", idW) + pad("Name", nameW) + pad("Hotkey", hotkeyW) + pad("Apps", appsW) + "Layout"
         let separator = String(repeating: "-", count: 2).padding(toLength: idW, withPad: " ", startingAt: 0)
             + String(repeating: "-", count: 9).padding(toLength: nameW, withPad: " ", startingAt: 0)
@@ -257,16 +272,21 @@ struct SpacesList: ParsableCommand {
             if space.apps.isEmpty {
                 appsCol = "—"
             } else {
-                let names = space.apps.map { appName(for: $0) }
+                let recordedBundleId = fillScreenLastApp[name]
+                let formatted: [String] = space.apps.map { bundleId in
+                    var display = appName(for: bundleId)
+                    if bundleId == recordedBundleId { display += "*" }
+                    return display
+                }
                 if let mainBundleId = space.layout?.main,
                    let mainIdx = space.apps.firstIndex(of: mainBundleId) {
-                    let mainDisplayName = names[mainIdx]
-                    var rest = names
+                    let mainDisplayName = formatted[mainIdx]
+                    var rest = formatted
                     rest.remove(at: mainIdx)
                     let parts = ["[\(mainDisplayName)]"] + rest
                     appsCol = parts.joined(separator: ", ")
                 } else {
-                    appsCol = names.joined(separator: ", ")
+                    appsCol = formatted.joined(separator: ", ")
                 }
             }
 

@@ -4,6 +4,7 @@ public struct TilrConfig: Codable {
     public var keyboardShortcuts: KeyboardShortcuts
     public var popups: PopupConfig
     public var accessibility: AccessibilityConfig
+    public var layouts: LayoutsConfig
     public var displays: [String: DisplayConfig]
     public var spaces: [String: SpaceDefinition]
 
@@ -11,25 +12,36 @@ public struct TilrConfig: Codable {
         keyboardShortcuts: KeyboardShortcuts = .default,
         popups: PopupConfig = .default,
         accessibility: AccessibilityConfig = .default,
+        layouts: LayoutsConfig = .default,
         displays: [String: DisplayConfig] = [:],
         spaces: [String: SpaceDefinition] = [:]
     ) {
         self.keyboardShortcuts = keyboardShortcuts
         self.popups = popups
         self.accessibility = accessibility
+        self.layouts = layouts
         self.displays = displays
         self.spaces = spaces
     }
 
-    enum CodingKeys: String, CodingKey { case keyboardShortcuts, popups, accessibility, displays, spaces }
+    enum CodingKeys: String, CodingKey { case keyboardShortcuts, popups, accessibility, layouts, displays, spaces }
 
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         keyboardShortcuts = try c.decode(KeyboardShortcuts.self, forKey: .keyboardShortcuts)
         popups = try c.decodeIfPresent(PopupConfig.self, forKey: .popups) ?? .default
         accessibility = try c.decodeIfPresent(AccessibilityConfig.self, forKey: .accessibility) ?? .default
+        layouts = try c.decodeIfPresent(LayoutsConfig.self, forKey: .layouts) ?? .default
         displays = try c.decodeIfPresent([String: DisplayConfig].self, forKey: .displays) ?? [:]
         spaces = try c.decode([String: SpaceDefinition].self, forKey: .spaces)
+    }
+}
+
+public struct LayoutsConfig: Codable {
+    public var resizeObserverEnabled: Bool
+    public static let `default` = LayoutsConfig(resizeObserverEnabled: true)
+    public init(resizeObserverEnabled: Bool = true) {
+        self.resizeObserverEnabled = resizeObserverEnabled
     }
 }
 

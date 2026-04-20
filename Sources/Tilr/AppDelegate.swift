@@ -37,7 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotKeyManager     = HotKeyManager(configStore: configStore, service: svc)
         appWindowManager  = AppWindowManager(configStore: configStore, service: svc)
 
-        let server = SocketServer(configStore: configStore, service: svc)
+        let server = SocketServer(configStore: configStore, service: svc, appWindowManager: appWindowManager)
         self.socketServer = server
         server.start()
 
