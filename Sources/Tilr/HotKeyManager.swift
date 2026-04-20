@@ -10,6 +10,8 @@ final class HotKeyManager {
     private let service: SpaceService
     private var cancellable: AnyCancellable?
 
+    var moveAppHandler: ((String) -> Void)?
+
     init(configStore: ConfigStore, service: SpaceService) {
         self.configStore = configStore
         self.service = service
@@ -54,6 +56,21 @@ final class HotKeyManager {
             }
             hotKeys.append(hotKey)
             Logger.hotkey.info("Registered \(config.keyboardShortcuts.switchToSpace, privacy: .public)+\(space.id, privacy: .public) for space '\(spaceName, privacy: .public)'")
+        }
+
+        let moveModifiers = parseModifiers(config.keyboardShortcuts.moveAppToSpace)
+        for (spaceName, space) in config.spaces {
+            guard let key = parseKey(space.id) else { continue }
+            let combo = KeyCombo(key: key, modifiers: moveModifiers)
+            let hotKey = HotKey(keyCombo: combo)
+            hotKey.keyDownHandler = { [weak self] in
+                guard let self else { return }
+                DispatchQueue.main.async {
+                    self.moveAppHandler?(spaceName)
+                }
+            }
+            hotKeys.append(hotKey)
+            Logger.hotkey.info("Registered \(config.keyboardShortcuts.moveAppToSpace, privacy: .public)+\(space.id, privacy: .public) → move app to '\(spaceName, privacy: .public)'")
         }
     }
 

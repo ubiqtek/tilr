@@ -14,6 +14,10 @@ public final class ConfigStore: ObservableObject {
         current = loaded
     }
 
+    public func updateInMemory(_ config: TilrConfig) {
+        current = config
+    }
+
     /// Static convenience used by the CLI and other non-instance callers.
     public static func load() throws -> TilrConfig {
         return try loadConfig()

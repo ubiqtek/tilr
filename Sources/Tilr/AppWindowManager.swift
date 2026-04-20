@@ -14,6 +14,7 @@ import OSLog
 final class AppWindowManager {
 
     private let configStore: ConfigStore
+    private let service: SpaceService
     private var cancellables = Set<AnyCancellable>()
     private let sidebarLayout = SidebarLayout()
     private let fillScreenLayout = FillScreenLayout()
@@ -26,6 +27,7 @@ final class AppWindowManager {
 
     init(configStore: ConfigStore, service: SpaceService) {
         self.configStore = configStore
+        self.service = service
 
         service.onSpaceActivated
             .receive(on: DispatchQueue.main)
@@ -53,6 +55,40 @@ final class AppWindowManager {
 
     func fillScreenLastAppSnapshot() -> [String: String] {
         fillScreenLastApp
+    }
+
+    func moveCurrentApp(toSpaceName targetName: String) {
+        guard let bundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier else { return }
+        guard bundleID != Bundle.main.bundleIdentifier else { return }
+
+        var config = configStore.current
+
+        guard config.spaces[targetName] != nil else {
+            Logger.windows.warning("moveCurrentApp: target space '\(targetName, privacy: .public)' not found")
+            return
+        }
+
+        let sourceName = config.spaces.first(where: { $0.value.apps.contains(bundleID) })?.key
+
+        if let src = sourceName {
+            config.spaces[src]?.apps.removeAll { $0 == bundleID }
+        }
+
+        config.spaces[targetName]?.apps.insert(bundleID, at: 0)
+
+        configStore.updateInMemory(config)
+
+        let appName = NSWorkspace.shared.frontmostApplication?.localizedName ?? bundleID
+        Logger.windows.info("moved '\(appName, privacy: .public)' from '\(sourceName ?? "none", privacy: .public)' to '\(targetName, privacy: .public)'")
+
+        service.switchToSpace(targetName, reason: .hotkey)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+            self?.service.sendNotification("moving \(appName) → \(targetName)")
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) { [weak self] in
+            guard let self, self.currentSpaceName == targetName else { return }
+            self.applyLayout(name: targetName, config: self.configStore.current)
+        }
     }
 
     // MARK: - Private

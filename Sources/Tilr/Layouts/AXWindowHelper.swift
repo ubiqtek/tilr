@@ -51,13 +51,9 @@ func setAppHidden(bundleID: String, hidden: Bool) {
     for app in instances {
         if hidden {
             guard !app.isHidden else { continue }
-            let wasHidden = app.isHidden
             app.hide()
-            Logger.layout.info("hide-diag: \(bundleID, privacy: .public) intended=hidden isHidden_before=\(wasHidden, privacy: .public) isHidden_after=\(app.isHidden, privacy: .public)")
         } else {
-            let wasHidden = app.isHidden
             app.unhide()
-            Logger.layout.info("hide-diag: \(bundleID, privacy: .public) intended=visible isHidden_before=\(wasHidden, privacy: .public) isHidden_after=\(app.isHidden, privacy: .public)")
         }
         scheduleHiddenStateRetry(bundleID: bundleID, desiredHidden: hidden, attemptsRemaining: 2)
     }
@@ -71,11 +67,7 @@ private func scheduleHiddenStateRetry(bundleID: String, desiredHidden: Bool, att
         let apps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
         guard let app = apps.first else { return }
 
-        let attemptNumber = 3 - attemptsRemaining
         let current = app.isHidden
-        Logger.layout.info(
-            "hide-diag retry\(attemptNumber, privacy: .public): \(bundleID, privacy: .public) isHidden=\(current, privacy: .public) intended=\(desiredHidden ? "hidden" : "visible", privacy: .public) willRetry=\(current != desiredHidden, privacy: .public)"
-        )
         if current == desiredHidden { return }
 
         if isFinalAttempt {

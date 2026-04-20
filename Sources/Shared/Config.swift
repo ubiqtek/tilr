@@ -81,7 +81,7 @@ public struct KeyboardShortcuts: Codable {
 
     public static let `default` = KeyboardShortcuts(
         switchToSpace: "cmd+opt",
-        moveAppToSpace: "cmd+shift+opt"
+        moveAppToSpace: "opt+shift"
     )
 
     public init(switchToSpace: String, moveAppToSpace: String) {

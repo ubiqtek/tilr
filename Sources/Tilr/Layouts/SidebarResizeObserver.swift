@@ -74,9 +74,9 @@ final class SidebarResizeObserver {
     }
 
     /// Sets the frame of the window for `bundleID` and marks that bundleID as
-    /// suppressed for 200 ms to swallow the echo AX resize notification.
+    /// suppressed for 600 ms to swallow the echo AX resize notification.
     func setFrameAndSuppress(bundleID: String, frame: CGRect) {
-        suppressedUntil[bundleID] = Date().addingTimeInterval(0.2)
+        suppressedUntil[bundleID] = Date().addingTimeInterval(0.6)
         setWindowFrame(bundleID: bundleID, frame: frame)
     }
 

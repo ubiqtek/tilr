@@ -14,13 +14,13 @@ lands — check boxes, add a dated note, link the commit/PR.
 |---|---|---|---|
 | 0–5b | Core infrastructure | ✅ | 2026-04-18 |
 | 6 | App visibility | ✅ | 2026-04-19 |
-| 7 | App layout | ⬜ | — |
+| 7 | App layout | ✅ | 2026-04-20 |
 | 8 | Moving apps to a space | ⬜ | — |
 | 9 | State file | ⬜ | — |
 | 10 | Polish | ⬜ | — |
 | 11 | Follow focus on CMD-TAB | ⬜ | — |
 
-**Current focus:** Delta 7 — App layout
+**Current focus:** Delta 8 — Moving apps to a space
 
 ---
 
@@ -575,46 +575,19 @@ When the user drags the edge of the main window or a sidebar window in a `sideba
 
 ## Delta 8 — Moving apps to a space
 
-**Goal:** CLI command to add/remove app bundle IDs from space definitions.
+**Goal:** Hotkey (opt+shift+id) moves the currently focused app from its current space into the target space, at runtime. In-memory only — no config write.
 
 **Subtasks:**
-- [ ] New CLI subcommand: `tilr spaces add-app <space-name-or-id> <bundle-id>`
-- [ ] New CLI subcommand: `tilr spaces remove-app <space-name-or-id> <bundle-id>`
-- [ ] Validate space exists; validate bundle ID format
-- [ ] Load config, mutate `spaces[name].apps`, save, print confirmation
-- [ ] Update `tilr config help` with new commands
+- [ ] Bind `moveAppToSpace` modifier + space id hotkeys (mirrors switch hotkeys)
+- [ ] On trigger: identify frontmost app's bundle ID
+- [ ] Remove bundle ID from its current space's `apps` list (in-memory)
+- [ ] Add bundle ID to the target space's `apps` list (in-memory)
+- [ ] Log the move; no config save
 
 **Verification:**
-- [ ] `tilr spaces add-app Coding com.test.app` appends to Coding's apps list
-- [ ] `tilr spaces remove-app Coding com.test.app` removes it
-- [ ] Config saves cleanly; error on non-existent space
-
-**Notes:**
-
----
-
-## Delta 9 — State file
-
-**Goal:** state survives restart; active space restored on launch.
-
-- [ ] `StateStore` with Combine publisher for `activeSpace`
-- [ ] Loads/saves `~/Library/Application Support/tilr/state.toml`
-- [ ] Hotkey fire → `StateStore.setActive(name)` persists & publishes
-- [ ] Never writes to user `config.toml`
-- [ ] `tilr status` reports `activeSpace`; new CLI command `tilr switch <name>`
-
-**Notes:**
-
----
-
-## Delta 10 — Polish
-
-**Goal:** shippable starter.
-
-- [ ] Config file watch → hot reload on save
-- [ ] Launch at login via `SMAppService`
-- [ ] App icon finalised
-- [ ] About dialog polished
+- [ ] Focused app moves to target space when opt+shift+id pressed
+- [ ] App is hidden/shown correctly on next space switch
+- [ ] Original space no longer manages the moved app
 
 **Notes:**
 
@@ -637,6 +610,34 @@ that app's space so the rest of its space's apps come with it.
 
 **Reference:** Hammerspoon `focusWatcher` in
 `~/projects/dotfiles/home/hammerspoon/init.lua` (~line 652).
+
+---
+
+## Delta 9 — State file
+
+**Goal:** state survives restart; active space restored on launch.
+
+- [ ] `StateStore` with Combine publisher for `activeSpace`
+- [ ] Loads/saves `~/Library/Application Support/tilr/state.toml`
+- [ ] Hotkey fire → `StateStore.setActive(name)` persists & publishes
+- [ ] Never writes to user `config.toml`
+- [ ] `tilr status` reports `activeSpace`; new CLI command `tilr switch <name>`
+
+**Notes:**
+
+---
+
+## Delta 10 — Polish
+
+**Goal:** shippable starter.
+
+- [x] `tilr spaces config add-app/remove-app` — edit space apps list in config file
+- [ ] Config file watch → hot reload on save
+- [ ] Launch at login via `SMAppService`
+- [ ] App icon finalised
+- [ ] About dialog polished
+
+**Notes:**
 
 ---
 
