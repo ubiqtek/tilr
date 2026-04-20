@@ -131,6 +131,8 @@ struct ConfigHelp: ParsableCommand {
           tilr spaces add <name> <id> [bundle-ids...]
           tilr spaces set-layout <name-or-id> --type sidebar [--main <bundle-id>] [--ratio <float>]
           tilr spaces set-layout <name-or-id> --type fill-screen [--main <bundle-id>]
+          tilr spaces config add-app <name-or-id> <bundle-id>
+          tilr spaces config remove-app <name-or-id> <bundle-id>
           tilr displays list
           tilr displays configure <id> <name> <default-space>
         """)
@@ -142,8 +144,68 @@ struct ConfigHelp: ParsableCommand {
 struct Spaces: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Manage spaces.",
-        subcommands: [SpacesAdd.self, SpacesSetLayout.self, SpacesList.self, SpacesDelete.self]
+        subcommands: [SpacesAdd.self, SpacesSetLayout.self, SpacesList.self, SpacesDelete.self, SpacesConfig.self]
     )
+}
+
+struct SpacesConfig: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "config",
+        abstract: "Configure space properties.",
+        subcommands: [SpacesConfigAddApp.self, SpacesConfigRemoveApp.self]
+    )
+}
+
+struct SpacesConfigAddApp: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "add-app", abstract: "Add a bundle ID to a space's apps list.")
+
+    @Argument var nameOrId: String
+    @Argument var bundleId: String
+
+    func run() throws {
+        var config = try ConfigStore.load()
+        let resolvedName: String?
+        if nameOrId.count == 1 {
+            resolvedName = config.spaces.first(where: { $0.value.id == nameOrId })?.key
+        } else {
+            resolvedName = config.spaces[nameOrId] != nil ? nameOrId : nil
+        }
+        guard let name = resolvedName else {
+            print("Error: no space found for '\(nameOrId)'"); throw ExitCode(1)
+        }
+        guard !config.spaces[name]!.apps.contains(bundleId) else {
+            print("Error: '\(bundleId)' is already in space '\(name)'"); throw ExitCode(1)
+        }
+        config.spaces[name]!.apps.append(bundleId)
+        try ConfigStore.save(config)
+        print("Added '\(bundleId)' to space '\(name)'")
+    }
+}
+
+struct SpacesConfigRemoveApp: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "remove-app", abstract: "Remove a bundle ID from a space's apps list.")
+
+    @Argument var nameOrId: String
+    @Argument var bundleId: String
+
+    func run() throws {
+        var config = try ConfigStore.load()
+        let resolvedName: String?
+        if nameOrId.count == 1 {
+            resolvedName = config.spaces.first(where: { $0.value.id == nameOrId })?.key
+        } else {
+            resolvedName = config.spaces[nameOrId] != nil ? nameOrId : nil
+        }
+        guard let name = resolvedName else {
+            print("Error: no space found for '\(nameOrId)'"); throw ExitCode(1)
+        }
+        guard config.spaces[name]!.apps.contains(bundleId) else {
+            print("Error: '\(bundleId)' is not in space '\(name)'"); throw ExitCode(1)
+        }
+        config.spaces[name]!.apps.removeAll(where: { $0 == bundleId })
+        try ConfigStore.save(config)
+        print("Removed '\(bundleId)' from space '\(name)'")
+    }
 }
 
 struct SpacesAdd: ParsableCommand {
@@ -473,6 +535,8 @@ struct Context: ParsableCommand {
             CommandEntry(cmd: "tilr spaces add <name> <id> [bundle-ids...]", desc: "Add a space; id is single char 0-9 or a-z"),
             CommandEntry(cmd: "tilr spaces delete <name-or-id>", desc: "Delete a space"),
             CommandEntry(cmd: "tilr spaces set-layout <name-or-id> --type sidebar|fill-screen [--main <bundle-id>] [--ratio <float>]", desc: "Set window layout for a space (sidebar: ratio split; fill-screen: all apps full-screen)"),
+            CommandEntry(cmd: "tilr spaces config add-app <name-or-id> <bundle-id>", desc: "Add a bundle ID to a space's apps list"),
+            CommandEntry(cmd: "tilr spaces config remove-app <name-or-id> <bundle-id>", desc: "Remove a bundle ID from a space's apps list"),
             CommandEntry(cmd: "tilr displays list", desc: "List displays with Tilr ID, user name, system name, and default space"),
             CommandEntry(cmd: "tilr displays configure <id> <name> <default-space>", desc: "Set user label and default space for a display; id is integer 1-N"),
             CommandEntry(cmd: "tilr system", desc: "List running apps (name + bundle ID) and displays"),
