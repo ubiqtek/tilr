@@ -38,6 +38,8 @@ final class SidebarResizeObserver {
     // Per-bundleID suppression deadlines. Entries expire naturally; no cleanup timer needed.
     private var suppressedUntil: [String: Date] = [:]
 
+    private var settleWorkItem: DispatchWorkItem?
+
     // MARK: - Public API
 
     func ratio(for spaceName: String) -> Double? {
@@ -132,9 +134,27 @@ final class SidebarResizeObserver {
                 width: sf.width * (1 - newRatio),
                 height: sf.height
             )
-            for (sid, _) in sidebarWindowElements {
-                setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
+
+            // Live resize: only move the frontmost sidebar to keep things smooth.
+            let activeBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+            let frontSidebar = sidebarWindowElements.first(where: { $0.bundleID == activeBundleID })
+                            ?? sidebarWindowElements.first
+            if let front = frontSidebar {
+                setFrameAndSuppress(bundleID: front.bundleID, frame: sidebarFrame)
             }
+
+            // Settle the rest after dragging stops.
+            settleWorkItem?.cancel()
+            let allSidebars = sidebarWindowElements  // capture current list
+            let work = DispatchWorkItem { [weak self] in
+                guard let self else { return }
+                for (sid, _) in allSidebars {
+                    self.setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
+                }
+            }
+            settleWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: work)
+
             return
         }
 
@@ -232,6 +252,8 @@ final class SidebarResizeObserver {
         activeScreen = nil
         storedMainFrame = nil
         storedSidebarFrame = nil
+        settleWorkItem?.cancel()
+        settleWorkItem = nil
     }
 
     private func axFrame(of element: AXUIElement) -> CGRect? {
