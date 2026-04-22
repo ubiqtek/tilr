@@ -83,19 +83,22 @@ final class AppWindowManager {
 
         service.switchToSpace(targetName, reason: .hotkey)
 
-        let movedBundleID = bundleID
-        let targetLayoutType = config.spaces[targetName]?.layout?.type
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-            guard let self else { return }
-            let screen = NSScreen.main ?? NSScreen.screens[0]
-            if targetLayoutType == .sidebar,
-               let space = self.configStore.current.spaces[targetName] {
-                let frame = self.sidebarLayout.frame(for: movedBundleID, in: space, spaceName: targetName, screen: screen)
-                setWindowFrame(bundleID: movedBundleID, frame: frame)
-            } else {
-                setWindowFrame(bundleID: movedBundleID, frame: screen.frame)
+        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let targetSize: CGSize = {
+            if let space = config.spaces[targetName], space.layout?.type == .sidebar {
+                return sidebarLayout.frame(for: bundleID, in: space, spaceName: targetName, screen: screen).size
             }
-            self.service.sendNotification("moving \(appName) → \(targetName)")
+            return screen.frame.size
+        }()
+
+        retryUntilWindowMatches(bundleID: bundleID, targetSize: targetSize) { [weak self] in
+            guard let self else { return }
+            let currentConfig = self.configStore.current
+            self.applyLayout(name: targetName, config: currentConfig)
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+            self?.service.sendNotification("moving \(appName) → \(targetName)")
         }
     }
 

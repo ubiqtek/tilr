@@ -8,6 +8,8 @@ func contentWindow(forApp axApp: AXUIElement, bundleID: String) -> AXUIElement? 
     if mainResult == .success, let windowRef {
         let candidate = windowRef as! AXUIElement
         if subrole(of: candidate) == kAXStandardWindowSubrole as String {
+            let sr = subrole(of: candidate) ?? "nil"
+            Logger.layout.info("AX finder: '\(bundleID, privacy: .public)' → fast-path, subrole=\(sr, privacy: .public)")
             return candidate
         }
     }
@@ -18,9 +20,11 @@ func contentWindow(forApp axApp: AXUIElement, bundleID: String) -> AXUIElement? 
         let windows = windowsRef as! [AXUIElement]
         let seenSubroles = windows.compactMap { subrole(of: $0) }
         if let match = windows.first(where: { subrole(of: $0) == kAXStandardWindowSubrole as String }) {
+            let sr = subrole(of: match) ?? "nil"
+            Logger.layout.info("AX finder: '\(bundleID, privacy: .public)' → fallback, picked subrole=\(sr, privacy: .public), alternatives=\(seenSubroles, privacy: .public)")
             return match
         }
-        Logger.layout.info("AX: no standard window for '\(bundleID, privacy: .public)' — saw subroles \(seenSubroles, privacy: .public)")
+        Logger.layout.info("AX finder: '\(bundleID, privacy: .public)' → miss, no standard window — saw subroles \(seenSubroles, privacy: .public)")
     }
 
     return nil

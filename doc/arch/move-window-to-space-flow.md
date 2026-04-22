@@ -1,190 +1,90 @@
-# Moving a window to another space — flow and known issues
+# Moving and resizing windows across spaces
 
-Scope: what happens when the user presses `opt+shift+<key>` to move the focused
-app to a different space, with a focus on window sizing after the move and the
-asymmetry between the two directions (sidebar ↔ fill-screen).
+Flow, the apps that resist, and the solution we converged on.
 
-Related files:
-- `Sources/Tilr/AppWindowManager.swift` — `moveCurrentApp` and `handleSpaceActivated`
-- `Sources/Tilr/Layouts/FillScreenLayout.swift` — fill-screen strategy
-- `Sources/Tilr/Layouts/SidebarLayout.swift` — sidebar strategy
-- `Sources/Tilr/Layouts/SidebarResizeObserver.swift` — ratio tracking + observer
-- `Sources/Tilr/Layouts/AXWindowHelper.swift` — `setWindowFrame` via Accessibility API
+When a user moves the focused app to another space (via `opt+shift+<key>`) or drags a sidebar to resize, the system must apply new window frames and verify they actually stick. This doc covers the apply-and-verify pattern we settled on, the specific problem Zen Browser posed, and the lessons learned.
 
-Example setup (from `~/.config/tilr/config.yaml`):
-- **Reference**: `fill-screen`, main = Zen, apps = [Zen, Chrome, Safari]
-- **Coding**: `sidebar` (ratio 0.65), main = Ghostty, apps = [Ghostty, Marq]
+## Related files
 
----
+- `Sources/Tilr/AppWindowManager.swift` — `moveCurrentApp`, `handleSpaceActivated`
+- `Sources/Tilr/Layouts/FillScreenLayout.swift`
+- `Sources/Tilr/Layouts/SidebarLayout.swift` — layout.apply + `frame(for:...)`
+- `Sources/Tilr/Layouts/SidebarResizeObserver.swift` — drag observer + settle blocks
+- `Sources/Tilr/Layouts/AXWindowHelper.swift` — `setWindowFrame`, `readWindowSize`, `retryUntilWindowMatches`
+- `Sources/Tilr/Layouts/AXWindowFinder.swift` — `contentWindow(forApp:bundleID:)`
 
-## Status at a glance
+## Current flow: the exemplar (Zen from Reference to Coding)
 
-| Direction | Target layout | Status | Primary symptom |
-|-----------|--------------|--------|------------------|
-| Coding → Reference | fill-screen | **working** after explicit retry added at T=350ms | (previously: sometimes wider than display) |
-| Reference → Coding | sidebar | **broken** (asymmetric — no explicit retry) | Zen: correct X, wrong width (overflows right). Marq: first attempt fills screen; second attempt correct. |
+User presses `opt+shift+C` to move Zen from Reference (fill-screen) to Coding (sidebar with Ghostty as main, 0.65 ratio).
 
----
+- **T=0ms** — `moveCurrentApp("Coding")` updates config in memory, calls `service.switchToSpace("Coding", reason: .hotkey)`, schedules `retryUntilWindowMatches(bundleID: "zen.browser", targetSize: <sidebar frame size>)` to begin verifying at T+300ms.
+- **T=0ms (sync)** — `handleSpaceActivated("Coding")` unhides target space apps, hides others, schedules layout apply for T+200ms.
+- **T=200ms** — `SidebarLayout.apply` computes main and sidebar frames from screen geometry + ratio, calls `setFrameAndSuppress` (which wraps `setWindowFrame`) for main app and each sidebar app.
+- **T=300ms** — first verify: reads Zen's width via `readWindowSize(bundleID:)`, compares to target width (within 2px tolerance).
+  - If match: done (snappy path — most apps hit this).
+  - If not: call `applyLayout(name: "Coding", ...)` again, wait 200ms, check again. Up to 4 total attempts (~1.1s worst case).
+- **T=350ms** — popup notification fires (async, does not set frames).
 
-## Timeline: Coding → Reference (fill-screen target, currently working)
+## The apply-and-verify helper
 
-**T = 0 ms** — `moveCurrentApp(toSpaceName: "Reference")`:
-- Updates config in memory: Zen removed from Coding, added to Reference.
-- Calls `service.switchToSpace("Reference", reason: .hotkey)`.
+`retryUntilWindowMatches(bundleID:targetSize:tolerance:firstCheckAfter:retryInterval:maxAttempts:reapply:)` in `AXWindowHelper.swift`:
 
-**T = 0 ms (sync)** — `handleSpaceActivated("Reference")`:
-- Reference is fill-screen with `main: zen` → target = Zen.
-- **Unhides** Zen. **Hides** Ghostty, Marq, and every other running regular-UI app.
-- Schedules activation + layout apply for **T + 200 ms**.
+- Defaults: tolerance = 2px, firstCheckAfter = 0.3s, retryInterval = 0.2s, maxAttempts = 4.
+- Reads current window width via `readWindowSize(bundleID:)`.
+- **Compares only width** — macOS menu bar (~34px) clamps height, so we request h=1117 but receive h=1083. Height is not under our control; width is.
+- On match: logs `verify: '<bundleID>' matches on attempt <N> (w=<W>)`.
+- On exhaustion: logs `verify: '<bundleID>' gave up after <N> attempts (want w=<TW>, got w=<W>)`.
+- Used in three places: `moveCurrentApp` (verify moved window), main-drag `settleWorkItem`, sidebar-drag `settleWorkItem`.
 
-**T = 200 ms** — scheduled block runs:
-- `app.activate()` on Zen.
-- `FillScreenLayout.apply(...)` iterates Reference's running apps (Zen, plus
-  Chrome/Safari if running) and calls `setWindowFrame(bundleID, screen.frame)`
-  for each. `screen` is `NSScreen.main ?? NSScreen.screens[0]`.
+## AX call ordering inside `setWindowFrame`
 
-**T = 350 ms** — the deferred block inside `moveCurrentApp`:
-- Gated on `targetLayoutType != .sidebar`.
-- Calls `setWindowFrame(Zen, screen.frame)` again — **explicit retry**.
-- Sends "moving Zen → Reference" notification.
+Current order: **Size → Position** (no trailing size call).
 
-So Zen's frame is set **twice**: once at T = 200 ms by `FillScreenLayout`,
-again at T = 350 ms by the explicit retry. `setWindowFrame` itself issues
-`Position → Size → Position` to correct drift from Sequoia tiling snap or
-off-screen capping.
+This mirrors Hammerspoon's `hs.window:setFrameWithWorkarounds` pattern (window.lua:322-350) in spirit: resize at current on-screen position first, then move to target. A trailing `setSize` was tried but removed — it causes Zen to snap x back to 0, undoing the position move.
 
----
+## The content-window finder
 
-## Timeline: Reference → Coding (sidebar target, currently broken)
+`contentWindow(forApp:bundleID:)` in `AXWindowFinder.swift`:
 
-**T = 0 ms** — `moveCurrentApp(toSpaceName: "Coding")`:
-- Config: Zen/Marq removed from Reference, inserted at index 0 of Coding.
-- Calls `switchToSpace("Coding")`.
+- Fast path: check `kAXMainWindowAttribute`, return if subrole is `kAXStandardWindowSubrole`.
+- Fallback: enumerate `kAXWindowsAttribute`, return first standard window.
+- Logs which path matched + all subroles seen on fallback, for debugging apps with multiple AX windows (e.g. Marq after it added its own window management).
 
-**T = 0 ms (sync)** — `handleSpaceActivated("Coding")`:
-- Coding is sidebar → no single fill-screen target. visibleApps = Coding.apps.
-- **Unhides** Zen (or Marq), Ghostty, and the other sidebar app.
-- **Hides** everything else.
-- `activateBundleID` = `layout.main` = Ghostty.
-- Schedules activation + layout apply for **T + 200 ms**.
+## What Zen Browser does that's weird
 
-**T = 200 ms** — scheduled block:
-- `app.activate()` on Ghostty.
-- `SidebarLayout.apply(...)`:
-  - Resolves `ratio` (override → `layout.ratio` → 0.65 default).
-  - Computes `mainFrame` (left `ratio · width`, Ghostty) and `sidebarFrame`
-    (right `(1 − ratio) · width`, everything else).
-  - `setFrameAndSuppress(Ghostty, mainFrame)`.
-  - For each sidebar bundleID (Zen, Marq): `setFrameAndSuppress(id, sidebarFrame)`.
-  - Stores expected frames for snap-back detection.
-  - Registers AX resize observers.
+Zen has custom window management that fights AX calls:
 
-**T = 350 ms** — the deferred block inside `moveCurrentApp`:
-- Gated on `targetLayoutType != .sidebar` → **branch NOT taken**.
-- Only sends the "moving X → Coding" notification. **No explicit retry.**
+- `setSize` on Zen: often accepted, but a subsequent `setPosition` call causes Zen to expand width back to its pre-move value.
+- `setPosition` then `setSize`: Zen snaps x back to 0 during the size call.
+- Neither order alone works.
 
-This is the asymmetry: the sidebar branch gets the `SidebarLayout.apply` at
-T = 200 ms and nothing else.
+**The fix: re-apply the layout until Zen accepts it.** After ~500–1000ms its internal state settles enough that a fresh layout apply succeeds. The 200ms primary debounce + 300ms first-check + 200ms retries is tuned for Zen's settle time. Most other apps (Marq, Ghostty) accept AX calls cleanly and hit the first-check match instantly.
 
----
+## Things that did NOT work (and why)
 
-## Observed symptoms on Reference → Coding
+- **Min-width constraint theory** — Zen landed at w=1150 instead of w=604. Looked like a browser min-width clamp. Ruled out: user confirmed Zen resizes smaller manually. Real cause was AX state-fight, not layout constraints.
+- **Fixed 800ms delayed re-apply** — worked but laggy for Marq, which settles instantly.
+- **Polling for size stability** (`whenWindowSettles`) — wrong signal. Zen's AX size is stable at the WRONG value during its fight window. Fired re-apply at ~111ms, far too early.
+- **Symmetric T=350ms retry in `moveCurrentApp`** — immediate second `setWindowFrame` 150ms after the first interfered with Zen's post-layout settling. Removed.
+- **Trailing `setSize` call in `setWindowFrame`** — caused Zen to snap x back to 0. Removed.
 
-### Zen (deterministic failure)
+## Known imperfections and future work
 
-- **X position**: correct (at `ratio · screenWidth`, aligned to Ghostty's right edge).
-- **Width**: wrong — stays at the previous full-screen width it had in Reference.
-- **Result**: Zen's right edge lands at `ratio · sw + sw ≈ 1.65 · sw`, overflowing
-  the display to the right by ~65 %.
-- **Happens every time** the move is triggered from Reference.
+- If Zen doesn't settle within 4 retry attempts (~1.1s total), we give up and log. Window may stay at wrong width. Rare in practice; raise `maxAttempts` if it becomes an issue.
+- `maxAttempts` and delays are tuned for Zen on this machine. May need tuning for other stubborn apps (Chrome, Safari, Obsidian).
+- Move-notification popup uses fixed 0.35s asyncAfter. Could be driven off verify completion but not worth the complexity.
+- No multi-display support yet — `NSScreen.main ?? NSScreen.screens[0]` everywhere. Multi-display needs additional work in finder and setFrame paths.
 
-### Marq (flaky failure)
+## Debugging recipe
 
-- **First attempt**: Marq fills the entire screen — both position AND size wrong.
-- **Second attempt**: works correctly (lands in the sidebar frame).
-
----
-
-## Revised theory
-
-The two symptoms rule out several candidates:
-
-- Not a bug in `SidebarLayout.apply` itself — Zen's position is correct, so
-  the sidebar frame is computed right and the position call is getting
-  through. If the layout were broken, both apps would fail the same way.
-- Not a min-width clamp — Marq's first-attempt failure is a full-screen frame,
-  not a width clamped to a minimum. If AX were rejecting a too-small size
-  request, Marq would get the correct position but a clamped width (same as
-  Zen). The fact that Marq ends up at full-screen points to Marq's internal
-  state overriding the AX call entirely.
-
-**Most likely root cause: both apps have internal window-state that can
-override the single AX call sequence we issue at T = 200 ms.**
-
-- **Zen** (Firefox fork): accepts the position change (cheap) but refuses the
-  shrink (expensive — triggers viewport reflow / Firefox's own
-  size-remembering code). Deterministic because Zen's behaviour is consistent
-  per call.
-- **Marq** (Tauri/webview): still in its fill-screen state from Reference
-  when the AX calls arrive. Its own window-management code wins the race on
-  the first attempt; by the second attempt the state has settled and Marq
-  accepts the placement.
-
-Different failure modes, same class of root cause. The fix should be the
-same: **give the app a second chance** after its internal state has settled.
-
----
-
-## Proposed fix: symmetric explicit retry
-
-Match the existing fill-screen pattern. In `moveCurrentApp`, after
-`switchToSpace`, schedule an explicit retry at T = 350 ms regardless of
-target layout type — fill-screen reapplies `screen.frame`, sidebar reapplies
-the moved window's sidebar (or main) frame.
-
-Pseudocode change in `AppWindowManager.moveCurrentApp`:
-
-```
-at T+350ms, for the moved bundleID:
-  if target layout is fill-screen:
-    setWindowFrame(moved, screen.frame)          # already exists
-  else if target layout is sidebar:
-    frame = sidebarLayout.frameFor(moved, space, screen)  # new
-    setWindowFrame(moved, frame)
-  send notification
+```sh
+just logs-capture          # truncates .tilr-logs/session.log and streams
+# in another terminal, or background it and do your moves
+# inspect: grep "verify:" .tilr-logs/session.log
 ```
 
-`frameFor` resolves whether `moved` is the space's `layout.main` (→ mainFrame)
-or a sidebar app (→ sidebarFrame), using the same ratio resolution chain as
-`SidebarLayout.apply`.
+Key log lines to watch:
 
-Why this should work:
-- Coding → Reference already proves the pattern: an explicit retry 150 ms
-  after the layout apply is enough to override app-internal resistance.
-- For Zen, the second `Position → Size → Position` sequence should win by the
-  time Firefox's size-restoration has settled.
-- For Marq, the retry covers the race on the first attempt — we don't need
-  to rely on the user doing it twice.
-
-Risks / things to watch:
-- The retry could fight with the `SidebarResizeObserver` if the second frame
-  set triggers an echo resize notification. `setFrameAndSuppress` suppresses
-  for 600 ms, so a T = 350 ms retry will land inside the suppression window
-  started at T = 200 ms — echo should be swallowed. (If we use plain
-  `setWindowFrame` instead of `setFrameAndSuppress` we'd bypass the
-  suppression bookkeeping and risk a spurious observer callback. Prefer
-  `setFrameAndSuppress` — or extend suppression from inside the retry.)
-- If the user has manually changed the ratio between T = 200 ms and T = 350 ms
-  (extremely unlikely) the retry would use the updated ratio, which is
-  actually correct behaviour.
-
----
-
-## Diagnostic questions still open
-
-- **Does the `set size failed` log line from `AXWindowHelper` appear** when
-  moving Zen from Reference to Coding? If yes, AX itself is rejecting the
-  shrink (min-width / constraint). If no, AX accepts it silently and Zen
-  overrides later — which matches the theory above.
-- **Single display or multiple?** Still relevant for any residual sizing
-  weirdness after the retry fix lands.
+- `AX finder: '<id>' → fast-path | fallback | miss` — which AX window was selected.
+- `AX: setting '<id>' to ...` + `AX: post-set frame for '<id>' ...` — requested vs actual frame.
+- `verify: '<id>' matches on attempt N` or `gave up after N attempts` — placement outcome.

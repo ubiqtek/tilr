@@ -164,6 +164,18 @@ final class SidebarResizeObserver {
                 // Update stored expected frames so snap-back detection uses the new ratio.
                 self.storedMainFrame = mainFrame
                 self.storedSidebarFrame = sidebarFrame
+
+                if let firstSidebar = allSidebars.first {
+                    retryUntilWindowMatches(
+                        bundleID: firstSidebar.bundleID,
+                        targetSize: sidebarFrame.size
+                    ) { [weak self] in
+                        guard let self else { return }
+                        for (sid, _) in allSidebars {
+                            self.setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
+                        }
+                    }
+                }
             }
             settleWorkItem = work
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: work)
@@ -227,6 +239,21 @@ final class SidebarResizeObserver {
                 }
                 self.storedMainFrame = mainFrame
                 self.storedSidebarFrame = sidebarFrame
+
+                if let target = capturedSidebars.first(where: { $0.bundleID != capturedDragged }) {
+                    retryUntilWindowMatches(
+                        bundleID: target.bundleID,
+                        targetSize: sidebarFrame.size
+                    ) { [weak self] in
+                        guard let self else { return }
+                        if let mainID = capturedMain {
+                            self.setFrameAndSuppress(bundleID: mainID, frame: mainFrame)
+                        }
+                        for (sid, _) in capturedSidebars where sid != capturedDragged {
+                            self.setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
+                        }
+                    }
+                }
             }
             settleWorkItem = work
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: work)
