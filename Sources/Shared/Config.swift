@@ -38,11 +38,18 @@ public struct TilrConfig: Codable {
 }
 
 public struct LayoutsConfig: Codable {
-    public var resizeObserverEnabled: Bool
-    public static let `default` = LayoutsConfig(resizeObserverEnabled: true)
-    public init(resizeObserverEnabled: Bool = true) {
-        self.resizeObserverEnabled = resizeObserverEnabled
+    /// When true, the frontmost sidebar also tracks live during a drag.
+    /// Sidebars always snap to their final position on release regardless.
+    public var resizeWhileDragging: Bool
+    public static let `default` = LayoutsConfig(resizeWhileDragging: false)
+    public init(resizeWhileDragging: Bool = false) {
+        self.resizeWhileDragging = resizeWhileDragging
     }
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        resizeWhileDragging = try c.decodeIfPresent(Bool.self, forKey: .resizeWhileDragging) ?? false
+    }
+    enum CodingKeys: String, CodingKey { case resizeWhileDragging }
 }
 
 public struct AccessibilityConfig: Codable {

@@ -40,6 +40,8 @@ final class SidebarResizeObserver {
 
     private var settleWorkItem: DispatchWorkItem?
 
+    private var resizeWhileDragging: Bool = false
+
     // MARK: - Public API
 
     func ratio(for spaceName: String) -> Double? {
@@ -57,13 +59,15 @@ final class SidebarResizeObserver {
         name: String,
         screen: NSScreen,
         mainBundleID: String?,
-        sidebarBundleIDs: [String]
+        sidebarBundleIDs: [String],
+        resizeWhileDragging: Bool = false
     ) {
         tearDown()
 
         activeSpaceName = name
         self.mainBundleID = mainBundleID
         activeScreen = screen
+        self.resizeWhileDragging = resizeWhileDragging
 
         if let mainID = mainBundleID {
             if let (observer, element) = makeObserver(bundleID: mainID) {
@@ -128,6 +132,7 @@ final class SidebarResizeObserver {
             let newRatio = (frame.width / sf.width).clamped(to: 0.1...0.9)
             ratioOverride[spaceName] = newRatio
 
+            let mainFrame = CGRect(x: sf.minX, y: sf.minY, width: sf.width * newRatio, height: sf.height)
             let sidebarFrame = CGRect(
                 x: sf.minX + sf.width * newRatio,
                 y: sf.minY,
@@ -135,15 +140,20 @@ final class SidebarResizeObserver {
                 height: sf.height
             )
 
-            // Live resize: only move the frontmost sidebar to keep things smooth.
-            let activeBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
-            let frontSidebar = sidebarWindowElements.first(where: { $0.bundleID == activeBundleID })
-                            ?? sidebarWindowElements.first
-            if let front = frontSidebar {
-                setFrameAndSuppress(bundleID: front.bundleID, frame: sidebarFrame)
+            // In follow mode, live-update the frontmost sidebar during the drag.
+            // In release mode, do nothing — just wait for the drag to settle.
+            if resizeWhileDragging {
+                let activeBundleID = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+                let frontSidebar = sidebarWindowElements.first(where: { $0.bundleID == activeBundleID })
+                                ?? sidebarWindowElements.first
+                if let front = frontSidebar {
+                    setFrameAndSuppress(bundleID: front.bundleID, frame: sidebarFrame)
+                }
             }
 
-            // Settle the rest after dragging stops.
+            // Settle the rest (or all, in release mode) after dragging stops.
+            // Longer debounce (200ms) gives the main-window drag a clear window to
+            // complete before we issue competing AX calls.
             settleWorkItem?.cancel()
             let allSidebars = sidebarWindowElements  // capture current list
             let work = DispatchWorkItem { [weak self] in
@@ -151,9 +161,12 @@ final class SidebarResizeObserver {
                 for (sid, _) in allSidebars {
                     self.setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
                 }
+                // Update stored expected frames so snap-back detection uses the new ratio.
+                self.storedMainFrame = mainFrame
+                self.storedSidebarFrame = sidebarFrame
             }
             settleWorkItem = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: work)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: work)
 
             return
         }
@@ -161,16 +174,14 @@ final class SidebarResizeObserver {
         if let idx = sidebarWindowElements.firstIndex(where: { CFEqual($0.element, element) }) {
             let draggedBundleID = sidebarWindowElements[idx].bundleID
 
-            // Snap-back detection: if the sidebar window has landed significantly to the
-            // left of where it should be, the OS snapped it back to its pre-move position
-            // rather than honouring our setFrameAndSuppress placement.
-            // Use stored intended frames (set before the AX move) rather than reading AX
-            // positions live, which may lag behind the async move.
-            // Return early — do NOT update ratioOverride.
+            // Snap-back detection: browsers like Zen resist AX placement and animate
+            // back to their previous position. Only active immediately after a
+            // programmatic layout apply (storedFrames set). Once the user genuinely
+            // drags the sidebar, we clear the stored frames so this doesn't fire on
+            // legitimate leftward drags.
             if let mFrame = storedMainFrame, let sFrame = storedSidebarFrame {
-                Logger.layout.info("resize observer: sidebar '\(draggedBundleID, privacy: .public)' x=\(frame.origin.x), main.maxX=\(mFrame.maxX), threshold=\(mFrame.maxX - sf.width * 0.15)")
                 if frame.origin.x < mFrame.maxX - sf.width * 0.15 {
-                    Logger.layout.info("resize observer: snap-back detected for sidebar '\(draggedBundleID, privacy: .public)' — reapplying frames")
+                    Logger.layout.info("resize observer: snap-back detected for '\(draggedBundleID, privacy: .public)' — reapplying frames")
                     if let mainID = mainBundleID {
                         setFrameAndSuppress(bundleID: mainID, frame: mFrame)
                     }
@@ -179,8 +190,10 @@ final class SidebarResizeObserver {
                     }
                     return
                 }
-            } else {
-                Logger.layout.info("resize observer: no stored frames available")
+                // Past the snap-back window — this is a real user drag. Clear stored
+                // frames so leftward drags don't re-trigger snap-back detection.
+                storedMainFrame = nil
+                storedSidebarFrame = nil
             }
 
             let newRatio = ((frame.origin.x - sf.origin.x) / sf.width).clamped(to: 0.1...0.9)
@@ -193,12 +206,31 @@ final class SidebarResizeObserver {
                 width: sf.width * (1 - newRatio),
                 height: sf.height
             )
-            if let mainID = mainBundleID {
+
+            // In follow mode, also live-update main during the sidebar drag.
+            if resizeWhileDragging, let mainID = mainBundleID {
                 setFrameAndSuppress(bundleID: mainID, frame: mainFrame)
             }
-            for (sid, _) in sidebarWindowElements where sid != draggedBundleID {
-                setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
+
+            // Always settle main + other sidebars after the drag stops.
+            settleWorkItem?.cancel()
+            let capturedMain = mainBundleID
+            let capturedSidebars = sidebarWindowElements
+            let capturedDragged = draggedBundleID
+            let work = DispatchWorkItem { [weak self] in
+                guard let self else { return }
+                if let mainID = capturedMain {
+                    self.setFrameAndSuppress(bundleID: mainID, frame: mainFrame)
+                }
+                for (sid, _) in capturedSidebars where sid != capturedDragged {
+                    self.setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
+                }
+                self.storedMainFrame = mainFrame
+                self.storedSidebarFrame = sidebarFrame
             }
+            settleWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: work)
+
             return
         }
     }

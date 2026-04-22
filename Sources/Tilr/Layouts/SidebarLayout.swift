@@ -47,20 +47,17 @@ final class SidebarLayout: LayoutStrategy {
             Logger.layout.info("applied sidebar layout: sidebars alone → fill")
         }
 
-        if config.layouts.resizeObserverEnabled {
-            if mainIsVisible && !sidebarBundleIDs.isEmpty {
-                resizeObserver.setExpectedFrames(mainFrame: mainFrame, sidebarFrame: sidebarFrame)
-            }
-            resizeObserver.startObserving(
-                space: space,
-                name: name,
-                screen: screen,
-                mainBundleID: mainBundleID,
-                sidebarBundleIDs: sidebarBundleIDs
-            )
-        } else {
-            resizeObserver.stopObserving()
+        if mainIsVisible && !sidebarBundleIDs.isEmpty {
+            resizeObserver.setExpectedFrames(mainFrame: mainFrame, sidebarFrame: sidebarFrame)
         }
+        resizeObserver.startObserving(
+            space: space,
+            name: name,
+            screen: screen,
+            mainBundleID: mainBundleID,
+            sidebarBundleIDs: sidebarBundleIDs,
+            resizeWhileDragging: config.layouts.resizeWhileDragging
+        )
     }
 
     func stopObserving() {

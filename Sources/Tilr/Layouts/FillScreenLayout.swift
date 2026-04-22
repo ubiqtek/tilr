@@ -21,6 +21,6 @@ struct FillScreenLayout: LayoutStrategy {
         }
 
         let names = runningApps.map { $0.components(separatedBy: ".").last ?? $0 }.joined(separator: ", ")
-        Logger.layout.info("applied fill-screen layout: [\(names, privacy: .public)]")
+        Logger.layout.info("applied fill-screen layout: [\(names, privacy: .public)] frame x=\(sf.origin.x) y=\(sf.origin.y) w=\(sf.width) h=\(sf.height)")
     }
 }

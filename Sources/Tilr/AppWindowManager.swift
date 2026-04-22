@@ -82,8 +82,23 @@ final class AppWindowManager {
         Logger.windows.info("moved '\(appName, privacy: .public)' from '\(sourceName ?? "none", privacy: .public)' to '\(targetName, privacy: .public)'")
 
         service.switchToSpace(targetName, reason: .hotkey)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
-            self?.service.sendNotification("moving \(appName) → \(targetName)")
+
+        // For non-sidebar targets (e.g. fill-screen), explicitly place the moved window
+        // at full screen after 350ms. Mirrors Hammerspoon's moveFocusedAppToSpace which
+        // calls placeWindow(movedWin, screen, screen:frame()) for non-sidebar targets.
+        let targetLayoutType = config.spaces[targetName]?.layout?.type
+        if targetLayoutType != .sidebar {
+            let movedBundleID = bundleID
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+                guard let self else { return }
+                let screen = NSScreen.main ?? NSScreen.screens[0]
+                setWindowFrame(bundleID: movedBundleID, frame: screen.frame)
+                self.service.sendNotification("moving \(appName) → \(targetName)")
+            }
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+                self?.service.sendNotification("moving \(appName) → \(targetName)")
+            }
         }
     }
 
