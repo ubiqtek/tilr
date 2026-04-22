@@ -244,13 +244,10 @@ final class SidebarResizeObserver {
         let pid = app.processIdentifier
         let axApp = AXUIElementCreateApplication(pid)
 
-        var windowRef: CFTypeRef?
-        let result = AXUIElementCopyAttributeValue(axApp, kAXMainWindowAttribute as CFString, &windowRef)
-        guard result == .success, let windowRef else {
-            Logger.layout.info("resize observer: no main window for '\(bundleID, privacy: .public)' — skipping")
+        guard let windowElement = contentWindow(forApp: axApp, bundleID: bundleID) else {
+            Logger.layout.info("resize observer: no content window for '\(bundleID, privacy: .public)' — skipping")
             return nil
         }
-        let windowElement = windowRef as! AXUIElement
 
         var observer: AXObserver?
         let refcon = Unmanaged.passUnretained(self).toOpaque()

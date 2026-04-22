@@ -27,6 +27,7 @@
 		84A812BF0C0DB21CE80D8F73 /* AppWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C9DE747423AFE90BD2B410 /* AppWindowManager.swift */; };
 		84DCEB885A50EC3B9174EECC /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = F4A7A23332D8A25DFB330647 /* Yams */; };
 		8E51978AA47050C39A510714 /* AXWindowHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11539077F40F015167E985B /* AXWindowHelper.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* AXWindowFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E1D0C9B8A7F6E5D4C3B2A1 /* AXWindowFinder.swift */; };
 		8EFB57F4C04046C26FB5AFC8 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */; };
 		974ED4F42FBB8CC66FE95B5B /* SpaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0E2C3C1A9CC939C4627AB /* SpaceService.swift */; };
 		A0AD88187A1F38BDA085A1C8 /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
@@ -67,6 +68,7 @@
 		A58A3D2379A1546D9821F1BE /* TilrCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TilrCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA4954960D225425A4DC46AB /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		B11539077F40F015167E985B /* AXWindowHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindowHelper.swift; sourceTree = "<group>"; };
+		F2E1D0C9B8A7F6E5D4C3B2A1 /* AXWindowFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindowFinder.swift; sourceTree = "<group>"; };
 		B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilrCLI.swift; sourceTree = "<group>"; };
 		B7B84695773403E5189D2283 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		CD73C3E61369CF9E9A088950 /* ConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigTests.swift; sourceTree = "<group>"; };
@@ -135,6 +137,7 @@
 			isa = PBXGroup;
 			children = (
 				B11539077F40F015167E985B /* AXWindowHelper.swift */,
+				F2E1D0C9B8A7F6E5D4C3B2A1 /* AXWindowFinder.swift */,
 				3269A5CC9642D65D8DBB09AA /* FillScreenLayout.swift */,
 				F9AABDC9DDB1FFCAEEC2F271 /* LayoutStrategy.swift */,
 				8A5000BC4CB2632C66661403 /* SidebarLayout.swift */,
@@ -352,6 +355,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E51978AA47050C39A510714 /* AXWindowHelper.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* AXWindowFinder.swift in Sources */,
 				C39854C517831B944B5A4645 /* ActivationReason.swift in Sources */,
 				0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */,
 				84A812BF0C0DB21CE80D8F73 /* AppWindowManager.swift in Sources */,

@@ -12,14 +12,10 @@ func setWindowFrame(bundleID: String, frame: CGRect) -> Bool {
 
     let axApp = AXUIElementCreateApplication(app.processIdentifier)
 
-    var windowRef: CFTypeRef?
-    let windowResult = AXUIElementCopyAttributeValue(axApp, kAXMainWindowAttribute as CFString, &windowRef)
-    guard windowResult == .success, let windowRef else {
-        Logger.layout.info("AX: no main window for '\(bundleID, privacy: .public)' (err \(windowResult.rawValue, privacy: .public)) — skipping")
+    guard let axWindow = contentWindow(forApp: axApp, bundleID: bundleID) else {
+        Logger.layout.info("AX: no content window for '\(bundleID, privacy: .public)' — skipping")
         return false
     }
-
-    let axWindow = windowRef as! AXUIElement
     Logger.layout.info("AX: setting '\(bundleID, privacy: .public)' to x=\(frame.origin.x) y=\(frame.origin.y) w=\(frame.size.width) h=\(frame.size.height)")
 
     // Set position → size → position again.

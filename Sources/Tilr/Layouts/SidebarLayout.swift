@@ -60,6 +60,14 @@ final class SidebarLayout: LayoutStrategy {
         )
     }
 
+    func frame(for bundleID: String, in space: SpaceDefinition, spaceName: String, screen: NSScreen) -> CGRect {
+        let ratio = resizeObserver.ratio(for: spaceName) ?? space.layout?.ratio ?? 0.65
+        let sf = screen.frame
+        let mainFrame    = CGRect(x: sf.minX,                    y: sf.minY, width: sf.width * ratio,       height: sf.height)
+        let sidebarFrame = CGRect(x: sf.minX + sf.width * ratio, y: sf.minY, width: sf.width * (1 - ratio), height: sf.height)
+        return bundleID == space.layout?.main ? mainFrame : sidebarFrame
+    }
+
     func stopObserving() {
         resizeObserver.stopObserving()
     }
