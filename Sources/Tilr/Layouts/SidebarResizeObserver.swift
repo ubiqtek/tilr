@@ -27,6 +27,8 @@ final class SidebarResizeObserver {
     private var mainBundleID: String?
     private var mainWindowElement: AXUIElement?
     private var sidebarWindowElements: [(bundleID: String, element: AXUIElement)] = []
+    // Hidden sidebar apps that still need frame updates when ratio changes.
+    private var hiddenSidebarBundleIDs: [String] = []
     private var activeScreen: NSScreen?
     private var axObservers: [AXObserver] = []
 
@@ -60,6 +62,7 @@ final class SidebarResizeObserver {
         screen: NSScreen,
         mainBundleID: String?,
         sidebarBundleIDs: [String],
+        hiddenSidebarBundleIDs: [String] = [],
         resizeWhileDragging: Bool = false
     ) {
         tearDown()
@@ -68,6 +71,7 @@ final class SidebarResizeObserver {
         self.mainBundleID = mainBundleID
         activeScreen = screen
         self.resizeWhileDragging = resizeWhileDragging
+        self.hiddenSidebarBundleIDs = hiddenSidebarBundleIDs
 
         if let mainID = mainBundleID {
             if let (observer, element) = makeObserver(bundleID: mainID) {
@@ -303,6 +307,7 @@ final class SidebarResizeObserver {
         axObservers.removeAll()
         mainWindowElement = nil
         sidebarWindowElements.removeAll()
+        hiddenSidebarBundleIDs.removeAll()
         activeSpaceName = nil
         mainBundleID = nil
         activeScreen = nil

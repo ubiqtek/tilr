@@ -21,6 +21,8 @@ final class AppWindowManager {
 
     private var currentSpaceName: String?
     private var fillScreenLastApp: [String: String] = [:]  // spaceName → bundleID
+    private var previousSidebarSlotApp: String?
+    private var pendingMoveInto: (targetSpace: String, movedBundleID: String)?
     private var isTilrActivating = false
     private var activationResetWorkItem: DispatchWorkItem?
     private var activationObserverToken: NSObjectProtocol?
@@ -81,6 +83,13 @@ final class AppWindowManager {
         let appName = NSWorkspace.shared.frontmostApplication?.localizedName ?? bundleID
         Logger.windows.info("moved '\(appName, privacy: .public)' from '\(sourceName ?? "none", privacy: .public)' to '\(targetName, privacy: .public)'")
 
+        let operation = OperationType.windowMove(
+            movedBundleID: bundleID,
+            sourceSpace: sourceName,
+            targetSpace: targetName
+        )
+
+        pendingMoveInto = (targetSpace: targetName, movedBundleID: bundleID)
         service.switchToSpace(targetName, reason: .hotkey)
 
         let screen = NSScreen.main ?? NSScreen.screens[0]
@@ -94,7 +103,29 @@ final class AppWindowManager {
         retryUntilWindowMatches(bundleID: bundleID, targetSize: targetSize) { [weak self] in
             guard let self else { return }
             let currentConfig = self.configStore.current
-            self.applyLayout(name: targetName, config: currentConfig)
+            self.applyLayout(name: targetName, config: currentConfig, operation: operation)
+        }
+
+        // Focus the moved app after layout.apply returns (small delay to let AX settle).
+        // Also set previousSidebarSlotApp here — AFTER handleSpaceActivated has run and
+        // reset it to nil, so CMD+TAB knows which slot app is currently visible.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            guard let self else { return }
+            let currentConfig = self.configStore.current
+            if let space = currentConfig.spaces[targetName], space.layout?.type == .sidebar,
+               bundleID != space.layout?.main {
+                self.previousSidebarSlotApp = bundleID
+                Logger.windows.info("moveCurrentApp: set previousSidebarSlotApp='\(bundleID, privacy: .public)' for CMD+TAB handoff")
+            }
+            if let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first {
+                self.isTilrActivating = true
+                self.activationResetWorkItem?.cancel()
+                let work = DispatchWorkItem { [weak self] in self?.isTilrActivating = false }
+                self.activationResetWorkItem = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
+                app.activate(options: [])
+                Logger.windows.info("moveCurrentApp: focused '\(bundleID, privacy: .public)' after move")
+            }
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
@@ -111,19 +142,66 @@ final class AppWindowManager {
         guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
               let bundleID = app.bundleIdentifier,
               let spaceName = currentSpaceName,
-              let space = configStore.current.spaces[spaceName],
-              space.layout?.type == .fillScreen,
+              let space = configStore.current.spaces[spaceName]
+        else { return }
+
+        // Fill-screen branch: remember the last-focused app for the space.
+        if space.layout?.type == .fillScreen, space.apps.contains(bundleID) {
+            if fillScreenLastApp[spaceName] != bundleID {
+                fillScreenLastApp[spaceName] = bundleID
+                Logger.windows.info("remembered foreground app for fill-screen '\(spaceName, privacy: .public)': \(bundleID, privacy: .public)")
+            }
+            return
+        }
+
+        // Sidebar branch: handle CMD+TAB and other activations into sidebar-space apps.
+        guard space.layout?.type == .sidebar,
               space.apps.contains(bundleID)
         else { return }
 
-        if fillScreenLastApp[spaceName] != bundleID {
-            fillScreenLastApp[spaceName] = bundleID
-            Logger.windows.info("remembered foreground app for fill-screen '\(spaceName, privacy: .public)': \(bundleID, privacy: .public)")
+        let mainBundleID = space.layout?.main
+        let isMainApp = (bundleID == mainBundleID)
+
+        if isMainApp {
+            // Main app always holds its position — no frame action needed.
+            previousSidebarSlotApp = nil
+            Logger.windows.info("app-activation: '\(bundleID, privacy: .public)' is sidebar main — no frame action")
+            return
+        }
+
+        // It's a sidebar-slot app — resize it into its frame and hide the previous slot app.
+        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let targetFrame = sidebarLayout.frame(for: bundleID, in: space, spaceName: spaceName, screen: screen)
+
+        let prev = previousSidebarSlotApp
+        Logger.windows.info("app-activation: '\(bundleID, privacy: .public)' is sidebar slot — applying frame, hiding prev '\(prev ?? "none", privacy: .public)'")
+
+        if let prev, prev != bundleID, prev != mainBundleID {
+            setAppHidden(bundleID: prev, hidden: true)
+        }
+        previousSidebarSlotApp = bundleID
+
+        // Delay the frame call if the app was hidden — AX is not ready immediately after unhide.
+        let wasHidden = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first?.isHidden ?? false
+        let config = configStore.current
+        if wasHidden {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                guard let self else { return }
+                self.sidebarLayout.setFrameAndSuppress(bundleID: bundleID, frame: targetFrame)
+                self.sidebarLayout.reattachObserver(space: space, name: spaceName, screen: screen, visibleSidebarBundleID: bundleID, config: config)
+                retryUntilWindowMatches(bundleID: bundleID, targetSize: targetFrame.size) { [weak self] in
+                    self?.sidebarLayout.setFrameAndSuppress(bundleID: bundleID, frame: targetFrame)
+                }
+            }
+        } else {
+            sidebarLayout.setFrameAndSuppress(bundleID: bundleID, frame: targetFrame)
+            sidebarLayout.reattachObserver(space: space, name: spaceName, screen: screen, visibleSidebarBundleID: bundleID, config: config)
         }
     }
 
     private func handleSpaceActivated(name: String) {
         currentSpaceName = name
+        previousSidebarSlotApp = nil
 
         let config = configStore.current
         let space = config.spaces[name]
@@ -143,12 +221,23 @@ final class AppWindowManager {
             return space.apps.first
         }()
 
+        // Consume the pending move-into hint (set by moveCurrentApp before switchToSpace).
+        let moveInto = pendingMoveInto.flatMap { $0.targetSpace == name ? $0 : nil }
+        pendingMoveInto = nil
+
         // Compute the set of apps that should be VISIBLE in this space.
-        // Fill-screen: just the target (single app). Sidebar/none: all apps.
+        // Fill-screen: just the target. Sidebar move-into: only main + moved app
+        // (so handleSpaceActivated never unhides sidebar apps that should stay hidden).
+        // Sidebar switch: all apps.
         let visibleApps: Set<String> = {
             guard let space else { return [] }
             if space.layout?.type == .fillScreen {
                 return fillScreenTarget.map { Set([$0]) } ?? []
+            }
+            if space.layout?.type == .sidebar, let move = moveInto {
+                var visible = Set([move.movedBundleID])
+                if let main = space.layout?.main { visible.insert(main) }
+                return visible
             }
             return Set(space.apps)
         }()
@@ -224,10 +313,18 @@ final class AppWindowManager {
         }
     }
 
-    private func applyLayout(name: String, config: TilrConfig) {
+    private func applyLayout(name: String, config: TilrConfig, operation: OperationType = .spaceSwitch(spaceName: "")) {
         guard let space = config.spaces[name], let layout = space.layout else { return }
 
         let screen = NSScreen.main ?? NSScreen.screens[0]
+
+        // Resolve the operation's spaceName default when caller used the bare default.
+        let resolvedOperation: OperationType
+        if case .spaceSwitch(let sn) = operation, sn.isEmpty {
+            resolvedOperation = .spaceSwitch(spaceName: name)
+        } else {
+            resolvedOperation = operation
+        }
 
         let strategy: LayoutStrategy
         switch layout.type {
@@ -238,7 +335,7 @@ final class AppWindowManager {
             strategy = fillScreenLayout
         }
 
-        strategy.apply(name: name, space: space, config: config, screen: screen)
+        strategy.apply(name: name, space: space, config: config, screen: screen, operation: resolvedOperation)
     }
 
     /// Returns a bracket-enclosed list of localised app names (falling back

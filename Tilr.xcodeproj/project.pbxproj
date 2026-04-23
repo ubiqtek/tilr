@@ -13,6 +13,7 @@
 		0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D591EB97A8285386E320E7A1 /* AppDelegate.swift */; };
 		1757134B0FBBE8F270642C77 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 37F0E62234354AFC0109FC05 /* HotKey */; };
 		17CB9065CB4E3C1DCA8E17CF /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
+		2C584E84F3F20076D243A7BE /* AXWindowFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CAE599B01BA6AA1A9258DC8 /* AXWindowFinder.swift */; };
 		2D55E81C071208DFE4E3B8B7 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
 		2D5EF2D6EDE2C1F6D8676944 /* ConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD73C3E61369CF9E9A088950 /* ConfigTests.swift */; };
 		3487264C1D9A996204B83EB0 /* SocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DA24F8994DA197871EC4F7 /* SocketClient.swift */; };
@@ -27,7 +28,6 @@
 		84A812BF0C0DB21CE80D8F73 /* AppWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C9DE747423AFE90BD2B410 /* AppWindowManager.swift */; };
 		84DCEB885A50EC3B9174EECC /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = F4A7A23332D8A25DFB330647 /* Yams */; };
 		8E51978AA47050C39A510714 /* AXWindowHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11539077F40F015167E985B /* AXWindowHelper.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* AXWindowFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E1D0C9B8A7F6E5D4C3B2A1 /* AXWindowFinder.swift */; };
 		8EFB57F4C04046C26FB5AFC8 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */; };
 		974ED4F42FBB8CC66FE95B5B /* SpaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0E2C3C1A9CC939C4627AB /* SpaceService.swift */; };
 		A0AD88187A1F38BDA085A1C8 /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
@@ -43,6 +43,7 @@
 		E0DE4DCD84C06EBEC86DAC66 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
 		E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
 		E377ED23CAD122AF26638FAB /* SidebarResizeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4EB64639CC193477ED3D56 /* SidebarResizeObserver.swift */; };
+		E3F27FCF2C9C42DFCB9A98F9 /* OperationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C01B9671B7AE4AB62FBF9ED /* OperationType.swift */; };
 		EAD8FE660F8955E7E69CDD3A /* UserNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90384F2DAE9BC22F1BB5EBF /* UserNotifier.swift */; };
 		F3F1430FD3A5751E0DB9562C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */; };
 		FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */; };
@@ -53,6 +54,7 @@
 		0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyManager.swift; sourceTree = "<group>"; };
 		0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
 		107A98FA7DFAD3B0C72DF305 /* Protocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
+		1CAE599B01BA6AA1A9258DC8 /* AXWindowFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindowFinder.swift; sourceTree = "<group>"; };
 		1D466C78546253ED43ED5A1B /* TilrCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = TilrCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		26A0E2C3C1A9CC939C4627AB /* SpaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceService.swift; sourceTree = "<group>"; };
 		3269A5CC9642D65D8DBB09AA /* FillScreenLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FillScreenLayout.swift; sourceTree = "<group>"; };
@@ -62,13 +64,13 @@
 		8A5000BC4CB2632C66661403 /* SidebarLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarLayout.swift; sourceTree = "<group>"; };
 		8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketServer.swift; sourceTree = "<group>"; };
 		8F4EB64639CC193477ED3D56 /* SidebarResizeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarResizeObserver.swift; sourceTree = "<group>"; };
+		9C01B9671B7AE4AB62FBF9ED /* OperationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationType.swift; sourceTree = "<group>"; };
 		A2C26C3A022E722BB2141506 /* PopupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWindow.swift; sourceTree = "<group>"; };
 		A2DA24F8994DA197871EC4F7 /* SocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClient.swift; sourceTree = "<group>"; };
 		A31BA873E7DDD31C99FD1C25 /* TilrApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TilrApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A58A3D2379A1546D9821F1BE /* TilrCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TilrCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA4954960D225425A4DC46AB /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		B11539077F40F015167E985B /* AXWindowHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindowHelper.swift; sourceTree = "<group>"; };
-		F2E1D0C9B8A7F6E5D4C3B2A1 /* AXWindowFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindowFinder.swift; sourceTree = "<group>"; };
 		B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilrCLI.swift; sourceTree = "<group>"; };
 		B7B84695773403E5189D2283 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		CD73C3E61369CF9E9A088950 /* ConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigTests.swift; sourceTree = "<group>"; };
@@ -136,8 +138,8 @@
 		5F4D31370E3B4ECFA4D1CD3A /* Layouts */ = {
 			isa = PBXGroup;
 			children = (
+				1CAE599B01BA6AA1A9258DC8 /* AXWindowFinder.swift */,
 				B11539077F40F015167E985B /* AXWindowHelper.swift */,
-				F2E1D0C9B8A7F6E5D4C3B2A1 /* AXWindowFinder.swift */,
 				3269A5CC9642D65D8DBB09AA /* FillScreenLayout.swift */,
 				F9AABDC9DDB1FFCAEEC2F271 /* LayoutStrategy.swift */,
 				8A5000BC4CB2632C66661403 /* SidebarLayout.swift */,
@@ -159,6 +161,7 @@
 				EC864E8DB4EFA2E99ACD386F /* Logging.swift */,
 				B7B84695773403E5189D2283 /* main.swift */,
 				0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */,
+				9C01B9671B7AE4AB62FBF9ED /* OperationType.swift */,
 				A2C26C3A022E722BB2141506 /* PopupWindow.swift */,
 				8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */,
 				26A0E2C3C1A9CC939C4627AB /* SpaceService.swift */,
@@ -354,8 +357,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C584E84F3F20076D243A7BE /* AXWindowFinder.swift in Sources */,
 				8E51978AA47050C39A510714 /* AXWindowHelper.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* AXWindowFinder.swift in Sources */,
 				C39854C517831B944B5A4645 /* ActivationReason.swift in Sources */,
 				0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */,
 				84A812BF0C0DB21CE80D8F73 /* AppWindowManager.swift in Sources */,
@@ -368,6 +371,7 @@
 				C2E219F8E4C83709202061D0 /* LayoutStrategy.swift in Sources */,
 				C3F3599B193202D73F6FF5D9 /* Logging.swift in Sources */,
 				47841DC6765B676345C49ADF /* MenuBarController.swift in Sources */,
+				E3F27FCF2C9C42DFCB9A98F9 /* OperationType.swift in Sources */,
 				CBA5C00A789C86F4237796D9 /* PopupWindow.swift in Sources */,
 				B6C816A29F4059B6D013DE52 /* Protocol.swift in Sources */,
 				BAC485F2BDA8B61C51D834AE /* SidebarLayout.swift in Sources */,
