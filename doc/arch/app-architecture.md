@@ -390,12 +390,59 @@ Tilr:
 | Drag-to-resize | session ratio dict (memory only) | non-blocking |
 | `tilr reload-config` | config.toml reload → ConfigStore.current re-publish | async; HotKeyManager re-registers on change |
 
+## Fixes & optimizations
+
+### BUG-6 fix: Fill-screen move flash (2026-04-25)
+
+**Problem:** Moving Marq to Reference (fill-screen space) briefly flashed the app full-screen then hid all windows.
+
+**Root cause:** The fill-screen `OperationType.windowMove` branch ignored `pendingMoveInto`, the move-override flag set before space switch. This caused `handleSpaceActivated` to compute `visibleApps = [moved]` (only the moved app), hide all competitors, but then the fill-screen layout didn't include the moved app in its final positioning because it wasn't being tracked. The app briefly rendered at full screen before being hidden by competitor-hide logic.
+
+**Fix:** Set `fillScreenLastApp[targetName] = bundleID` before calling `switchToSpace` (equivalent to HS's `sessionAppOverride` pattern). This ensures the fill-screen branch's `handleSpaceActivated` path includes the moved app in `visibleApps` computation. Also wired `retryUntilWindowMatches` in the fill-screen path to verify window sizing post-layout.
+
+**Related fix:** Hotkey re-registration guard — was subscribing to all config changes, now only on hotkey/space name/ID changes. Reduces spurious re-registrations and avoids lost hotkeys during unrelated config reloads.
+
+---
+
+### FillScreenLayout optimization: Only frame visible apps (2026-04-25)
+
+**Problem:** Layout applied AX frames to all running apps in a space, including hidden ones, generating unnecessary AX calls and risking frames on inaccessible windows.
+
+**Solution:** Filter `space.apps` to only visible apps before positioning: `.contains { !$0.isHidden }`. Reduces AX call volume and avoids framing hidden apps (which are inaccessible post-hide and would fail silently anyway).
+
+**Code location:** `FillScreenLayout.swift`, `.spaceSwitch` case — pre-filter to `visibleApps` before calling `setWindowFrame`.
+
+---
+
+### retryUntilWindowMatches aggressive tuning (2026-04-25)
+
+**Initial problem:** Windows were resizing slowly or not at all when apps like Zen Browser internally fought AX calls for 500–1000ms. The initial fixed-delay approach (300ms check, up to 4 retries) caught the problem but felt sluggish.
+
+**Tuning experiment:** Tested aggressive early checks with variable retry intervals to catch fast-settling apps immediately while still covering slow apps.
+
+**Final schedule:** 10ms initial check, then retries at [20ms, 50ms, 100ms, 200ms, 200ms, 200ms, 200ms].
+
+| Attempt | Delay | Cumulative | Notes |
+|---------|-------|------------|-------|
+| 1 (initial) | 10ms | 10ms | Fast apps caught almost immediately |
+| 2 | 20ms | 30ms | |
+| 3 | 50ms | 80ms | Most apps settled by here |
+| 4 | 100ms | 180ms | Covers medium-speed apps |
+| 5–8 (retries) | 200ms each | ~980ms | Covers Zen's 500–1000ms window settle time |
+
+**Total budget:** ~980ms, still under Zen's typical window settling time of ~360ms + safety buffer.
+
+**Results:** Windows resize "almost instant" without flakiness; early 10ms–100ms attempts catch fast-settling apps immediately, while later 200ms retries handle Zen's fighting behaviour. No observed failures; feels snappiest at 10ms vs earlier 300ms threshold.
+
+**Threshold history:** Started at 300ms → 100ms → 50ms → 20ms → 10ms. Empirical testing confirmed 10ms is optimal for responsiveness without introducing races.
+
+---
+
 ## Known issues & open questions
 
 **Cross-references to `plan.md`:**
 
 - **BUG-5:** CMD+TAB sidebar handoff has ~200ms animation lag. After unhiding a sidebar-slot app, we add a 200ms delay before calling `setWindowFrame` to wait for AX readiness. Future: replace with AX readiness poll instead of fixed timing.
-- **BUG-6 (current):** Moving Marq to Reference (fill-screen space) briefly shows full screen then hides everything. Root cause: fill-screen `moveCurrentApp` path computes `visibleApps = [moved]` and hides all others, but doesn't account for competitor visibility pre-switch. Likely needs special `OperationType.windowMove` logic in fill-screen layout.
 
 **Open questions:**
 
