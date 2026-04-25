@@ -13,7 +13,7 @@ that app's space so the rest of its space's apps come with it.
 - [x] Skip when the app belongs to the current active space (no-op)
 - [x] Skip when the app belongs to no configured space
 - [x] **Extended:** sidebar-specific CMD+TAB behaviour — when activating a sidebar-slot app, resize it into its frame and hide the previous slot app; reattaches drag observer
-- [ ] **Pending:** cross-space switching when activating an app in a different space
+- [x] **Pending:** cross-space switching when activating an app in a different space
 
 **Reference:** Hammerspoon `focusWatcher` in
 `~/projects/dotfiles/home/hammerspoon/init.lua` (~line 652).

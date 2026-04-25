@@ -16,12 +16,13 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 6 | App visibility | ✅ | 2026-04-19 |
 | 7 | App layout | ✅ | 2026-04-20 |
 | 8 | Moving apps to a space | ✅ | 2026-04-25 |
-| 9 | Follow focus on CMD-TAB | 🟡 | — |
+| 9 | Follow focus on CMD-TAB | ✅ | 2026-04-25 |
+| 9b | Sidebar layout on app activate/close | ⬜ | — |
 | 10 | Multi-display support | ⬜ | — |
 | 11 | State file | ⬜ | — |
 | 12 | Polish | ⬜ | — |
 
-**Current focus:** Delta 9 — Follow focus on CMD-TAB (cross-space switching pending)
+**Current focus:** Delta 9b — Sidebar layout on app activate/close
 
 ---
 
@@ -46,6 +47,7 @@ lands — check boxes, add a dated note, link the commit/PR.
 - [Delta 7: App layout](delta-7.md)
 - [Delta 8: Moving apps to a space](delta-8.md)
 - [Delta 9: Follow focus on CMD-TAB](delta-9.md)
+- [Delta 9b: Sidebar layout on app activate/close](delta-9b.md)
 - [Delta 10: Multi-display support](delta-10.md)
 - [Delta 11: State file](delta-11.md)
 - [Delta 12: Polish](delta-12.md)

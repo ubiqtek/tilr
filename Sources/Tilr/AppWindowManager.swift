@@ -2,6 +2,8 @@ import AppKit
 import Combine
 import OSLog
 
+// MARK: - AppWindowManager
+
 /// Output adaptor — subscribes to SpaceService.onSpaceActivated and
 /// hides/shows running apps based on space membership.
 ///
@@ -147,19 +149,62 @@ final class AppWindowManager {
 
     // MARK: - Private
 
+    /// Helper to find which space contains a given bundle ID.
+    private func spaceContaining(bundleID: String) -> String? {
+        configStore.current.spaces
+            .first(where: { $0.value.apps.contains(bundleID) })?
+            .key
+    }
+
     private func handleAppActivation(notification: Notification) {
         // Ignore our own programmatic activations.
         guard !isTilrActivating else { return }
 
         guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
-              let bundleID = app.bundleIdentifier,
-              let spaceName = currentSpaceName,
+              let bundleID = app.bundleIdentifier
+        else { return }
+
+        // Guard against activating Tilr itself.
+        guard bundleID != Bundle.main.bundleIdentifier else { return }
+
+        // Cross-space branch: if the activated app belongs to a different space, switch to it.
+        if let targetSpace = spaceContaining(bundleID: bundleID),
+           targetSpace != service.activeSpace {
+            Logger.windows.info("follow-focus: '\(bundleID, privacy: .public)' lives in '\(targetSpace, privacy: .public)' — switching from '\(self.service.activeSpace ?? "none", privacy: .public)'")
+
+            isTilrActivating = true
+            activationResetWorkItem?.cancel()
+            let work = DispatchWorkItem { [weak self] in self?.isTilrActivating = false }
+            activationResetWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
+
+            // For fill-screen spaces, register the activated app as the fill-screen app
+            // BEFORE switching so handleSpaceActivated picks it up immediately.
+            let targetConfig = configStore.current
+            if targetConfig.spaces[targetSpace]?.layout?.type == .fillScreen {
+                fillScreenLastApp[targetSpace] = bundleID
+                Logger.windows.info("pre-registered fill-screen app for '\(targetSpace, privacy: .public)': \(bundleID, privacy: .public)")
+            }
+
+            service.switchToSpace(targetSpace, reason: .hotkey)
+            return
+        }
+
+        // From here on, work only with currentSpaceName.
+        guard let spaceName = currentSpaceName,
               let space = configStore.current.spaces[spaceName]
         else { return }
 
         // Fill-screen branch: remember the last-focused app for the space.
         if space.layout?.type == .fillScreen, space.apps.contains(bundleID) {
             if fillScreenLastApp[spaceName] != bundleID {
+                // Hide all other visible apps in this space before showing the new one.
+                let previousApp = fillScreenLastApp[spaceName]
+                if let prev = previousApp, prev != bundleID {
+                    Logger.windows.info("hiding previous fill-screen app '\(prev, privacy: .public)' in space '\(spaceName, privacy: .public)'")
+                    setAppHidden(bundleID: prev, hidden: true)
+                }
+
                 fillScreenLastApp[spaceName] = bundleID
                 Logger.windows.info("remembered foreground app for fill-screen '\(spaceName, privacy: .public)': \(bundleID, privacy: .public)")
             }

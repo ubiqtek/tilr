@@ -20,6 +20,28 @@ Read the KB docs before suggesting architecture or scope changes.
   `~/Library/Application Support/tilr/state.toml` (app-owned runtime state).
   Never write to the user config.
 
+## Logging and debugging
+
+Tilr uses a file-based logging system to track space switches, window placement,
+and layout operations. Logs are written to `~/.local/share/tilr/tilr.log` with
+automatic rolling at 5 MB.
+
+**Key log categories:** `[space]`, `[windows]`, `[layout]`, `[verify]`
+(most important for debugging window placement issues).
+
+**Debug markers:** Use `tilr debug-marker "<description>"` to write a visually
+distinct marker line to the log. Markers are useful for bracketing test
+scenarios and pinpointing log sections for analysis.
+
+**Debugging workflow:**
+1. `tilr debug-marker "TEST: before reproduction"`
+2. Reproduce the issue (e.g., press hotkey, move window).
+3. `tilr debug-marker "TEST: after reproduction"`
+4. `grep -A 50 "before reproduction" ~/.local/share/tilr/tilr.log`
+5. Look for `[verify:` lines — they show window placement attempts and outcomes.
+
+For detailed guide, see **`doc/arch/logging.md`**.
+
 ## Upstream reference
 
 The Hammerspoon Lua implementation is the behavioural spec for the full native
