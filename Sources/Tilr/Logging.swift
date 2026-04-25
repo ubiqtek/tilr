@@ -13,3 +13,8 @@ extension Logger {
     static let windows  = Logger(subsystem: subsystem, category: "windows")
     static let layout   = Logger(subsystem: subsystem, category: "layout")
 }
+
+// TODO: wire remaining TilrLogger.shared.log() calls for:
+//   SocketServer (socket errors/events), CommandHandler (config reload),
+//   MenuBarController, Layouts/SidebarLayout, Layouts/FillScreenLayout,
+//   Layouts/AXWindowHelper, Layouts/AXWindowFinder, Layouts/SidebarResizeObserver

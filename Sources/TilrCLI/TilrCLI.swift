@@ -7,7 +7,7 @@ struct Tilr: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "tilr",
         abstract: "Tilr CLI — query and control the Tilr menu bar app.",
-        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, Displays.self, ReloadConfig.self, System.self, Context.self, Doctor.self],
+        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, Displays.self, ReloadConfig.self, System.self, Context.self, Doctor.self, DebugMarker.self],
         defaultSubcommand: Status.self
     )
 }
@@ -697,6 +697,25 @@ struct Doctor: ParsableCommand {
     private func isRunning(_ pid: Int32) -> Bool {
         // kill(pid, 0) succeeds (returns 0) if the process exists
         return kill(pid, 0) == 0
+    }
+}
+
+// MARK: - DebugMarker
+
+struct DebugMarker: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        commandName: "debug-marker",
+        abstract: "Write a named marker to the Tilr log file for debugging."
+    )
+
+    @Argument(help: "Marker description, e.g. 'before BUG-6 repro'")
+    var description: String
+
+    func run() throws {
+        TilrLogger.shared.marker(description)
+        // TilrLogger writes are async through a serial queue; give it a moment to flush.
+        Thread.sleep(forTimeInterval: 0.1)
+        print("[tilr] marker written: \(description)")
     }
 }
 

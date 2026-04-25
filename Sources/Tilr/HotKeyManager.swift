@@ -21,8 +21,21 @@ final class HotKeyManager {
             .dropFirst()  // skip the initial value — already registered above
             .receive(on: DispatchQueue.main)
             .sink { [weak self] newConfig in
-                self?.reregister(config: newConfig)
+                // Only re-register if the hotkey-relevant parts of the config changed
+                // (space names/IDs or keyboard shortcut modifiers). App membership
+                // changes (e.g. moveCurrentApp) must not trigger re-registration.
+                guard let self, self.hotkeyStructureChanged(newConfig) else { return }
+                self.reregister(config: newConfig)
             }
+    }
+
+    private func hotkeyStructureChanged(_ newConfig: TilrConfig) -> Bool {
+        let old = configStore.current
+        guard old.keyboardShortcuts == newConfig.keyboardShortcuts else { return true }
+        // Compare space names and their IDs (the parts that affect hotkey bindings).
+        let oldSpaces = old.spaces.mapValues { $0.id }
+        let newSpaces = newConfig.spaces.mapValues { $0.id }
+        return oldSpaces != newSpaces
     }
 
     private func reregister(config: TilrConfig) {
@@ -56,6 +69,7 @@ final class HotKeyManager {
             }
             hotKeys.append(hotKey)
             Logger.hotkey.info("Registered \(config.keyboardShortcuts.switchToSpace, privacy: .public)+\(space.id, privacy: .public) for space '\(spaceName, privacy: .public)'")
+            TilrLogger.shared.log("Registered \(config.keyboardShortcuts.switchToSpace)+\(space.id) for space '\(spaceName)'", category: "hotkey")
         }
 
         let moveModifiers = parseModifiers(config.keyboardShortcuts.moveAppToSpace)

@@ -4,6 +4,7 @@ import OSLog
 struct FillScreenLayout: LayoutStrategy {
 
     func apply(name: String, space: SpaceDefinition, config: TilrConfig, screen: NSScreen, operation: OperationType) {
+        TilrLogger.shared.log("fill-screen apply: AX trusted=\(AXIsProcessTrusted()) operation=\(operation)", category: "layout")
         guard AXIsProcessTrusted() else {
             Logger.layout.info("layout 'fill-screen': AX permission not granted — skipping positioning")
             return
@@ -16,10 +17,12 @@ struct FillScreenLayout: LayoutStrategy {
             let runningApps = space.apps.filter { bundleID in
                 !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty
             }
+            TilrLogger.shared.log("fill-screen spaceSwitch: runningApps=\(runningApps) in space \(name) (space.apps=\(space.apps))", category: "layout")
             guard !runningApps.isEmpty else { return }
 
             for bundleID in runningApps {
-                setWindowFrame(bundleID: bundleID, frame: sf)
+                let result = setWindowFrame(bundleID: bundleID, frame: sf)
+                TilrLogger.shared.log("fill-screen setWindowFrame '\(bundleID)' result=\(result)", category: "layout")
             }
 
             let names = runningApps.map { $0.components(separatedBy: ".").last ?? $0 }.joined(separator: ", ")

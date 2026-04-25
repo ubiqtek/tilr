@@ -28,6 +28,9 @@ logs-capture:
     echo "capturing to .tilr-logs/session.log — Ctrl-C to stop"
     /usr/bin/log stream --predicate 'subsystem == "io.ubiqtek.tilr"' --level debug --style compact | awk '$1 ~ /^[0-9]{4}-/ { ts=$2; sub(/\+[0-9]+$/, "", ts); sub(/\.[0-9]+$/, "", ts); abbr=$3; type=(abbr=="I"?"Info":abbr=="Db"?"Debug":abbr=="E"?"Error":abbr=="Fa"?"Fault":"Default"); msg=""; for(i=5;i<=NF;i++) msg=msg (i==5?"":OFS) $i; cat=""; rest=msg; if (match(msg, /\[[^]]+\] /)) { cat=substr(msg,RSTART+1,RLENGTH-3); rest=substr(msg,RSTART+RLENGTH) }; if (length(cat)>30) cat=substr(cat,1,30); printf "%s %-8s %-30s %s\n", ts, type, cat, rest; fflush() }' >> .tilr-logs/session.log
 
+debug-tail:
+    tail -f ~/.local/share/tilr/tilr.log
+
 run-dev: build
     #!/usr/bin/env bash
     set -euo pipefail

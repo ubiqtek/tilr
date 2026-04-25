@@ -35,6 +35,7 @@ final class SpaceService {
     /// Switch to a named space. Logs, updates state, fires onSpaceActivated.
     func switchToSpace(_ name: String, reason: ActivationReason) {
         Logger.space.info("switching to '\(name, privacy: .public)' (\(reason.logDescription, privacy: .public))")
+        TilrLogger.shared.log("switching to '\(name)' (\(reason.logDescription))", category: "space")
         activeSpace = name
         onSpaceActivated.send((name: name, reason: reason))
     }
@@ -50,6 +51,7 @@ final class SpaceService {
         let config = configStore.current
         guard let ref = config.displays["1"]?.defaultSpace else {
             Logger.space.info("applyConfig(\(reason.logDescription, privacy: .public)) — no default space for display 1")
+            TilrLogger.shared.log("applyConfig(\(reason.logDescription)) — no default space for display 1", category: "space")
             onNotification.send("↺ Config")
             return
         }
@@ -63,11 +65,13 @@ final class SpaceService {
 
         guard let name = spaceName else {
             Logger.space.warning("applyConfig: default space '\(ref, privacy: .public)' not found in config")
+            TilrLogger.shared.log("applyConfig: default space '\(ref)' not found in config", category: "space")
             onNotification.send("↺ Config")
             return
         }
 
         Logger.space.info("activating '\(name, privacy: .public)' (\(reason.logDescription, privacy: .public))")
+        TilrLogger.shared.log("activating '\(name)' (\(reason.logDescription))", category: "space")
         activeSpace = name
         onSpaceActivated.send((name: name, reason: reason))
     }

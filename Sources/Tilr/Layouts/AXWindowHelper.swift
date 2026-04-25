@@ -7,6 +7,7 @@ import OSLog
 func setWindowFrame(bundleID: String, frame: CGRect) -> Bool {
     guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first else {
         Logger.layout.info("AX: app '\(bundleID, privacy: .public)' not running — skipping")
+        TilrLogger.shared.log("setWindowFrame: '\(bundleID)' not running", category: "layout")
         return false
     }
 
@@ -14,6 +15,7 @@ func setWindowFrame(bundleID: String, frame: CGRect) -> Bool {
 
     guard let axWindow = contentWindow(forApp: axApp, bundleID: bundleID) else {
         Logger.layout.info("AX: no content window for '\(bundleID, privacy: .public)' — skipping")
+        TilrLogger.shared.log("setWindowFrame: no content window for '\(bundleID)'", category: "layout")
         return false
     }
     Logger.layout.info("AX: setting '\(bundleID, privacy: .public)' to x=\(frame.origin.x) y=\(frame.origin.y) w=\(frame.size.width) h=\(frame.size.height)")
@@ -62,6 +64,7 @@ func setWindowFrame(bundleID: String, frame: CGRect) -> Bool {
         Logger.layout.info("AX: post-set frame for '\(bundleID, privacy: .public)' unreadable (pos=\(posReadResult.rawValue, privacy: .public), size=\(sizeReadResult.rawValue, privacy: .public))")
     }
 
+    TilrLogger.shared.log("setWindowFrame: '\(bundleID)' pos=\(posResult.rawValue) size=\(sizeResult1.rawValue)", category: "layout")
     return posResult == .success && sizeResult1 == .success
 }
 

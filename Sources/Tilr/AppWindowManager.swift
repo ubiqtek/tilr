@@ -82,6 +82,7 @@ final class AppWindowManager {
 
         let appName = NSWorkspace.shared.frontmostApplication?.localizedName ?? bundleID
         Logger.windows.info("moved '\(appName, privacy: .public)' from '\(sourceName ?? "none", privacy: .public)' to '\(targetName, privacy: .public)'")
+        TilrLogger.shared.log("moved '\(appName)' from '\(sourceName ?? "none")' to '\(targetName)'", category: "windows")
 
         let operation = OperationType.windowMove(
             movedBundleID: bundleID,
@@ -89,21 +90,32 @@ final class AppWindowManager {
             targetSpace: targetName
         )
 
-        pendingMoveInto = (targetSpace: targetName, movedBundleID: bundleID)
-        service.switchToSpace(targetName, reason: .hotkey)
+        let isFillScreen = config.spaces[targetName]?.layout?.type == .fillScreen
 
-        let screen = NSScreen.main ?? NSScreen.screens[0]
-        let targetSize: CGSize = {
-            if let space = config.spaces[targetName], space.layout?.type == .sidebar {
-                return sidebarLayout.frame(for: bundleID, in: space, spaceName: targetName, screen: screen).size
+        if isFillScreen {
+            // For fill-screen targets, register the moved app as the fill-screen app
+            // BEFORE switching spaces so handleSpaceActivated picks it up immediately.
+            // The standard handleSpaceActivated path handles show/hide/layout with its
+            // own 200ms settle delay — no second layout apply needed.
+            fillScreenLastApp[targetName] = bundleID
+            service.switchToSpace(targetName, reason: .hotkey)
+        } else {
+            pendingMoveInto = (targetSpace: targetName, movedBundleID: bundleID)
+            service.switchToSpace(targetName, reason: .hotkey)
+
+            let screen = NSScreen.main ?? NSScreen.screens[0]
+            let targetSize: CGSize = {
+                if let space = config.spaces[targetName], space.layout?.type == .sidebar {
+                    return sidebarLayout.frame(for: bundleID, in: space, spaceName: targetName, screen: screen).size
+                }
+                return screen.frame.size
+            }()
+
+            retryUntilWindowMatches(bundleID: bundleID, targetSize: targetSize) { [weak self] in
+                guard let self else { return }
+                let currentConfig = self.configStore.current
+                self.applyLayout(name: targetName, config: currentConfig, operation: operation)
             }
-            return screen.frame.size
-        }()
-
-        retryUntilWindowMatches(bundleID: bundleID, targetSize: targetSize) { [weak self] in
-            guard let self else { return }
-            let currentConfig = self.configStore.current
-            self.applyLayout(name: targetName, config: currentConfig, operation: operation)
         }
 
         // Focus the moved app after layout.apply returns (small delay to let AX settle).
@@ -264,6 +276,7 @@ final class AppWindowManager {
         Logger.windows.info(
             "applying space '\(name, privacy: .public)': showing \(showingNames, privacy: .public), hiding \(hidingNames, privacy: .public)"
         )
+        TilrLogger.shared.log("applying space '\(name)': showing \(showingNames), hiding \(hidingNames)", category: "windows")
 
         // Show the visible apps first — so macOS has a foreground target before
         // we hide the old space's foreground app. Matches Hammerspoon's ordering.
@@ -310,6 +323,15 @@ final class AppWindowManager {
             }
 
             self.applyLayout(name: name, config: config)
+
+            if space?.layout?.type == .fillScreen, let targetBundleID = activateBundleID {
+                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let targetSize = screen.frame.size
+                retryUntilWindowMatches(bundleID: targetBundleID, targetSize: targetSize) { [weak self] in
+                    guard let self else { return }
+                    self.applyLayout(name: name, config: config)
+                }
+            }
         }
     }
 

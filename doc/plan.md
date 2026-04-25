@@ -15,12 +15,12 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 0–5b | Core infrastructure | ✅ | 2026-04-18 |
 | 6 | App visibility | ✅ | 2026-04-19 |
 | 7 | App layout | ✅ | 2026-04-20 |
-| 8 | Moving apps to a space | ⬜ | — |
+| 8 | Moving apps to a space | 🟡 | — |
 | 9 | State file | ⬜ | — |
 | 10 | Polish | ⬜ | — |
-| 11 | Follow focus on CMD-TAB | ⬜ | — |
+| 11 | Follow focus on CMD-TAB | 🟡 | — |
 
-**Current focus:** Delta 8 — Moving apps to a space
+**Current focus:** Delta 8 — Moving apps to a space (bug fixes before marking done)
 
 ---
 
@@ -578,18 +578,22 @@ When the user drags the edge of the main window or a sidebar window in a `sideba
 **Goal:** Hotkey (opt+shift+id) moves the currently focused app from its current space into the target space, at runtime. In-memory only — no config write.
 
 **Subtasks:**
-- [ ] Bind `moveAppToSpace` modifier + space id hotkeys (mirrors switch hotkeys)
-- [ ] On trigger: identify frontmost app's bundle ID
-- [ ] Remove bundle ID from its current space's `apps` list (in-memory)
-- [ ] Add bundle ID to the target space's `apps` list (in-memory)
-- [ ] Log the move; no config save
+- [x] Bind `moveAppToSpace` modifier + space id hotkeys (mirrors switch hotkeys)
+- [x] On trigger: identify frontmost app's bundle ID
+- [x] Remove bundle ID from its current space's `apps` list (in-memory)
+- [x] Add bundle ID to the target space's `apps` list (in-memory)
+- [x] Log the move; no config save
 
 **Verification:**
-- [ ] Focused app moves to target space when opt+shift+id pressed
-- [ ] App is hidden/shown correctly on next space switch
-- [ ] Original space no longer manages the moved app
+- [x] Focused app moves to target space when opt+shift+id pressed
+- [x] App is hidden/shown correctly on next space switch
+- [x] Original space no longer manages the moved app
 
 **Notes:**
+
+**Follow-up tasks:**
+- **FillScreenLayout cleanup:** The `.spaceSwitch` case frames ALL running apps in the space, not just the visible one. Should only frame `visibleApps` (the single fill-screen target). Hidden apps like Chrome get silent AX frames applied unnecessarily.
+- **Try lowering retryUntilWindowMatches delay for fill-screen:** Currently `firstCheckAfter: 0.3` (300ms). Try 100ms to make the resize feel snappier. The window may settle faster than 300ms in most cases.
 
 ---
 
@@ -599,17 +603,31 @@ When the user drags the edge of the main window or a sidebar window in a `sideba
 in a different space than the currently active one, automatically switch to
 that app's space so the rest of its space's apps come with it.
 
-- [ ] Register an `NSWorkspace.didActivateApplicationNotification` observer
-- [ ] On activation: look up the app's bundle ID in `config.spaces`,
+- [x] Register an `NSWorkspace.didActivateApplicationNotification` observer
+- [x] On activation: look up the app's bundle ID in `config.spaces`,
       find the space that contains it, call `SpaceService.activate(name:)`
-- [ ] Guard against recursion: while we're activating a space, ignore
+- [x] Guard against recursion: while we're activating a space, ignore
       activation events triggered by our own `app.activate()` call (matches
       Hammerspoon's `activatingSpace` re-entrancy flag with a ~0.5s window)
-- [ ] Skip when the app belongs to the current active space (no-op)
-- [ ] Skip when the app belongs to no configured space
+- [x] Skip when the app belongs to the current active space (no-op)
+- [x] Skip when the app belongs to no configured space
+- [x] **Extended:** sidebar-specific CMD+TAB behaviour — when activating a sidebar-slot app, resize it into its frame and hide the previous slot app; reattaches drag observer
+- [ ] **Pending:** cross-space switching when activating an app in a different space
 
 **Reference:** Hammerspoon `focusWatcher` in
 `~/projects/dotfiles/home/hammerspoon/init.lua` (~line 652).
+
+---
+
+## Known bugs (as of 2026-04-23)
+
+- ~~**BUG-3**: Zen fill-screen → sidebar snap-back~~ — no longer observed, likely resolved
+- ~~**BUG-4**: Zen not filling screen when moved to Reference~~ — no longer observed, likely resolved
+- **BUG-5**: CMD+TAB sidebar handoff has ~200ms animation lag (AX readiness delay after unhide)
+- ~~**BUG-6**: Moving Marq to Reference briefly shows full screen then all windows hide~~ — **Fixed (2026-04-23)**
+  - Root cause: `handleSpaceActivated` fill-screen branch ignored `pendingMoveInto`/move override, showing the wrong app (previous `fillScreenLastApp`) instead of the moved app. Then `retryUntilWindowMatches` tried to frame the moved app while it was hidden → flash.
+  - Fix: (a) Set `fillScreenLastApp[targetName] = bundleID` before `switchToSpace` so the standard path picks up the moved app. (b) Wire `retryUntilWindowMatches` in `handleSpaceActivated` for fill-screen targets so the resize retries until the window actually settles (~360ms in practice).
+  - Also fixed: hotkey re-registration on every move (was subscribing to `configStore.$current` without filtering for hotkey-relevant changes).
 
 ---
 

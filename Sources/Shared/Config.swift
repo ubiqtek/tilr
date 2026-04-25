@@ -82,7 +82,7 @@ public struct PopupConfig: Codable {
     }
 }
 
-public struct KeyboardShortcuts: Codable {
+public struct KeyboardShortcuts: Codable, Equatable {
     public var switchToSpace: String
     public var moveAppToSpace: String
 

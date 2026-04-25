@@ -15,6 +15,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Logger.app.info("Tilr starting")
+        TilrLogger.shared.log("Tilr starting", category: "app")
 
         let axTrusted: Bool
         if configStore.current.accessibility.promptOnLaunch {
@@ -24,9 +25,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             axTrusted = AXIsProcessTrusted()
             if !axTrusted {
                 Logger.windows.warning("AX permission not granted — grant access in System Settings → Privacy & Security → Accessibility")
+                TilrLogger.shared.log("AX permission not granted — grant access in System Settings → Privacy & Security → Accessibility", category: "windows")
             }
         }
         Logger.windows.info("AX trusted: \(axTrusted, privacy: .public)")
+        TilrLogger.shared.log("AX trusted: \(axTrusted)", category: "windows")
 
         let svc = SpaceService(configStore: configStore)
         self.service = svc
@@ -52,6 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         Logger.app.info("Tilr shutting down")
+        TilrLogger.shared.log("Tilr shutting down", category: "app")
         socketServer?.stop()
         menuBarController = nil
         hotKeyManager = nil
