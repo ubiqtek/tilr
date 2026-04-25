@@ -127,9 +127,8 @@ func retryUntilWindowMatches(
     bundleID: String,
     targetSize: CGSize,
     tolerance: CGFloat = 2.0,
-    firstCheckAfter: TimeInterval = 0.3,
-    retryInterval: TimeInterval = 0.2,
-    maxAttempts: Int = 4,
+    firstCheckAfter: TimeInterval = 0.01,
+    maxAttempts: Int = 8,
     reapply: @escaping () -> Void
 ) {
     func matches(_ size: CGSize?) -> Bool {
@@ -152,8 +151,10 @@ func retryUntilWindowMatches(
                 Logger.layout.info("verify: '\(bundleID, privacy: .public)' gave up after \(n - 1, privacy: .public) attempts (want w=\(targetSize.width, privacy: .public), got w=\(ws, privacy: .public))")
                 return
             }
+            let retryDelays: [TimeInterval] = [0.02, 0.05, 0.1, 0.2, 0.2, 0.2, 0.2]
+            let delay = n <= retryDelays.count ? retryDelays[n - 1] : retryDelays.last!
             reapply()
-            DispatchQueue.main.asyncAfter(deadline: .now() + retryInterval) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 let current = readWindowSize(bundleID: bundleID)
                 if matches(current) {
                     let w = current!.width
