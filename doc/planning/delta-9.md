@@ -13,7 +13,7 @@ that app's space so the rest of its space's apps come with it.
 - [x] Skip when the app belongs to the current active space (no-op)
 - [x] Skip when the app belongs to no configured space
 - [x] **Extended:** sidebar-specific CMD+TAB behaviour — when activating a sidebar-slot app, resize it into its frame and hide the previous slot app; reattaches drag observer
-- [x] **Pending:** cross-space switching when activating an app in a different space
+- [x] **Pending:** cross-space switching when activating an app in a different space — completed 2026-04-25
 
 **Reference:** Hammerspoon `focusWatcher` in
 `~/projects/dotfiles/home/hammerspoon/init.lua` (~line 652).
@@ -131,3 +131,17 @@ configured space, switch to that space.
     activate the space on the *display* hosting that app's window) lands
     with Delta 10. The single-display assumption keeps step 4's
     `service.activeSpace` check correct for now.
+
+---
+
+## What we learned
+
+**Race conditions discovered and fixed (2026-04-25):**
+
+1. **Generation-token pattern** — AppWindowManager now maintains a UInt64 generation counter (incremented at the top of `handleSpaceActivated`). All asyncAfter blocks capture the current generation; if it has changed by the time the block fires, the block returns early with a log line. Eliminates stale layout work from rapid space switches.
+
+2. **`isTilrActivating` timing fix** — was set inside the 200ms-delayed asyncAfter (too late). When hiding the previously-frontmost app, macOS auto-promotes another visible app, firing our `handleAppActivation` with the guard still false, causing recursive space switches. Fix: set the flag at the very START of `handleSpaceActivated`, with a 0.6s reset.
+
+3. **`.receive(on:)` removal** — SpaceService's onSpaceActivated subscriber had a `.receive(on:)` hop to the main queue. This queued `handleSpaceActivated` to the next runloop tick, breaking the generation-token capture order in `moveCurrentApp`. Fix: run the handler synchronously within the subscription's `send()` call.
+
+See `doc/arch/async-and-races.md` for the canonical reference and implementation detail.

@@ -17,12 +17,12 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 7 | App layout | ✅ | 2026-04-20 |
 | 8 | Moving apps to a space | ✅ | 2026-04-25 |
 | 9 | Follow focus on CMD-TAB | ✅ | 2026-04-25 |
-| 9b | Sidebar layout on app activate/close | ⬜ | — |
-| 10 | Multi-display support | ⬜ | — |
-| 11 | State file | ⬜ | — |
-| 12 | Polish | ⬜ | — |
+| 10 | Sidebar layout on app activate/close | ⬜ | — |
+| 11 | Multi-display support | ⬜ | — |
+| 12 | State file | ⬜ | — |
+| 13 | Polish | ⬜ | — |
 
-**Current focus:** Delta 9b — Sidebar layout on app activate/close
+**Current focus:** Delta 10 — Sidebar layout on app activate/close
 
 ---
 
@@ -47,14 +47,14 @@ lands — check boxes, add a dated note, link the commit/PR.
 - [Delta 7: App layout](delta-7.md)
 - [Delta 8: Moving apps to a space](delta-8.md)
 - [Delta 9: Follow focus on CMD-TAB](delta-9.md)
-- [Delta 9b: Sidebar layout on app activate/close](delta-9b.md)
-- [Delta 10: Multi-display support](delta-10.md)
-- [Delta 11: State file](delta-11.md)
-- [Delta 12: Polish](delta-12.md)
+- [Delta 10: Sidebar layout on app activate/close](delta-10.md)
+- [Delta 11: Multi-display support](delta-11.md)
+- [Delta 12: State file](delta-12.md)
+- [Delta 13: Polish](delta-13.md)
 
 ---
 
-## Known bugs (as of 2026-04-23)
+## Known bugs (as of 2026-04-25)
 
 - ~~**BUG-3**: Zen fill-screen → sidebar snap-back~~ — no longer observed, likely resolved
 - ~~**BUG-4**: Zen not filling screen when moved to Reference~~ — no longer observed, likely resolved
@@ -63,6 +63,12 @@ lands — check boxes, add a dated note, link the commit/PR.
   - Root cause: `handleSpaceActivated` fill-screen branch ignored `pendingMoveInto`/move override, showing the wrong app (previous `fillScreenLastApp`) instead of the moved app. Then `retryUntilWindowMatches` tried to frame the moved app while it was hidden → flash.
   - Fix: (a) Set `fillScreenLastApp[targetName] = bundleID` before `switchToSpace` so the standard path picks up the moved app. (b) Wire `retryUntilWindowMatches` in `handleSpaceActivated` for fill-screen targets so the resize retries until the window actually settles (~360ms in practice).
   - Also fixed: hotkey re-registration on every move (was subscribing to `configStore.$current` without filtering for hotkey-relevant changes).
+- ~~**BUG-7**: Cross-space follow-focus recursed into source space~~ — **Fixed (2026-04-25)**
+  - Root cause: when `handleSpaceActivated` hides the previously-frontmost app, macOS auto-promotes another visible app, firing our `handleAppActivation`. With `isTilrActivating` guard still false, the cross-space follow-focus would recursively switch back to the source space.
+  - Fix: set `isTilrActivating = true` at the very START of `handleSpaceActivated` (not inside the delayed asyncAfter), with a 0.6s reset. Captures the guard correctly for all activation events triggered by subsequent `app.activate()` calls.
+- ~~**BUG-8**: moveCurrentApp's deferred layout never ran after Delta 9~~ — **Fixed (2026-04-25)**
+  - Root cause: removed `.receive(on:)` hop from SpaceService's onSpaceActivated subscriber (see decision log). That hop was queuing `handleSpaceActivated` to the next runloop tick, breaking the capture order of the generation token in `moveCurrentApp`.
+  - Fix: run `handleSpaceActivated` synchronously within the subscription's `send()` call. Adjusted `moveCurrentApp` gen capture position to AFTER switchToSpace (now matches what `handleSpaceActivated` set).
 
 ---
 
@@ -70,3 +76,6 @@ lands — check boxes, add a dated note, link the commit/PR.
 
 Record any plan deviations here with a date and one-line reason. Link to an
 ADR in `doc/adr/` if the change is architectural.
+
+- **2026-04-25:** Adopted generation-token pattern (UInt64 counter in AppWindowManager, captured by asyncAfter blocks, guards against stale work from rapid space switches). See `doc/arch/async-and-races.md`.
+- **2026-04-25:** Removed `.receive(on:)` hop from SpaceService's onSpaceActivated subscriber; handlers must run synchronously inside `send()` for generation-token capture order to be correct. See `doc/arch/async-and-races.md`.
