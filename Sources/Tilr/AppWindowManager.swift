@@ -28,6 +28,7 @@ final class AppWindowManager {
     private var isTilrActivating = false
     private var activationResetWorkItem: DispatchWorkItem?
     private var activationObserverToken: NSObjectProtocol?
+    private var activationGeneration: UInt64 = 0
 
     init(configStore: ConfigStore, service: SpaceService) {
         self.configStore = configStore
@@ -94,6 +95,11 @@ final class AppWindowManager {
 
         let isFillScreen = config.spaces[targetName]?.layout?.type == .fillScreen
 
+        // Capture generation before switchToSpace, so we can detect if a newer activation
+        // supersedes this moveCurrentApp's asyncAfter work.
+        activationGeneration &+= 1
+        let gen = activationGeneration
+
         if isFillScreen {
             // For fill-screen targets, register the moved app as the fill-screen app
             // BEFORE switching spaces so handleSpaceActivated picks it up immediately.
@@ -114,7 +120,7 @@ final class AppWindowManager {
             }()
 
             retryUntilWindowMatches(bundleID: bundleID, targetSize: targetSize) { [weak self] in
-                guard let self else { return }
+                guard let self, self.activationGeneration == gen else { return }
                 let currentConfig = self.configStore.current
                 self.applyLayout(name: targetName, config: currentConfig, operation: operation)
             }
@@ -124,7 +130,7 @@ final class AppWindowManager {
         // Also set previousSidebarSlotApp here — AFTER handleSpaceActivated has run and
         // reset it to nil, so CMD+TAB knows which slot app is currently visible.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
-            guard let self else { return }
+            guard let self, self.activationGeneration == gen else { return }
             let currentConfig = self.configStore.current
             if let space = currentConfig.spaces[targetName], space.layout?.type == .sidebar,
                bundleID != space.layout?.main {
@@ -257,11 +263,29 @@ final class AppWindowManager {
     }
 
     private func handleSpaceActivated(name: String) {
+        activationGeneration &+= 1
+        let gen = activationGeneration
+
+        // Suppress follow-focus during the entire space activation flow. macOS will
+        // auto-promote a new frontmost app when we hide the current one, which would
+        // otherwise trigger our cross-space follow-focus and recurse back. The reset
+        // covers the 200ms layout delay + ~500ms settle window.
+        isTilrActivating = true
+        activationResetWorkItem?.cancel()
+        let resetWork = DispatchWorkItem { [weak self] in self?.isTilrActivating = false }
+        activationResetWorkItem = resetWork
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: resetWork)
+
         currentSpaceName = name
         previousSidebarSlotApp = nil
 
         let config = configStore.current
         let space = config.spaces[name]
+
+        // Tear down sidebar observer if new space is not sidebar layout
+        if space?.layout?.type != .sidebar {
+            sidebarLayout.stopObserving()
+        }
 
         // Resolve the target app for fill-screen layouts:
         // prefer the user's last-focused app (if still in the space's apps),
@@ -349,7 +373,10 @@ final class AppWindowManager {
         // crowd out pending AppleEvents and cause intermittent stuck apps. This
         // matches the Hammerspoon reference implementation's `hs.timer.doAfter(0.2)`.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-            guard let self else { return }
+            guard let self, self.activationGeneration == gen else {
+                Logger.windows.info("space activation \(gen, privacy: .public) stale (now \(self?.activationGeneration ?? 0, privacy: .public)) — dropping queued layout for '\(name, privacy: .public)'")
+                return
+            }
 
             if let bundleID = activateBundleID {
                 if let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first {
@@ -373,7 +400,7 @@ final class AppWindowManager {
                 let screen = NSScreen.main ?? NSScreen.screens[0]
                 let targetSize = screen.frame.size
                 retryUntilWindowMatches(bundleID: targetBundleID, targetSize: targetSize) { [weak self] in
-                    guard let self else { return }
+                    guard let self, self.activationGeneration == gen else { return }
                     self.applyLayout(name: name, config: config)
                 }
             }
