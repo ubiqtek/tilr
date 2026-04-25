@@ -7,10 +7,11 @@ This document has been refactored into focused sub-documents for clarity. Use th
 ## Quick navigation
 
 ### For understanding how space switching works
-- **[Space Switching](./space-switching.md)** — How activation works, the one-code-path invariant, and startup/hotkey/CLI sequences
+- **[Space Switching](./space-switching.md)** — How activation works, the one-code-path invariant, startup/hotkey/CLI sequences, and generation tokens for guarding deferred work
 
 ### For understanding visibility and timing
 - **[Window Visibility](./window-visibility.md)** — Hide/unhide timing, AX inaccessibility, and why we defer layout apply
+- **[Async & Races](./async-and-races.md)** — Patterns for reliable deferred work (generation tokens, guard suppression, Combine gotchas). **Read this before touching async code.**
 
 ### For understanding positioning
 - **[Layout Strategies](./layout-strategies.md)** — Sidebar layout (main + sidebars), fill-screen layout, ratio computation, and AX graceful degradation
@@ -75,12 +76,12 @@ INPUT ADAPTERS (translate user actions → domain commands)
 
 **Summary:** User presses `cmd+opt+1` → HotKeyManager calls `SpaceService.switchToSpace("Coding")` → Service updates state and publishes `onSpaceActivated` event → AppWindowManager hides/shows apps and applies layout → UserNotifier shows popup → MenuBarController updates title.
 
-**For detailed sequence, timing decisions, and edge cases, see [Space Switching](./space-switching.md).**
+**For detailed sequence, timing decisions, generation tokens, and edge cases, see [Space Switching](./space-switching.md).**
 
 **Key timing:**
 - T=0: Hotkey → space switch command
 - T=0: Service updates state and broadcasts event (sync)
-- T=200ms: Layout apply (after hide/unhide settle for AX readiness)
+- T=100ms: Layout apply (after hide/unhide settle for AX readiness; may need 200ms for slow apps)
 - T=350ms: Popup shows (after layout, so windows are positioned first)
 
 ---
@@ -261,10 +262,16 @@ See [Hammerspoon Comparison](./hammerspoon-comparison.md#implications-for-curren
 
 ## Known issues & open questions
 
-**Current bugs:**
+**Recent fixes (2026-04-25):**
+
+- **Generation tokens** — Added `activationGeneration` counter to guard against rapid hotkey presses leaving windows mis-positioned. See [Space Switching](./space-switching.md) and [Async & Races](./async-and-races.md).
+- **`isTilrActivating` timing** — Fixed by setting guard at START of `handleSpaceActivated` (before hide/show), not inside the deferred activate block. Prevents macOS auto-promotion from triggering recursive cross-space switches. See [Cross-Space Switching (Delta 9)](./cross-space-switching.md).
+- **Layout delay tightened** — 200ms → 100ms for snappier response; revert to 200ms if AX failures appear in logs. See [Async & Races](./async-and-races.md#layout-timing-100ms-vs-200ms).
+- **Removed Combine `.receive(on:)`** — Was queuing subscribers async even from main, breaking generation token capture order. Critical lesson: never re-add it. See [Async & Races](./async-and-races.md#pattern-3-receiveon-is-not-free--the-critical-combine-gotcha).
+
+**Remaining investigation (non-blocking):**
 
 - **BUG-5:** CMD+TAB sidebar handoff has ~200ms lag (AX readiness delay). See [Window Visibility](./window-visibility.md).
-- **BUG-6:** Fill-screen move flash (fixed in recent commit; see [Move Window to Space](./move-window-to-space-flow.md)).
 
 **Future work:**
 

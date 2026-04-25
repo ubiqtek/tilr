@@ -50,9 +50,9 @@ INPUT ADAPTERS (translate user actions → domain commands)
 
 ### Foundation
 
-- **[Space Switching](./space-switching.md)** — How space activation works. All space changes funnel through `SpaceService.switchToSpace()`. Covers startup, hotkey press, CLI, and config reload activation sequences.
+- **[Space Switching](./space-switching.md)** — How space activation works. All space changes funnel through `SpaceService.switchToSpace()`. Covers startup, hotkey press, CLI, and config reload activation sequences. Explains the generation token system for guarding deferred layout against rapid activations.
 
-- **[Window Visibility](./window-visibility.md)** — Hide/unhide timing and AX inaccessibility. Explains why layout is deferred ~200ms post-unhide and how sidebar-move pre-resize works around AX races.
+- **[Window Visibility](./window-visibility.md)** — Hide/unhide timing and AX inaccessibility. Explains why layout is deferred ~100ms post-unhide and how sidebar-move pre-resize works around AX races.
 
 - **[State & Config](./state-and-config.md)** — Two-file model (user config, app state), hot-reload, persistence, activation reasons, and future plans for persistent ratios and per-display state.
 
@@ -64,7 +64,9 @@ INPUT ADAPTERS (translate user actions → domain commands)
 
 ### Advanced
 
-- **[Cross-Space Switching (Delta 9)](./cross-space-switching.md)** — CMD+TAB follow-focus: when the user switches to an app in a different space, automatically activate that space. Covers app-to-space lookup, recursion guard, pre-registration for fill-screen apps, and logging.
+- **[Async & Races](./async-and-races.md)** — Patterns for reliable deferred work: generation tokens (guard against stale async), `isTilrActivating` guard (suppress re-entrance), Combine `.receive(on:)` gotcha, layout timing trade-offs, and retry loop strategies. Foundational reading for async work in Tilr.
+
+- **[Cross-Space Switching (Delta 9)](./cross-space-switching.md)** — CMD+TAB follow-focus: when the user switches to an app in a different space, automatically activate that space. Covers app-to-space lookup, recursion guard (with critical timing fix), pre-registration for fill-screen apps, and logging.
 
 - **[macOS Windowing Primitives](./macos-windowing.md)** — Reference for NSRunningApplication, NSWindow, NSWorkspace, NSScreen, and the Accessibility Framework. Known gotchas (AX is fire-and-forget, hidden apps are inaccessible, observer races, permission model) and how Tilr works around them.
 
@@ -147,7 +149,7 @@ macOS provides no public `moveAppToSpace(app, space)` API. Tilr's workaround: hi
 
 ### Careful timing for AX races
 
-AX is fire-and-forget and window-inaccessible-when-hidden. This forces careful sequencing: defer layout apply ~200ms post-unhide for AX readiness, pre-resize sidebar apps before hiding, add 200ms delay on activation-time framing. These are not bugs; they're adaptations to real AX semantics that Hammerspoon's Lua wrapper hid.
+AX is fire-and-forget and window-inaccessible-when-hidden. This forces careful sequencing: defer layout apply ~100ms post-unhide for AX readiness (with note that slow-settling apps may need 200ms), pre-resize sidebar apps before hiding, add 200ms delay on activation-time framing. These are not bugs; they're adaptations to real AX semantics that Hammerspoon's Lua wrapper hid. See [Async & Races](./async-and-races.md) for tuning guidance.
 
 ### Surgical config reload
 
@@ -171,9 +173,10 @@ Sidebar ratios are remembered during the session but not persisted to disk. Delt
 
 ## Getting started with the codebase
 
-1. Read [Space Switching](./space-switching.md) to understand the one-code-path invariant.
+1. Read [Space Switching](./space-switching.md) to understand the one-code-path invariant and generation tokens.
 2. Read [Window Visibility](./window-visibility.md) to understand hide/unhide timing.
 3. Read [State & Config](./state-and-config.md) to understand persistence and hot-reload.
-4. Skim [Layout Strategies](./layout-strategies.md) and [Sidebar Drag-to-Resize](./sidebar-drag-resize.md) for positioning and observers.
-5. For Delta 9 work, read [Cross-Space Switching (Delta 9)](./cross-space-switching.md) and [macOS Windowing Primitives](./macos-windowing.md).
-6. For bug investigation, search logs using patterns from [Logging](./logging.md) and compare against [Hammerspoon POC Comparison](./app-architecture.md#hammerspoon-poc-api-comparison).
+4. Read [Async & Races](./async-and-races.md) **before touching any async code** — covers generation tokens, guard patterns, and Combine gotchas.
+5. Skim [Layout Strategies](./layout-strategies.md) and [Sidebar Drag-to-Resize](./sidebar-drag-resize.md) for positioning and observers.
+6. For Delta 9 work, read [Cross-Space Switching (Delta 9)](./cross-space-switching.md) and [macOS Windowing Primitives](./macos-windowing.md).
+7. For bug investigation, search logs using patterns from [Logging](./logging.md) and compare against [Hammerspoon POC Comparison](./app-architecture.md#hammerspoon-poc-api-comparison).

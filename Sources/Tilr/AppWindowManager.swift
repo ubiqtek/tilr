@@ -35,7 +35,6 @@ final class AppWindowManager {
         self.service = service
 
         service.onSpaceActivated
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] event in
                 self?.handleSpaceActivated(name: event.name)
             }
@@ -95,11 +94,6 @@ final class AppWindowManager {
 
         let isFillScreen = config.spaces[targetName]?.layout?.type == .fillScreen
 
-        // Capture generation before switchToSpace, so we can detect if a newer activation
-        // supersedes this moveCurrentApp's asyncAfter work.
-        activationGeneration &+= 1
-        let gen = activationGeneration
-
         if isFillScreen {
             // For fill-screen targets, register the moved app as the fill-screen app
             // BEFORE switching spaces so handleSpaceActivated picks it up immediately.
@@ -110,6 +104,10 @@ final class AppWindowManager {
         } else {
             pendingMoveInto = (targetSpace: targetName, movedBundleID: bundleID)
             service.switchToSpace(targetName, reason: .hotkey)
+
+            // Capture generation after switchToSpace; handleSpaceActivated has incremented
+            // it synchronously. Used by the retry callback to detect supersession.
+            let gen = activationGeneration
 
             let screen = NSScreen.main ?? NSScreen.screens[0]
             let targetSize: CGSize = {
@@ -125,6 +123,10 @@ final class AppWindowManager {
                 self.applyLayout(name: targetName, config: currentConfig, operation: operation)
             }
         }
+
+        // Capture generation after switchToSpace; handleSpaceActivated has incremented
+        // it synchronously. Used by the focus block below to detect supersession.
+        let gen = activationGeneration
 
         // Focus the moved app after layout.apply returns (small delay to let AX settle).
         // Also set previousSidebarSlotApp here — AFTER handleSpaceActivated has run and
@@ -269,12 +271,12 @@ final class AppWindowManager {
         // Suppress follow-focus during the entire space activation flow. macOS will
         // auto-promote a new frontmost app when we hide the current one, which would
         // otherwise trigger our cross-space follow-focus and recurse back. The reset
-        // covers the 200ms layout delay + ~500ms settle window.
+        // covers the 100ms layout delay + ~500ms settle window.
         isTilrActivating = true
         activationResetWorkItem?.cancel()
         let resetWork = DispatchWorkItem { [weak self] in self?.isTilrActivating = false }
         activationResetWorkItem = resetWork
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: resetWork)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: resetWork)
 
         currentSpaceName = name
         previousSidebarSlotApp = nil
@@ -368,11 +370,14 @@ final class AppWindowManager {
             return space?.layout?.main
         }()
 
-        // Give the hide/unhide AppleEvents ~200 ms to be processed by their target
-        // apps before issuing AX window-position calls — AX round-trips otherwise
-        // crowd out pending AppleEvents and cause intermittent stuck apps. This
-        // matches the Hammerspoon reference implementation's `hs.timer.doAfter(0.2)`.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+        // Give the hide/unhide AppleEvents a brief window to be processed by their
+        // target apps before issuing AX window-position calls — AX round-trips
+        // otherwise crowd out pending AppleEvents and cause intermittent stuck apps.
+        // Tightened to 100ms (from the Hammerspoon reference's 200ms) for snappier
+        // space-switch response. If AX failures appear in logs (e.g. "no content
+        // window for X"), bump this back up — the AppleEvents need more time to
+        // settle before AX will see the freshly-unhidden windows.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self, self.activationGeneration == gen else {
                 Logger.windows.info("space activation \(gen, privacy: .public) stale (now \(self?.activationGeneration ?? 0, privacy: .public)) — dropping queued layout for '\(name, privacy: .public)'")
                 return

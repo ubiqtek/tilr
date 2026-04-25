@@ -73,6 +73,48 @@ Subscribers react (AppWindowManager, UserNotifier, MenuBarController)
 - On app launch, the previous active space is restored from `state.toml`.
 - On each space switch, the new active space is persisted immediately (async disk write).
 
+## Generation tokens & stale work suppression
+
+**Problem:** Layout is deferred ~100ms after visibility changes to let AX become accessible. But if the user rapidly presses hotkeys (e.g. `cmd+opt+1`, `cmd+opt+2`), the first space's queued layout might apply after we've already switched to the second space, leaving the second space's windows mis-positioned.
+
+**Solution:** Use a generation counter to mark each space activation.
+
+```swift
+// In AppWindowManager
+private var activationGeneration: UInt64 = 0
+
+private func handleSpaceActivated(name: String) {
+    activationGeneration &+= 1
+    let gen = activationGeneration
+    
+    // ... hide/show logic ...
+    
+    // Defer layout apply; capture generation NOW, not inside the block
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+        guard let self, self.activationGeneration == gen else {
+            Logger.windows.info("space activation \(gen) stale (now \(self?.activationGeneration ?? 0)) — dropping queued layout for '\(name)'")
+            return
+        }
+        // ... apply layout ...
+    }
+}
+```
+
+**Pattern:**
+1. Increment `activationGeneration` at the top of `handleSpaceActivated`
+2. Capture the new value: `let gen = activationGeneration`
+3. Before any async work fires, guard: `guard self.activationGeneration == gen else { ... }`
+4. If stale, log and return; drop the queued work
+
+This ensures:
+- Rapid hotkey presses only lay out the most recent space
+- Stale layout doesn't overwrite the current space's positioning
+- The log line makes it visible in debugging: "space activation 5 stale (now 7)"
+
+**Code reference:** `AppWindowManager.swift:268–283` (handleSpaceActivated), `AppWindowManager.swift:380–384` (layout defer with gen check).
+
+**Related:** [Async & Races](./async-and-races.md) — full explanation of why this pattern is needed and how to apply it in other contexts.
+
 ## Edge cases
 
 ### Multi-display (future)

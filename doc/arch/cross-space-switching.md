@@ -136,23 +136,40 @@ This is more authoritative than a local `currentSpaceName` mirror (which may lag
 
 **Code reference:** `/Users/jmdb/Code/github/ubiqtek/tilr/Sources/Tilr/AppWindowManager.swift:170-191`.
 
-### Recursion guard: `isTilrActivating`
+### Recursion guard: `isTilrActivating` (critical timing fix)
 
-When we call `service.switchToSpace(targetSpace)`, it eventually calls `handleSpaceActivated`, which may call `app.activate()` on the target app (as part of ensuring it's focused). This `activate()` call fires `didActivateApplicationNotification` again, which would normally trigger another cross-space check and infinite loop.
+**The bug:** When we call `service.switchToSpace(targetSpace)`, it eventually calls `handleSpaceActivated`, which calls `app.activate()` on the target app. This `activate()` call fires `didActivateApplicationNotification` again, which would normally trigger another cross-space check and infinite loop.
 
-**Solution:** Set `isTilrActivating = true` *before* the space switch and reset it after 0.5s:
+**The deeper bug (fixed 2026-04-25):** The guard was only set *inside* the 200ms-delayed asyncAfter block, just before the `activate()` call. But `handleSpaceActivated` also calls `hide()` on the previously-frontmost app. When we hide it, macOS auto-promotes the next visible app to frontmost. That promotion fires `didActivateApplicationNotification` *while `isTilrActivating` is still false*, so `handleAppActivation` runs the cross-space check, sees the promoted app is in a different space, and recursively switches back — causing flicker and lag.
+
+**Fix:** Set `isTilrActivating = true` at the *START* of `handleSpaceActivated`, before any hide/show logic. Cover a 0.6s window (100ms layout delay + 500ms settle):
 
 ```swift
-isTilrActivating = true
-// ... schedule reset at T+0.5s ...
-service.switchToSpace(targetSpace, reason: .hotkey)
-// When didActivateApplicationNotification fires from our activate() call,
-// handleAppActivation sees the flag and returns early.
+private func handleSpaceActivated(name: String) {
+    activationGeneration &+= 1
+    
+    // SET THE GUARD FIRST — before hide/unhide logic
+    isTilrActivating = true
+    activationResetWorkItem?.cancel()
+    let resetWork = DispatchWorkItem { [weak self] in self?.isTilrActivating = false }
+    activationResetWorkItem = resetWork
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: resetWork)
+    
+    // NOW we're safe to hide/show — any app promotion won't trigger recursion
+    // ... hide/show logic ...
+    
+    // Deferred activate() at T+100ms will also be guarded
+}
 ```
 
-The 0.5s window is conservative (covers all internal timing). The flag clears automatically even if the app doesn't receive the activation event (network lag, sandboxing, etc.).
+**Why 0.6s?** The window covers:
+- 100ms layout delay (see Space Switching) before we call `activate()`
+- ~500ms app settle time after activate (conservative upper bound)
+- Even if our scheduled reset doesn't fire (shouldn't happen), the flag naturally clears
 
-**Code reference:** `/Users/jmdb/Code/github/ubiqtek/tilr/Sources/Tilr/AppWindowManager.swift:175-179`.
+**Code reference:** `AppWindowManager.swift:267–279` (guard set at start of `handleSpaceActivated`), `AppWindowManager.swift:167–169` (guard check in `handleAppActivation`).
+
+**Lesson:** For any operation that hides/unhides and then activates, the guard should cover the entire sequence, not just the activate call. The hide operation itself can trigger re-entry.
 
 ## Fill-screen app tracking
 
