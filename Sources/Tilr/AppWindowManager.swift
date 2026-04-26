@@ -2,6 +2,17 @@ import AppKit
 import Combine
 import OSLog
 
+// MARK: - ReflowReason
+
+/// Describes why a sidebar-space reflow was triggered.
+enum ReflowReason: String {
+    case appLaunched    = "app-launched"
+    case appTerminated  = "app-terminated"
+    case appHidden      = "app-hidden"
+    case appUnhidden    = "app-unhidden"
+    case slotActivated  = "slot-activated"
+}
+
 // MARK: - AppWindowManager
 
 /// Output adaptor — subscribes to SpaceService.onSpaceActivated and
@@ -30,9 +41,39 @@ final class AppWindowManager {
     private var activationObserverToken: NSObjectProtocol?
     private var activationGeneration: UInt64 = 0
 
+    // Reflow debounce support
+    private var pendingReflowWorkItem: DispatchWorkItem?
+    private let reflowDebounceInterval: TimeInterval = 0.15
+
+    // Suppression table: bundle IDs that should have their hide/unhide notifications
+    // ignored because Tilr itself issued the hide (e.g. during a reflow).
+    private var hideEventSuppression: [String: Date] = [:]
+
+    // Suppression table: bundle IDs that should have their unhide notifications
+    // ignored because Tilr itself issued the unhide (e.g. during slot activation).
+    private var unhideEventSuppression: [String: Date] = [:]
+
+    // Runtime live membership: spaceName → set of bundle IDs currently inhabiting the space.
+    // Seeded from config at init; mutated on move, launch, and terminate.
+    // Reads are used instead of config.space.apps wherever runtime state matters.
+    private var liveSpaceMembership: [String: Set<String>] = [:]
+
+    // Lifecycle observer tokens (stored separately so each can be cleaned up).
+    private var launchObserverToken: NSObjectProtocol?
+    private var terminateObserverToken: NSObjectProtocol?
+    private var hideObserverToken: NSObjectProtocol?
+    private var unhideObserverToken: NSObjectProtocol?
+
     init(configStore: ConfigStore, service: SpaceService) {
         self.configStore = configStore
         self.service = service
+
+        // Seed live membership from config: every configured space gets a set entry,
+        // and every pinned app is added to its space's set.
+        let seedConfig = configStore.current
+        for (spaceName, space) in seedConfig.spaces {
+            liveSpaceMembership[spaceName] = Set(space.apps)
+        }
 
         service.onSpaceActivated
             .sink { [weak self] event in
@@ -49,16 +90,114 @@ final class AppWindowManager {
                 self?.handleAppActivation(notification: notification)
             }
         }
+
+        // Step 3: launch observer
+        self.launchObserverToken = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didLaunchApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                guard let self else { return }
+                guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                      let bundleID = app.bundleIdentifier
+                else { return }
+                guard bundleID != Bundle.main.bundleIdentifier else { return }
+                Logger.windows.info("handle: app launched '\(bundleID, privacy: .public)'")
+                // Add to pinned space's live membership on launch.
+                if let pinnedSpace = self.configStore.current.spaces.first(where: { $0.value.apps.contains(bundleID) })?.key {
+                    self.liveSpaceMembership[pinnedSpace, default: []].insert(bundleID)
+                }
+                guard self.isMemberOfActiveSidebarSpace(bundleID: bundleID) else { return }
+                // Give the new process time to register a window before reflowing.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                    self?.reflowSidebarSpace(reason: .appLaunched, triggerBundleID: bundleID)
+                }
+            }
+        }
+
+        // Step 4: terminate observer
+        self.terminateObserverToken = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didTerminateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                guard let self else { return }
+                guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                      let bundleID = app.bundleIdentifier
+                else { return }
+                guard bundleID != Bundle.main.bundleIdentifier else { return }
+                Logger.windows.info("handle: app terminated '\(bundleID, privacy: .public)'")
+                let wasMember = self.isMemberOfActiveSidebarSpace(bundleID: bundleID)
+                // Remove from all spaces in live membership on terminate.
+                for spaceName in self.liveSpaceMembership.keys {
+                    self.liveSpaceMembership[spaceName]?.remove(bundleID)
+                }
+                guard wasMember else { return }
+                self.reflowSidebarSpace(reason: .appTerminated, triggerBundleID: bundleID)
+            }
+        }
+
+        // Step 5: hide observer
+        self.hideObserverToken = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didHideApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                guard let self else { return }
+                guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                      let bundleID = app.bundleIdentifier
+                else { return }
+                Logger.windows.info("handle: app hidden '\(bundleID, privacy: .public)'")
+                // Drop events that Tilr itself triggered to prevent feedback loops.
+                if let suppressUntil = self.hideEventSuppression[bundleID], suppressUntil > Date() {
+                    Logger.windows.info("handle: suppressing hide event for '\(bundleID, privacy: .public)' (Tilr-issued)")
+                    return
+                }
+                guard self.isMemberOfActiveSidebarSpace(bundleID: bundleID) else { return }
+                self.reflowSidebarSpace(reason: .appHidden, triggerBundleID: bundleID)
+            }
+        }
+
+        // Step 5: unhide observer
+        self.unhideObserverToken = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didUnhideApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            Task { @MainActor in
+                guard let self else { return }
+                guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                      let bundleID = app.bundleIdentifier
+                else { return }
+                Logger.windows.info("handle: app unhidden '\(bundleID, privacy: .public)'")
+                if let suppressUntil = self.unhideEventSuppression[bundleID], suppressUntil > Date() {
+                    Logger.windows.info("handle: suppressing unhide event for '\(bundleID, privacy: .public)' (Tilr-issued)")
+                    return
+                }
+                guard self.isMemberOfActiveSidebarSpace(bundleID: bundleID) else { return }
+                self.reflowSidebarSpace(reason: .appUnhidden, triggerBundleID: bundleID)
+            }
+        }
     }
 
     deinit {
-        if let token = activationObserverToken {
+        for token in [activationObserverToken, launchObserverToken, terminateObserverToken,
+                      hideObserverToken, unhideObserverToken].compactMap({ $0 }) {
             NSWorkspace.shared.notificationCenter.removeObserver(token)
         }
     }
 
     func fillScreenLastAppSnapshot() -> [String: String] {
         fillScreenLastApp
+    }
+
+    /// Returns the runtime live bundle IDs for the given space.
+    /// SidebarLayout uses this instead of space.apps so moved-in apps are included.
+    func liveAppsInSpace(name: String) -> [String] {
+        Array(liveSpaceMembership[name] ?? [])
     }
 
     func moveCurrentApp(toSpaceName targetName: String) {
@@ -81,6 +220,12 @@ final class AppWindowManager {
         config.spaces[targetName]?.apps.insert(bundleID, at: 0)
 
         configStore.updateInMemory(config)
+
+        // Update live membership: remove from source space, add to target space.
+        if let src = sourceName {
+            liveSpaceMembership[src]?.remove(bundleID)
+        }
+        liveSpaceMembership[targetName, default: []].insert(bundleID)
 
         let appName = NSWorkspace.shared.frontmostApplication?.localizedName ?? bundleID
         Logger.windows.info("moved '\(appName, privacy: .public)' from '\(sourceName ?? "none", privacy: .public)' to '\(targetName, privacy: .public)'")
@@ -138,15 +283,6 @@ final class AppWindowManager {
                bundleID != space.layout?.main {
                 self.previousSidebarSlotApp = bundleID
                 Logger.windows.info("moveCurrentApp: set previousSidebarSlotApp='\(bundleID, privacy: .public)' for CMD+TAB handoff")
-            }
-            if let app = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first {
-                self.isTilrActivating = true
-                self.activationResetWorkItem?.cancel()
-                let work = DispatchWorkItem { [weak self] in self?.isTilrActivating = false }
-                self.activationResetWorkItem = work
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
-                app.activate(options: [])
-                Logger.windows.info("moveCurrentApp: focused '\(bundleID, privacy: .public)' after move")
             }
         }
 
@@ -220,8 +356,9 @@ final class AppWindowManager {
         }
 
         // Sidebar branch: handle CMD+TAB and other activations into sidebar-space apps.
+        // Use live membership so apps moved in at runtime (not just config-pinned) are included.
         guard space.layout?.type == .sidebar,
-              space.apps.contains(bundleID)
+              liveSpaceMembership[spaceName]?.contains(bundleID) ?? false
         else { return }
 
         let mainBundleID = space.layout?.main
@@ -234,34 +371,12 @@ final class AppWindowManager {
             return
         }
 
-        // It's a sidebar-slot app — resize it into its frame and hide the previous slot app.
-        let screen = NSScreen.main ?? NSScreen.screens[0]
-        let targetFrame = sidebarLayout.frame(for: bundleID, in: space, spaceName: spaceName, screen: screen)
-
-        let prev = previousSidebarSlotApp
-        Logger.windows.info("app-activation: '\(bundleID, privacy: .public)' is sidebar slot — applying frame, hiding prev '\(prev ?? "none", privacy: .public)'")
-
-        if let prev, prev != bundleID, prev != mainBundleID {
-            setAppHidden(bundleID: prev, hidden: true)
-        }
-        previousSidebarSlotApp = bundleID
-
-        // Delay the frame call if the app was hidden — AX is not ready immediately after unhide.
-        let wasHidden = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first?.isHidden ?? false
-        let config = configStore.current
-        if wasHidden {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-                guard let self else { return }
-                self.sidebarLayout.setFrameAndSuppress(bundleID: bundleID, frame: targetFrame)
-                self.sidebarLayout.reattachObserver(space: space, name: spaceName, screen: screen, visibleSidebarBundleID: bundleID, config: config)
-                retryUntilWindowMatches(bundleID: bundleID, targetSize: targetFrame.size) { [weak self] in
-                    self?.sidebarLayout.setFrameAndSuppress(bundleID: bundleID, frame: targetFrame)
-                }
-            }
-        } else {
-            sidebarLayout.setFrameAndSuppress(bundleID: bundleID, frame: targetFrame)
-            sidebarLayout.reattachObserver(space: space, name: spaceName, screen: screen, visibleSidebarBundleID: bundleID, config: config)
-        }
+        // It's a sidebar-slot app — delegate to the shared reflow helper.
+        Logger.windows.info("handle: slot activated '\(bundleID, privacy: .public)'")
+        // Suppress the unhide event that will fire when macOS unhides this app,
+        // so only the slotActivated reflow runs (not appUnhidden).
+        suppressUnhideEvent(for: bundleID)
+        reflowSidebarSpace(reason: .slotActivated, triggerBundleID: bundleID)
     }
 
     private func handleSpaceActivated(name: String) {
@@ -356,7 +471,11 @@ final class AppWindowManager {
         }
 
         // Hide apps not visible in this space.
+        // Suppress hide notifications for all apps we're about to hide so that
+        // incoming didHideApplicationNotification events don't trigger spurious
+        // sidebar reflows during the space-switch settle period.
         for bundleID in hidingApps {
+            suppressHideEvent(for: bundleID)
             setAppHidden(bundleID: bundleID, hidden: true)
         }
 
@@ -428,6 +547,9 @@ final class AppWindowManager {
         let strategy: LayoutStrategy
         switch layout.type {
         case .sidebar:
+            // Feed runtime live membership into SidebarLayout so slot candidates
+            // include apps moved in at runtime, not just config-pinned apps.
+            sidebarLayout.liveAppsOverride = liveAppsInSpace(name: name)
             strategy = sidebarLayout
         case .fillScreen:
             sidebarLayout.stopObserving()
@@ -450,5 +572,134 @@ final class AppWindowManager {
             return bundleID.components(separatedBy: ".").last ?? bundleID
         }
         return "[" + names.joined(separator: ", ") + "]"
+    }
+
+    // MARK: - Sidebar reflow
+
+    /// Returns true if the given bundle ID belongs to the currently active sidebar space.
+    /// Uses runtime live membership rather than config, so apps moved in at runtime are included.
+    private func isMemberOfActiveSidebarSpace(bundleID: String) -> Bool {
+        guard let spaceName = currentSpaceName,
+              let space = configStore.current.spaces[spaceName],
+              space.layout?.type == .sidebar
+        else { return false }
+        return liveSpaceMembership[spaceName]?.contains(bundleID) ?? false
+    }
+
+    /// Debounced reflow of the current sidebar space.
+    ///
+    /// All lifecycle events (launch, terminate, hide, unhide, slot-activated) funnel
+    /// through here so logic stays in one place and rapid successive events are coalesced.
+    private func reflowSidebarSpace(reason: ReflowReason, triggerBundleID: String) {
+        guard let spaceName = currentSpaceName,
+              let space = configStore.current.spaces[spaceName],
+              space.layout?.type == .sidebar
+        else { return }
+
+        Logger.windows.info("reflow: \(reason.rawValue, privacy: .public) for '\(triggerBundleID, privacy: .public)' in '\(spaceName, privacy: .public)'")
+        TilrLogger.shared.log("reflow: \(reason.rawValue) for '\(triggerBundleID)' in '\(spaceName)'", category: "windows")
+
+        // Debounce: cancel any already-pending reflow and schedule a new one.
+        pendingReflowWorkItem?.cancel()
+
+        let gen = activationGeneration
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.activationGeneration == gen else { return }
+
+            let config = self.configStore.current
+            guard let currentSpace = config.spaces[spaceName],
+                  currentSpace.layout?.type == .sidebar
+            else { return }
+
+            // For slot-activated: frame new slot app, hide previous, reattach observer.
+            // This is the targeted logic from the original handleAppActivation sidebar branch.
+            if reason == .slotActivated {
+                let mainBundleID = currentSpace.layout?.main
+                let prev = self.previousSidebarSlotApp
+
+                Logger.windows.info("reflow: slot '\(triggerBundleID, privacy: .public)' activated — hiding prev '\(prev ?? "none", privacy: .public)'")
+
+                // Frame the new slot app into its sidebar frame.
+                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let targetFrame = self.sidebarLayout.frame(
+                    for: triggerBundleID, in: currentSpace, spaceName: spaceName, screen: screen)
+
+                // Always run the retry loop on slot-activated. The wasHidden check is
+                // unreliable here because macOS unhides the app synchronously on
+                // activation, so by the time this debounced block runs the app is
+                // already visible. Browsers (Zen) routinely ignore the first AX
+                // setFrame after unhide and assert their AppKit-restored frame back —
+                // so we must retry until the actual window size matches the target.
+                self.sidebarLayout.setFrameAndSuppress(bundleID: triggerBundleID, frame: targetFrame)
+                self.sidebarLayout.reattachObserver(
+                    space: currentSpace, name: spaceName, screen: screen,
+                    visibleSidebarBundleID: triggerBundleID, config: config)
+                retryUntilWindowMatches(bundleID: triggerBundleID, targetSize: targetFrame.size) {
+                    [weak self] in
+                    guard let self, self.activationGeneration == gen else { return }
+                    self.sidebarLayout.setFrameAndSuppress(bundleID: triggerBundleID, frame: targetFrame)
+                }
+
+                // Hide the previous slot app.
+                if let prev, prev != triggerBundleID, prev != mainBundleID {
+                    self.suppressHideEvent(for: prev)
+                    setAppHidden(bundleID: prev, hidden: true)
+                }
+
+                // Update which slot app is currently visible.
+                self.previousSidebarSlotApp = triggerBundleID
+                return
+            }
+
+            // For launch / terminate / hide / unhide: full layout reapply.
+            self.applyLayout(name: spaceName, config: config)
+
+            // Retry until the main app's window width matches the target.
+            if let mainBundleID = currentSpace.layout?.main {
+                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let targetFrame = self.sidebarLayout.frame(
+                    for: mainBundleID, in: currentSpace, spaceName: spaceName, screen: screen)
+                retryUntilWindowMatches(bundleID: mainBundleID, targetSize: targetFrame.size) {
+                    [weak self] in
+                    guard let self, self.activationGeneration == gen else { return }
+                    self.applyLayout(name: spaceName, config: config)
+                }
+            }
+
+            // Also retry the trigger app's frame — needed for launch where the app
+            // may not honour the first AX setFrame (e.g. Marq comes up at default
+            // height and width matches but height doesn't).
+            if triggerBundleID != currentSpace.layout?.main {
+                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let triggerFrame = self.sidebarLayout.frame(
+                    for: triggerBundleID, in: currentSpace, spaceName: spaceName, screen: screen)
+                retryUntilWindowMatches(bundleID: triggerBundleID, targetSize: triggerFrame.size) {
+                    [weak self] in
+                    guard let self, self.activationGeneration == gen else { return }
+                    self.sidebarLayout.setFrameAndSuppress(bundleID: triggerBundleID, frame: triggerFrame)
+                }
+            }
+        }
+
+        pendingReflowWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + reflowDebounceInterval, execute: work)
+    }
+
+    /// Record that Tilr is about to issue a hide for `bundleID` so the hide notification
+    /// observer can ignore it and avoid a reflow feedback loop.
+    private func suppressHideEvent(for bundleID: String) {
+        // Prune expired entries while we're here.
+        let now = Date()
+        hideEventSuppression = hideEventSuppression.filter { $0.value > now }
+        hideEventSuppression[bundleID] = now.addingTimeInterval(0.5)
+    }
+
+    /// Record that Tilr is about to issue an unhide for `bundleID` so the unhide notification
+    /// observer can ignore it and avoid a reflow feedback loop.
+    private func suppressUnhideEvent(for bundleID: String) {
+        // Prune expired entries while we're here.
+        let now = Date()
+        unhideEventSuppression = unhideEventSuppression.filter { $0.value > now }
+        unhideEventSuppression[bundleID] = now.addingTimeInterval(0.5)
     }
 }

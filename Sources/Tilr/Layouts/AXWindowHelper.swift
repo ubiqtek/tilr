@@ -133,7 +133,8 @@ func retryUntilWindowMatches(
 ) {
     func matches(_ size: CGSize?) -> Bool {
         guard let size else { return false }
-        return abs(size.width - targetSize.width) <= tolerance
+        return abs(size.width - targetSize.width) <= tolerance &&
+               abs(size.height - targetSize.height) <= tolerance
     }
 
     DispatchQueue.main.asyncAfter(deadline: .now() + firstCheckAfter) {

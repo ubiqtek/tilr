@@ -6,6 +6,10 @@ final class SidebarLayout: LayoutStrategy {
 
     private let resizeObserver = SidebarResizeObserver()
 
+    /// When set, `applySidebarSwitch` uses these bundle IDs instead of `space.apps`
+    /// to determine slot candidates, supporting runtime-moved apps.
+    var liveAppsOverride: [String]?
+
     func apply(name: String, space: SpaceDefinition, config: TilrConfig, screen: NSScreen, operation: OperationType) {
         guard AXIsProcessTrusted() else {
             Logger.layout.info("layout 'sidebar': AX permission not granted — skipping positioning")
@@ -35,7 +39,11 @@ final class SidebarLayout: LayoutStrategy {
         let sf = screen.frame
         let mainBundleID = layout.main
 
-        let runningApps = space.apps.filter { bundleID in
+        // Use live membership when available (includes runtime-moved apps);
+        // fall back to config-pinned apps for spaces with no live membership.
+        let candidateApps = liveAppsOverride ?? space.apps
+
+        let runningApps = candidateApps.filter { bundleID in
             !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty
         }
 

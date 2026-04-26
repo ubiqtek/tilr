@@ -238,7 +238,7 @@ final class SidebarResizeObserver {
                 if let mainID = capturedMain {
                     self.setFrameAndSuppress(bundleID: mainID, frame: mainFrame)
                 }
-                for (sid, _) in capturedSidebars where sid != capturedDragged {
+                for (sid, _) in capturedSidebars {
                     self.setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
                 }
                 self.storedMainFrame = mainFrame
@@ -253,7 +253,7 @@ final class SidebarResizeObserver {
                         if let mainID = capturedMain {
                             self.setFrameAndSuppress(bundleID: mainID, frame: mainFrame)
                         }
-                        for (sid, _) in capturedSidebars where sid != capturedDragged {
+                        for (sid, _) in capturedSidebars {
                             self.setFrameAndSuppress(bundleID: sid, frame: sidebarFrame)
                         }
                     }
