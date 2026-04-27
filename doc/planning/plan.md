@@ -17,12 +17,13 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 7 | App layout | ✅ | 2026-04-20 |
 | 8 | Moving apps to a space | ✅ | 2026-04-25 |
 | 9 | Follow focus on CMD-TAB | ✅ | 2026-04-25 |
-| 10 | Sidebar layout on app activate/close | ⬜ | — |
+| 10 | Sidebar layout on app activate/close | ✅ | 2026-04-27 |
 | 11 | Multi-display support | ⬜ | — |
 | 12 | State file | ⬜ | — |
 | 13 | Polish | ⬜ | — |
+| 14 | Release on App Store | ⬜ | — |
 
-**Current focus:** Delta 10 — Sidebar layout on app activate/close
+**Current focus:** Delta 11 — Multi-display support
 
 ---
 
@@ -51,6 +52,7 @@ lands — check boxes, add a dated note, link the commit/PR.
 - [Delta 11: Multi-display support](delta-11.md)
 - [Delta 12: State file](delta-12.md)
 - [Delta 13: Polish](delta-13.md)
+- [Delta 14: Release on App Store](delta-14.md)
 
 ---
 

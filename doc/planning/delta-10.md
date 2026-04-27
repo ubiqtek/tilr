@@ -3,7 +3,7 @@
 **Goal:** keep sidebar-layout spaces visually correct as apps launch, activate,
 hide, unhide, or terminate.
 
-**Status:** in progress
+**Status:** done
 
 ## Scope
 
@@ -167,5 +167,78 @@ The remaining edge cases concentrate in the second path. A future cleanup could 
 
 Deferred — current behaviour is acceptable since users typically CMD+TAB after launch, which fires `.slotActivated` and self-corrects.
 
-### Defer to Delta 12
-Persistence of `liveSpaceMembership` to `state.toml`. The in-memory map is the right shape; Delta 12 adds load on launch and save on mutation.
+## Next steps / roadmap
+
+The Delta 10 deferred edge cases are *not* the next delta — they're folded
+into Delta 13 (Polish). Delta 11 (multi-display) and Delta 12 (state file)
+were already planned in `plan.md` and take priority.
+
+### Delta 11 — Multi-display support
+Per-display active space, per-display layout, hotkey routing across
+displays. See [`delta-11.md`](delta-11.md).
+
+### Delta 12 — State file
+Persistence of `activeSpace` (per-display), `liveSpaceMembership`,
+`sidebarRatios`, and fill-screen focus history to
+`~/Library/Application Support/tilr/state.toml`. The in-memory
+`liveSpaceMembership` introduced in Delta 10 is already in the right shape;
+Delta 12 just adds load/save plumbing. See [`delta-12.md`](delta-12.md).
+
+### Delta 13 — Polish
+All Delta 10 deferred edge cases (gap on right, startup miss-frame,
+re-launch slot visibility, main-window move-out, wake-from-sleep) plus
+standard polish (config hot-reload, launch-at-login, app icon, About).
+See [`delta-13.md`](delta-13.md).
+
+### Delta 14 — Release on App Store
+App Store Connect setup, sandboxing audit, code signing, submission. See
+[`delta-14.md`](delta-14.md).
+
+## Reference comparison
+
+### Behaviours matched vs. Hammerspoon
+
+| Behaviour | HS Approach | Tilr Delta 10 | Status |
+|-----------|-----------|-----------|--------|
+| **App launch** | 0.3s delay, call `applyLayout` | 0.3s delay, `reflowSidebarSpace(.appLaunched)` → full reapply | ✓ Matched |
+| **App terminate** | Immediate `applyLayout` | Immediate `reflowSidebarSpace(.appTerminated)` | ✓ Matched |
+| **Cmd-H hide** | No explicit suppression | `hideEventSuppression` table (0.5s TTL) | ✓ Better (explicit) |
+| **Unhide** | No explicit suppression | `unhideEventSuppression` table (0.5s TTL) | ✓ Better |
+| **Slot activation** | Focus-watcher auto-activates space | `handleAppActivation` sidebar branch, `reflowSidebarSpace(.slotActivated)` | ✓ Matched |
+| **Cross-space follow-focus** | `activatingSpace` bool (0.5s) | `isTilrActivating` bool (0.6s) | ✓ Matched |
+| **Previous slot hiding** | Implicit (layout enforces single visible) | Explicit `previousSidebarSlotApp` + hide call | ✓ Comparable |
+| **Live membership** | `sessionAppOverride` (move, session-only) | `liveSpaceMembership` map (move, launch, terminate) | ✓ Better (persistent-ready) |
+
+### Race condition strategy divergence
+
+**Hammerspoon:**
+- **Feedback loop prevention**: Relies on boolean flags with manual reset windows (`activatingSpace`, `ignoringResize`, both 0.5s fixed)
+- **Window placement retry**: Single `placeWindow` call; logs delta warning but does not retry
+- **Slot switching**: Implicit in layout — if main and sidebar both visible, main wins; only sidebar shows if main absent
+
+**Tilr:**
+- **Feedback loop prevention**: Time-keyed suppression tables (0.5s TTL) pruned on each access; generation counters detect stale completions
+- **Window placement retry**: `retryUntilWindowMatches` loop (width+height comparison, ~100ms polls) repeats until size matches or generation stales
+- **Slot switching**: Explicit `previousSidebarSlotApp` tracking; `.slotActivated` branch always hides previous slot and runs retry loop for new one
+- **Reflow debounce**: 0.15s coalesce window for rapid successive events (launch/unhide/activate within 150ms)
+
+**Why the differences:**
+1. **Retry loop**: Hammerspoon assumes single `placeWindow` succeeds; Tilr discovered browsers (Zen) ignore first AX `setFrame` after unhide, requiring retry. HS avoids this by not unhiding on app activation — only on space-switch.
+2. **Suppression tables vs. flags**: Tilr's time-keyed tables handle the `.appUnhidden` race case — two reflow events queue (`.slotActivated` + `.appUnhidden`), and unhide suppression ensures only `.slotActivated` fires. HS doesn't face this because its focus-watcher doesn't trigger on unhide, only on activation.
+3. **Explicit slot tracking**: HS layout logic infers single-visible from `#sidebarWins` count at layout-apply time. Tilr made it explicit with `previousSidebarSlotApp` to simplify the `.slotActivated` branch and ensure the previous slot always hides (even if the next reflow reason is lifecycle-driven instead of slot-activation).
+
+### Design insights for deferred edge cases
+
+1. **"Layout not applied on wake from sleep"**: HS has no explicit wake handler either — it would behave identically (space layout not reapplied on wake). Suggests this may be a macOS Spaces limitation (Spaces themselves don't emit wake notifications). Consider registering for `NSWorkspace.didWakeNotification` or polling space membership on first app activation post-wake.
+
+2. **"Re-launching a slot app while another slot app is visible"**: Root cause (documented in delta-10.md already) — lifecycle paths call `applyLayout` → `applySidebarSwitch` (frames only), never hide previous slot. HS avoids this by layering: `applyLayout` rebuilds sidebarWins set, then layout logic enforces single-visible. Tilr could adopt the same pattern or extend lifecycle paths to explicitly hide non-previous slot candidates.
+
+3. **"Intermittent startup miss-frame"**: HS uses fixed 0.2s delay post-frame; Tilr uses polling. Both are vulnerable to early AX read (window not yet registered by the app). HS logs the delta; Tilr retries. Consider a hybrid: initial delay + retry loop (gives time for window to settle, then auto-corrects ignores).
+
+4. **"Gap on right after move-into + drag-resize"**: Tilr identified the root cause (line ~154 of delta-10.md, `where sid != capturedDragged` filter). One-line fix already queued. HS avoids this because `SidebarResizeObserver` equivalent uses a simpler `ignoringResize` flag without tracking which window was dragged.
+
+### Debounce & generation tracking
+
+HS does not track generation or debounce reflows — each event schedules its own work immediately (with fixed delays). Tilr's debounce + generation approach gives better coalescence of rapid events (e.g., launch + unhide + activate within 150ms all become one reflow) and stale-check safety across async boundaries.
+
+**Recommendation**: The generation-based stale-check is sound; keep it. The 0.15s debounce interval is aggressive (responsive) but may need tuning if rapid event bursts cause missed updates — monitor logs for `"reflow dropped (generation stale)"` patterns.
