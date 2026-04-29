@@ -11,6 +11,7 @@
 		0904FA541B1A8BC6924CF077 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107A98FA7DFAD3B0C72DF305 /* Protocol.swift */; };
 		0B38CE60432BB7869AD2C6AB /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
 		0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D591EB97A8285386E320E7A1 /* AppDelegate.swift */; };
+		13E910F2510F5063A5BAFE8E /* DisplayStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */; };
 		1757134B0FBBE8F270642C77 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 37F0E62234354AFC0109FC05 /* HotKey */; };
 		17CB9065CB4E3C1DCA8E17CF /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
 		2C584E84F3F20076D243A7BE /* AXWindowFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CAE599B01BA6AA1A9258DC8 /* AXWindowFinder.swift */; };
@@ -25,11 +26,15 @@
 		534924DA94E3EF4350060E83 /* TilrLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9364FEE061EA809066EFFB9B /* TilrLogger.swift */; };
 		6590DE422F823AC133BAF9B4 /* FillScreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3269A5CC9642D65D8DBB09AA /* FillScreenLayout.swift */; };
 		6D3FCEDF811B35AC17F6930D /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
+		7C15D612D624963154D47DA4 /* DisplayIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */; };
 		7CE12D1A18EC94B3F94ACC67 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = F5B9438894D8D7F5E60A0A8C /* Yams */; };
 		84A812BF0C0DB21CE80D8F73 /* AppWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C9DE747423AFE90BD2B410 /* AppWindowManager.swift */; };
 		84DCEB885A50EC3B9174EECC /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = F4A7A23332D8A25DFB330647 /* Yams */; };
 		8E51978AA47050C39A510714 /* AXWindowHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11539077F40F015167E985B /* AXWindowHelper.swift */; };
 		8EFB57F4C04046C26FB5AFC8 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */; };
+		8F2E3B6B538E2E1C0E8A2FAA /* DisplayIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */; };
+		93A5412573B4534F774B61D0 /* DisplayStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */; };
+		957DA36FB21BBF85E9A940E6 /* DisplayStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */; };
 		974ED4F42FBB8CC66FE95B5B /* SpaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0E2C3C1A9CC939C4627AB /* SpaceService.swift */; };
 		A0AD88187A1F38BDA085A1C8 /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
 		A82AD978B5B34EED78AAF494 /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
@@ -44,6 +49,7 @@
 		CBA5C00A789C86F4237796D9 /* PopupWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C26C3A022E722BB2141506 /* PopupWindow.swift */; };
 		DEE9083EB76D4D4B6402EACF /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = 3F44E00F2A10F0ED11AB89E1 /* Yams */; };
 		E0DE4DCD84C06EBEC86DAC66 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
+		E17D8CB3B584BF59A9BD4556 /* DisplayIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */; };
 		E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
 		E377ED23CAD122AF26638FAB /* SidebarResizeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F4EB64639CC193477ED3D56 /* SidebarResizeObserver.swift */; };
 		E3F27FCF2C9C42DFCB9A98F9 /* OperationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C01B9671B7AE4AB62FBF9ED /* OperationType.swift */; };
@@ -58,12 +64,13 @@
 		0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigStore.swift; sourceTree = "<group>"; };
 		107A98FA7DFAD3B0C72DF305 /* Protocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocol.swift; sourceTree = "<group>"; };
 		1CAE599B01BA6AA1A9258DC8 /* AXWindowFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindowFinder.swift; sourceTree = "<group>"; };
-		1D466C78546253ED43ED5A1B /* tilr */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tilr; sourceTree = BUILT_PRODUCTS_DIR; };
+		1D466C78546253ED43ED5A1B /* TilrCLI */ = {isa = PBXFileReference; includeInIndex = 0; path = TilrCLI; sourceTree = BUILT_PRODUCTS_DIR; };
 		26A0E2C3C1A9CC939C4627AB /* SpaceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceService.swift; sourceTree = "<group>"; };
 		3269A5CC9642D65D8DBB09AA /* FillScreenLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FillScreenLayout.swift; sourceTree = "<group>"; };
 		32A6D361035A8E67B904B35F /* Tilr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tilr.entitlements; sourceTree = "<group>"; };
 		331BA5ACDFB0F4CFC957B1A7 /* ActivationReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivationReason.swift; sourceTree = "<group>"; };
 		42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayIdentity.swift; sourceTree = "<group>"; };
 		8A5000BC4CB2632C66661403 /* SidebarLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarLayout.swift; sourceTree = "<group>"; };
 		8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketServer.swift; sourceTree = "<group>"; };
 		8F4EB64639CC193477ED3D56 /* SidebarResizeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarResizeObserver.swift; sourceTree = "<group>"; };
@@ -71,12 +78,13 @@
 		9C01B9671B7AE4AB62FBF9ED /* OperationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationType.swift; sourceTree = "<group>"; };
 		A2C26C3A022E722BB2141506 /* PopupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWindow.swift; sourceTree = "<group>"; };
 		A2DA24F8994DA197871EC4F7 /* SocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClient.swift; sourceTree = "<group>"; };
-		A31BA873E7DDD31C99FD1C25 /* Tilr.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tilr.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A31BA873E7DDD31C99FD1C25 /* TilrApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TilrApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A58A3D2379A1546D9821F1BE /* TilrCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TilrCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA4954960D225425A4DC46AB /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		B11539077F40F015167E985B /* AXWindowHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindowHelper.swift; sourceTree = "<group>"; };
 		B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilrCLI.swift; sourceTree = "<group>"; };
 		B7B84695773403E5189D2283 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayStateStore.swift; sourceTree = "<group>"; };
 		CD73C3E61369CF9E9A088950 /* ConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigTests.swift; sourceTree = "<group>"; };
 		CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigPaths.swift; sourceTree = "<group>"; };
 		D591EB97A8285386E320E7A1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -180,8 +188,8 @@
 		67FA1E9D789E26191A18D2BF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A31BA873E7DDD31C99FD1C25 /* Tilr.app */,
-				1D466C78546253ED43ED5A1B /* tilr */,
+				A31BA873E7DDD31C99FD1C25 /* TilrApp.app */,
+				1D466C78546253ED43ED5A1B /* TilrCLI */,
 				A58A3D2379A1546D9821F1BE /* TilrCoreTests.xctest */,
 			);
 			name = Products;
@@ -193,6 +201,8 @@
 				AA4954960D225425A4DC46AB /* Config.swift */,
 				CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */,
 				0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */,
+				6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */,
+				C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */,
 				107A98FA7DFAD3B0C72DF305 /* Protocol.swift */,
 				9364FEE061EA809066EFFB9B /* TilrLogger.swift */,
 			);
@@ -230,7 +240,7 @@
 				3F44E00F2A10F0ED11AB89E1 /* Yams */,
 			);
 			productName = TilrApp;
-			productReference = A31BA873E7DDD31C99FD1C25 /* Tilr.app */;
+			productReference = A31BA873E7DDD31C99FD1C25 /* TilrApp.app */;
 			productType = "com.apple.product-type.application";
 		};
 		4FEC5CAE213FF6DE0F80B5B7 /* TilrCLI */ = {
@@ -250,7 +260,7 @@
 				F4A7A23332D8A25DFB330647 /* Yams */,
 			);
 			productName = TilrCLI;
-			productReference = 1D466C78546253ED43ED5A1B /* tilr */;
+			productReference = 1D466C78546253ED43ED5A1B /* TilrCLI */;
 			productType = "com.apple.product-type.tool";
 		};
 		D1E0AEA9CF0330D5B65704AC /* TilrCoreTests */ = {
@@ -282,9 +292,11 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					035154A5253B50ABE1C82A31 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 					4FEC5CAE213FF6DE0F80B5B7 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 					D1E0AEA9CF0330D5B65704AC = {
@@ -339,6 +351,8 @@
 				A0AD88187A1F38BDA085A1C8 /* ConfigPaths.swift in Sources */,
 				0B38CE60432BB7869AD2C6AB /* ConfigStore.swift in Sources */,
 				2D5EF2D6EDE2C1F6D8676944 /* ConfigTests.swift in Sources */,
+				7C15D612D624963154D47DA4 /* DisplayIdentity.swift in Sources */,
+				957DA36FB21BBF85E9A940E6 /* DisplayStateStore.swift in Sources */,
 				B368092F5A42CCD5D0025C23 /* Protocol.swift in Sources */,
 				B5CCA132984F8C61D558C1C4 /* TilrLogger.swift in Sources */,
 			);
@@ -351,6 +365,8 @@
 				2D55E81C071208DFE4E3B8B7 /* Config.swift in Sources */,
 				34B29F9D09169D21B43E2960 /* ConfigPaths.swift in Sources */,
 				17CB9065CB4E3C1DCA8E17CF /* ConfigStore.swift in Sources */,
+				E17D8CB3B584BF59A9BD4556 /* DisplayIdentity.swift in Sources */,
+				93A5412573B4534F774B61D0 /* DisplayStateStore.swift in Sources */,
 				0904FA541B1A8BC6924CF077 /* Protocol.swift in Sources */,
 				3487264C1D9A996204B83EB0 /* SocketClient.swift in Sources */,
 				07B350237A28183D14F28172 /* TilrCLI.swift in Sources */,
@@ -371,6 +387,8 @@
 				E0DE4DCD84C06EBEC86DAC66 /* Config.swift in Sources */,
 				E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */,
 				A82AD978B5B34EED78AAF494 /* ConfigStore.swift in Sources */,
+				8F2E3B6B538E2E1C0E8A2FAA /* DisplayIdentity.swift in Sources */,
+				13E910F2510F5063A5BAFE8E /* DisplayStateStore.swift in Sources */,
 				6590DE422F823AC133BAF9B4 /* FillScreenLayout.swift in Sources */,
 				4B6CB820CB7A0661BAB40021 /* HotKeyManager.swift in Sources */,
 				C2E219F8E4C83709202061D0 /* LayoutStrategy.swift in Sources */,
@@ -396,7 +414,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = MX95X5U6HA;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -554,7 +571,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Tilr/Tilr.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = MX95X5U6HA;
 				INFOPLIST_FILE = Sources/Tilr/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -585,7 +601,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = MX95X5U6HA;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -602,7 +617,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Tilr/Tilr.entitlements;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = MX95X5U6HA;
 				INFOPLIST_FILE = Sources/Tilr/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

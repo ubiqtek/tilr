@@ -134,7 +134,7 @@ struct ConfigHelp: ParsableCommand {
           tilr spaces config add-app <name-or-id> <bundle-id>
           tilr spaces config remove-app <name-or-id> <bundle-id>
           tilr displays list
-          tilr displays configure <id> <name> <default-space>
+          tilr displays configure <id> [--name <label>] [--number <n>] [--default-space <space>]
         """)
     }
 }
@@ -430,21 +430,38 @@ struct DisplaysList: ParsableCommand {
     func run() throws {
         let config = try ConfigStore.load()
         let screens = NSScreen.screens
+        var state = DisplayStateStore.load()
+        var stateChanged = false
 
-        let idW = 4, nameW = 12, systemW = 26
-        print(pad("ID", idW) + pad("Tilr Name", nameW) + pad("System Name", systemW) + "Default Space")
+        let idW = 4, nameW = 12, systemW = 26, defaultSpaceW = 15
+        print(pad("ID", idW) + pad("Tilr Name", nameW) + pad("System Name", systemW) + pad("Default Space", defaultSpaceW) + "UUID")
         print(String(repeating: "-", count: 2).padding(toLength: idW, withPad: " ", startingAt: 0)
             + String(repeating: "-", count: 9).padding(toLength: nameW, withPad: " ", startingAt: 0)
             + String(repeating: "-", count: 11).padding(toLength: systemW, withPad: " ", startingAt: 0)
-            + String(repeating: "-", count: 13))
+            + String(repeating: "-", count: 13).padding(toLength: defaultSpaceW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 4))
 
-        for (i, screen) in screens.enumerated() {
-            let displayId = "\(i + 1)"
-            let displayConfig = config.displays[displayId]
+        for screen in screens {
+            let uuid = displayUUID(for: screen)
+            let before = state.nextId
+            let displayId: Int
+            if let uuid {
+                displayId = DisplayStateStore.resolveId(for: uuid, state: &state)
+                if state.nextId != before { stateChanged = true }
+            } else {
+                displayId = 0
+            }
+            let displayKey = "\(displayId)"
+            let displayConfig = config.displays[displayKey]
             let tilrName = displayConfig?.name ?? "—"
             let systemName = screen.localizedName
             let defaultSpace = displayConfig?.defaultSpace ?? "—"
-            print(pad(displayId, idW) + pad(tilrName, nameW) + pad(systemName, systemW) + defaultSpace)
+            let uuidCol = uuid ?? "—"
+            print(pad(displayKey, idW) + pad(tilrName, nameW) + pad(systemName, systemW) + pad(defaultSpace, defaultSpaceW) + uuidCol)
+        }
+
+        if stateChanged {
+            try? DisplayStateStore.save(state)
         }
     }
 
@@ -455,37 +472,71 @@ struct DisplaysList: ParsableCommand {
 }
 
 struct DisplaysConfigure: ParsableCommand {
-    static let configuration = CommandConfiguration(commandName: "configure", abstract: "Set name and default space for a display.")
+    static let configuration = CommandConfiguration(commandName: "configure", abstract: "Set name, number, or default space for a display.")
 
     @Argument var id: Int
-    @Argument var name: String
-    @Argument var defaultSpace: String
+    @Option var name: String?
+    @Option var number: Int?
+    @Option var defaultSpace: String?
 
     func run() throws {
+        guard name != nil || number != nil || defaultSpace != nil else {
+            print("Error: at least one option required: --name, --number, or --default-space")
+            throw ExitCode(1)
+        }
+
         var config = try ConfigStore.load()
+        var state = DisplayStateStore.load()
+        var changed: [String] = []
 
-        // Validate that the display ID corresponds to a real screen
-        let screenCount = NSScreen.screens.count
-        guard id >= 1, id <= screenCount else {
-            print("Error: display \(id) does not exist (found \(screenCount) screen(s))")
-            throw ExitCode(1)
+        if let newName = name {
+            var dc = config.displays["\(id)"] ?? DisplayConfig()
+            dc.name = newName
+            config.displays["\(id)"] = dc
+            changed.append("name=\(newName)")
         }
 
-        // Resolve the space: single char → by id, else → by name
-        let resolvedName: String?
-        if defaultSpace.count == 1 {
-            resolvedName = config.spaces.first(where: { $0.value.id == defaultSpace })?.key
-        } else {
-            resolvedName = config.spaces[defaultSpace] != nil ? defaultSpace : nil
-        }
-        guard let spaceName = resolvedName else {
-            print("Error: no space found for '\(defaultSpace)'")
-            throw ExitCode(1)
+        if let ds = defaultSpace {
+            let resolvedName: String?
+            if ds.count == 1 {
+                resolvedName = config.spaces.first(where: { $0.value.id == ds })?.key
+            } else {
+                resolvedName = config.spaces[ds] != nil ? ds : nil
+            }
+            guard let spaceName = resolvedName else {
+                print("Error: no space found for '\(ds)'")
+                throw ExitCode(1)
+            }
+            var dc = config.displays["\(id)"] ?? DisplayConfig()
+            dc.defaultSpace = spaceName
+            config.displays["\(id)"] = dc
+            changed.append("defaultSpace=\(spaceName)")
         }
 
-        config.displays["\(id)"] = DisplayConfig(name: name, defaultSpace: spaceName)
+        if let newNumber = number {
+            guard newNumber != id else {
+                print("Error: --number \(newNumber) is the same as the current ID")
+                throw ExitCode(1)
+            }
+            guard state.uuidToId.values.first(where: { $0 == newNumber }) == nil else {
+                print("Error: number \(newNumber) is already in use")
+                throw ExitCode(1)
+            }
+            guard let uuid = state.uuidToId.first(where: { $0.value == id })?.key else {
+                print("Error: display \(id) not found in display state")
+                throw ExitCode(1)
+            }
+            state.uuidToId[uuid] = newNumber
+            if let dc = config.displays["\(id)"] {
+                config.displays.removeValue(forKey: "\(id)")
+                config.displays["\(newNumber)"] = dc
+            }
+            try DisplayStateStore.save(state)
+            changed.append("number: \(id) → \(newNumber)")
+        }
+
         try ConfigStore.save(config)
-        print("Display \(id) configured: name=\(name), defaultSpace=\(spaceName)")
+        print("Display \(id) updated: \(changed.joined(separator: ", "))")
     }
 }
 

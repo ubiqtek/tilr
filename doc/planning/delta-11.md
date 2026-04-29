@@ -30,9 +30,9 @@ runtime ignores it.
 - **Display-scoped space lookup:** when activating a space, find the display
   that owns it (via config `displays` map) and apply layout to that display's
   `NSScreen`, not `NSScreen.main`.
-- **Per-display hotkeys:** hotkey activation routes the space switch to the
-  display whose mouse cursor is over it (or active display, TBD — see open
-  questions).
+- **Per-display hotkeys:** hotkey activation routes to whichever display
+  currently owns that space in runtime state. User can reassign a space to a
+  different display at runtime via `CMD+SHIFT+1-n` (n = display integer ID).
 - **Per-display layout:** `LayoutStrategy.apply` already takes a `screen:
   NSScreen` parameter; audit all callers to ensure the correct screen is
   passed (not `NSScreen.main`).
@@ -44,14 +44,40 @@ runtime ignores it.
   display's frame.
 - **Display hotplug:** handle `NSApplication.didChangeScreenParametersNotification`
   — re-resolve display→space mapping when monitors are connected/disconnected.
+- **`tilr displays list`** — show all known displays with integer ID, Tilr Name,
+  system name, default space, and IODisplayUUID:
+
+  ```
+  ID  Tilr Name   System Name              Default Space  UUID
+  --  ---------   -----------              -------------  ----
+  1   Laptop      Built-in Retina Display  Coding         A1B2C3D4-...
+  2   Left        DELL U2723QE             —              E5F6G7H8-...
+  ```
+
+- **`tilr displays configure <id>`** — update display metadata:
+  - `--name <name>` — set/update Tilr Name
+  - `--number <n>` — reassign integer ID
+  - `--default-space <space>` — set default space (optional; display can be
+    named without one)
 
 ## Implementation steps
 
+> **Implementation order:** implement the display identity foundation first —
+> `IODisplayUUID → integerID` mapping, `tilr displays list`, and
+> `tilr displays configure` — before tackling space-switching across displays.
+> The stable ID mapping is a prerequisite for all subsequent per-display work.
+
+- [ ] **Display identity foundation:** on first sight of a display, read its
+      `IODisplayUUID` and auto-assign the next available integer ID. Persist the
+      `[IODisplayUUID: integerID]` mapping in `StateStore` so IDs survive
+      hotplug/reboot. Expose user-facing Tilr Name (defaulting to "Display N").
+      Implement `tilr displays list` and `tilr displays configure`.
 - [ ] Audit `NSScreen.main` usages: replace with display-scoped lookups via a
       new `DisplayResolver` helper (input: space name → output: `NSScreen`).
-- [ ] Extend `StateStore` to persist `[displayUUID: spaceName]` instead of a
-      single `activeSpace`. Migration: existing single-string state seeds
-      `NSScreen.main`'s UUID.
+- [ ] Extend `StateStore` to persist `[integerID: spaceName]` for current
+      display→space assignment (runtime, overrides config defaults) in addition
+      to the `[IODisplayUUID: integerID]` identity mapping. Migration: existing
+      single-string `activeSpace` seeds `NSScreen.main`'s mapped integer ID.
 - [ ] Add `DisplayService` (or extend `SpaceService`) to publish per-display
       `activeSpace` changes via Combine.
 - [ ] Update `MenuBarController` — show all displays' active spaces, e.g.
@@ -75,17 +101,24 @@ runtime ignores it.
 - [ ] Disconnect/reconnect external monitor → spaces on the disconnected
       display gracefully degrade; reattaching restores the previous mapping.
 
-## Open questions
+## Decisions
 
-1. Hotkey routing: should a hotkey always switch the display where the
-   space is *configured*, or the display under the mouse cursor?
-   (Hammerspoon does the former — config-driven.)
-2. Display identity across reboots: `CGDirectDisplayID` is unstable;
-   `NSScreen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")]` or
-   the IODisplayUUID? Choose one and document why.
-3. What happens if the user has only one display configured but two physical
-   displays? Default space activates on primary; secondary is "passive" until
-   the user adds it to config.
+1. **Hotkey routing:** spaces are assigned to displays. Config holds defaults;
+   runtime state (persisted in `StateStore`) holds the current assignment.
+   When a space hotkey is pressed it activates on whichever display currently
+   owns that space in state. The user can reassign a space to a different
+   display at runtime with `CMD+SHIFT+1-n` (n = target display integer ID).
+
+2. **Display identity:** internal stable key is `IODisplayUUID` (stored in
+   state). User-facing identity is a sequential integer ID plus a Tilr Name
+   (e.g. "Laptop", "Left", "Centre"). Config keys use the integer ID. State
+   maps `IODisplayUUID → integerID` so the mapping survives plug/unplug. First
+   time Tilr sees a display it auto-assigns the next available integer ID. The
+   user can later reassign IDs and names via `tilr displays configure`.
+
+3. **Unconfigured displays:** passive — Tilr ignores them for layout purposes.
+   A display can be named via `tilr displays configure` without assigning a
+   default space; `--default-space` is optional.
 
 ## Out of scope
 
