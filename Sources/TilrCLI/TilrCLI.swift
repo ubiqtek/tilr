@@ -420,7 +420,7 @@ struct SpacesDelete: ParsableCommand {
 struct Displays: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Manage display configuration.",
-        subcommands: [DisplaysList.self, DisplaysConfigure.self, DisplaysIdentify.self]
+        subcommands: [DisplaysList.self, DisplaysConfigure.self, DisplaysIdentify.self, DisplaysConfig.self]
     )
 }
 
@@ -486,6 +486,43 @@ struct DisplaysList: ParsableCommand {
 
         if stateChanged {
             try? DisplayStateStore.save(state)
+        }
+    }
+
+    private func pad(_ s: String, _ width: Int) -> String {
+        s.padding(toLength: max(s.count, width), withPad: " ", startingAt: 0)
+            .padding(toLength: width, withPad: " ", startingAt: 0)
+    }
+}
+
+struct DisplaysConfig: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "config", abstract: "Show persisted display mapping from disk.")
+
+    func run() throws {
+        let state = DisplayStateStore.load()
+        let config = try ConfigStore.load()
+
+        let uuidToId = state.uuidToId
+        guard !uuidToId.isEmpty else {
+            print("No displays registered yet. Run 'tilr displays list' to register connected displays.")
+            return
+        }
+
+        let idToUUID = Dictionary(uniqueKeysWithValues: uuidToId.map { ($1, $0) })
+        let sorted = idToUUID.sorted { $0.key < $1.key }
+
+        let idW = 4, nameW = 12, defaultSpaceW = 15
+        print(pad("ID", idW) + pad("Tilr Name", nameW) + pad("Default Space", defaultSpaceW) + "UUID")
+        print(String(repeating: "-", count: 2).padding(toLength: idW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 9).padding(toLength: nameW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 13).padding(toLength: defaultSpaceW, withPad: " ", startingAt: 0)
+            + String(repeating: "-", count: 4))
+
+        for (id, uuid) in sorted {
+            let displayConfig = config.displays["\(id)"]
+            let tilrName = displayConfig?.name ?? "—"
+            let defaultSpace = displayConfig?.defaultSpace ?? "—"
+            print(pad("\(id)", idW) + pad(tilrName, nameW) + pad(defaultSpace, defaultSpaceW) + uuid)
         }
     }
 
