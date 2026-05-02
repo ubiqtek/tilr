@@ -44,7 +44,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             appWindowManager?.moveCurrentApp(toSpaceName: spaceName)
         }
 
-        let server = SocketServer(configStore: configStore, service: svc, appWindowManager: appWindowManager)
+        let server = SocketServer(configStore: configStore, service: svc, appWindowManager: appWindowManager, popup: popup)
         self.socketServer = server
         server.start()
 

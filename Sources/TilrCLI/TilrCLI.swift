@@ -420,8 +420,32 @@ struct SpacesDelete: ParsableCommand {
 struct Displays: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Manage display configuration.",
-        subcommands: [DisplaysList.self, DisplaysConfigure.self]
+        subcommands: [DisplaysList.self, DisplaysConfigure.self, DisplaysIdentify.self]
     )
+}
+
+struct DisplaysIdentify: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "identify", abstract: "Flash a labelled popup on each display.")
+
+    func run() throws {
+        let client = SocketClient()
+        let response: TilrResponse
+        do {
+            response = try client.send(TilrRequest(cmd: "identify-displays"))
+        } catch SocketError.notRunning {
+            print("Tilr.app is not running.")
+            throw ExitCode(1)
+        } catch {
+            print("Error: \(error)")
+            throw ExitCode(1)
+        }
+        if response.ok {
+            print(response.message ?? "Identifying displays.")
+        } else {
+            print("Error: \(response.error ?? "unknown")")
+            throw ExitCode(1)
+        }
+    }
 }
 
 struct DisplaysList: ParsableCommand {

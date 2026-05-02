@@ -42,6 +42,13 @@ scenarios and pinpointing log sections for analysis.
 
 For detailed guide, see **`doc/arch/logging.md`**.
 
+## Code signing
+
+`DEVELOPMENT_TEAM` must stay set in `project.yml`. If it is blank, `just gen`
+regenerates the Xcode project with ad-hoc signing — macOS then treats each
+build as a new app and revokes the Accessibility permission grant after every
+build. See **`doc/kb/code-signing.md`** and `ops/local/local.env` for values.
+
 ## Upstream reference
 
 The Hammerspoon Lua implementation is the behavioural spec for the full native

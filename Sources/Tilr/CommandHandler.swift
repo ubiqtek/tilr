@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import OSLog
 
@@ -6,12 +7,14 @@ final class CommandHandler {
     private let configStore: ConfigStore
     private let service: SpaceService
     private weak var appWindowManager: AppWindowManager?
+    private weak var popup: PopupWindow?
 
-    init(configStore: ConfigStore, service: SpaceService, appWindowManager: AppWindowManager? = nil) {
+    init(configStore: ConfigStore, service: SpaceService, appWindowManager: AppWindowManager? = nil, popup: PopupWindow? = nil) {
         self.startDate = Date()
         self.configStore = configStore
         self.service = service
         self.appWindowManager = appWindowManager
+        self.popup = popup
     }
 
     /// Returns the response and an optional post-send action.
@@ -55,8 +58,27 @@ final class CommandHandler {
             }
             return (TilrResponse(ok: true, message: "Reloaded \(count) space(s)"), postSend)
 
+        case "identify-displays":
+            let postSend: (() -> Void)? = { [weak self] in
+                DispatchQueue.main.async {
+                    self?.showIdentifyPopups()
+                }
+            }
+            return (TilrResponse(ok: true, message: "Identifying displays"), postSend)
+
         default:
             return (TilrResponse(ok: false, error: "unknown command: \(request.cmd)"), nil)
+        }
+    }
+
+    private func showIdentifyPopups() {
+        let state = DisplayStateStore.load()
+        let config = configStore.current
+        for screen in NSScreen.screens {
+            guard let uuid = displayUUID(for: screen),
+                  let displayId = state.uuidToId[uuid] else { continue }
+            let name = config.displays["\(displayId)"]?.name ?? screen.localizedName
+            popup?.show("\(displayId) · \(name)", on: screen, duration: 3.0)
         }
     }
 }

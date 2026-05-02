@@ -8,8 +8,8 @@ final class SocketServer {
     private let queue = DispatchQueue(label: "io.ubiqtek.tilr.socket", qos: .utility)
     private let handler: CommandHandler
 
-    init(configStore: ConfigStore, service: SpaceService, appWindowManager: AppWindowManager? = nil) {
-        self.handler = CommandHandler(configStore: configStore, service: service, appWindowManager: appWindowManager)
+    init(configStore: ConfigStore, service: SpaceService, appWindowManager: AppWindowManager? = nil, popup: PopupWindow? = nil) {
+        self.handler = CommandHandler(configStore: configStore, service: service, appWindowManager: appWindowManager, popup: popup)
     }
 
     func start() {

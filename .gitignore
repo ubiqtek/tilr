@@ -67,3 +67,6 @@ fastlane/test_output
 # Local task/session data
 tsk/
 .claude-sessions/
+
+# Local ops secrets (team IDs, credentials)
+ops/local/
