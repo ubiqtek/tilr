@@ -1,0 +1,14 @@
+2026-05-03T21:56:28.084Z [MARKER] --- START[HST-a2d132] ---
+2026-05-03T21:56:30.133Z [MARKER] --- [HST-a2d132] Zen show/hide ---
+2026-05-03T21:56:31.190Z [windows] [show] showApp: 'app.zen-browser.zen' isVisible=false
+2026-05-03T21:56:31.503Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=5
+2026-05-03T21:56:31.817Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=4
+2026-05-03T21:56:32.133Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=3
+2026-05-03T21:56:32.228Z [windows] [hide] hideApp: 'app.zen-browser.zen' isVisible=true
+2026-05-03T21:56:32.228Z [windows] [hide] AppKit: calling app.hide()
+2026-05-03T21:56:32.542Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=5
+2026-05-03T21:56:32.858Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=4
+2026-05-03T21:56:33.174Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=3
+2026-05-03T21:56:33.488Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=2
+2026-05-03T21:56:33.804Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=1
+2026-05-03T21:56:39.346Z [MARKER] --- END[HST-a2d132] ---

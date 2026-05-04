@@ -11,7 +11,10 @@ settings:
     SWIFT_VERSION: "5.9"
     MACOSX_DEPLOYMENT_TARGET: "13.0"
     CODE_SIGN_STYLE: Automatic
-    DEVELOPMENT_TEAM: T6J8N8M9F4
+    DEVELOPMENT_TEAM: MX95X5U6HA
+    MARKETING_VERSION: "0.0.1"
+    TILR_VERSION_SUFFIX: ""
+    TILR_BUILD_DATE: ""
 
 packages:
   HotKey:
@@ -40,7 +43,8 @@ targets:
         CFBundleDisplayName: Tilr
         CFBundleIdentifier: io.ubiqtek.tilr
         CFBundleVersion: "1"
-        CFBundleShortVersionString: "0.0.1"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)$(TILR_VERSION_SUFFIX)"
+        TILRBuildDate: "$(TILR_BUILD_DATE)"
         NSHighResolutionCapable: true
         CFBundleIconFile: AppIcon
     dependencies:
@@ -53,6 +57,14 @@ targets:
     settings:
       base:
         PRODUCT_NAME: Tilr
+    preBuildScripts:
+      - name: Stamp Version
+        script: |
+          "$SRCROOT/scripts/stamp-version.sh"
+        basedOnDependencyAnalysis: false
+    configFiles:
+      Debug: build/Generated/Version.xcconfig
+      Release: build/Generated/Version.xcconfig
 
   TilrCLI:
     type: tool
@@ -60,6 +72,14 @@ targets:
     sources:
       - Sources/TilrCLI
       - Sources/Shared
+    info:
+      path: Sources/TilrCLI/Info.plist
+      properties:
+        CFBundleIdentifier: io.ubiqtek.tilr-cli
+        CFBundleName: tilr
+        CFBundleVersion: "1"
+        CFBundleShortVersionString: "$(MARKETING_VERSION)$(TILR_VERSION_SUFFIX)"
+        TILRBuildDate: "$(TILR_BUILD_DATE)"
     dependencies:
       - package: ArgumentParser
         product: ArgumentParser
@@ -68,6 +88,15 @@ targets:
       base:
         PRODUCT_NAME: tilr
         PRODUCT_BUNDLE_IDENTIFIER: io.ubiqtek.tilr-cli
+        CREATE_INFOPLIST_SECTION_IN_BINARY: YES
+    preBuildScripts:
+      - name: Stamp Version
+        script: |
+          "$SRCROOT/scripts/stamp-version.sh"
+        basedOnDependencyAnalysis: false
+    configFiles:
+      Debug: build/Generated/Version.xcconfig
+      Release: build/Generated/Version.xcconfig
 
   TilrCoreTests:
     type: bundle.unit-test

@@ -1,0 +1,16 @@
+2026-05-03T14:04:45.819Z [MARKER] --- START[HST-6f1976] ---
+2026-05-03T14:04:47.879Z [MARKER] --- [HST-6f1976] Zen show/hide ---
+2026-05-03T14:04:48.939Z [windows] [show] showApp: 'app.zen-browser.zen' isVisible=false
+2026-05-03T14:04:49.243Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=5
+2026-05-03T14:04:49.559Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=4
+2026-05-03T14:04:49.875Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=3
+2026-05-03T14:04:50.004Z [windows] [hide] hideApp: 'app.zen-browser.zen' isVisible=true
+2026-05-03T14:04:50.005Z [windows] [hide] hiding using System Events: 'app.zen-browser.zen' appName=Zen
+2026-05-03T14:04:50.316Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=true remaining=5
+2026-05-03T14:04:50.317Z [windows] [hide] hiding using System Events: 'app.zen-browser.zen' appName=Zen
+2026-05-03T14:04:50.318Z [windows] [hide] retry: firing SystemEvents for 'app.zen-browser.zen' (state drifted)
+2026-05-03T14:04:50.633Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=4
+2026-05-03T14:04:50.947Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=3
+2026-05-03T14:04:51.263Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=2
+2026-05-03T14:04:51.567Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=1
+2026-05-03T14:04:57.139Z [MARKER] --- END[HST-6f1976] ---

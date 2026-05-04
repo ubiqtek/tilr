@@ -42,12 +42,20 @@ scenarios and pinpointing log sections for analysis.
 
 For detailed guide, see **`doc/arch/logging.md`**.
 
+## Building
+
+**Agents should NOT run builds.** When an agent makes code changes:
+1. Edit the code only
+2. Ask the user to test via **`just run-dev`** (run this yourself in your terminal)
+
+Why: Agent-spawned builds can trigger accessibility permission prompts on the focused app (usually Ghostty). Builds are reliable and fast when run directly in the terminal, so the user should do it.
+
 ## Code signing
 
 `DEVELOPMENT_TEAM` must stay set in `project.yml`. If it is blank, `just gen`
 regenerates the Xcode project with ad-hoc signing — macOS then treats each
 build as a new app and revokes the Accessibility permission grant after every
-build. See **`doc/kb/code-signing.md`** and `ops/local/local.env` for values.
+build. See **`doc/kb/code-signing.md`** (especially "Debugging signing problems" for cert inspection commands) and `ops/local/local.env` for values.
 
 ## Upstream reference
 

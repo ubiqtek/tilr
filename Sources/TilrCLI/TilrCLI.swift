@@ -7,7 +7,8 @@ struct Tilr: ParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "tilr",
         abstract: "Tilr CLI — query and control the Tilr menu bar app.",
-        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, Displays.self, ReloadConfig.self, System.self, Context.self, Doctor.self, DebugMarker.self],
+        version: Version.info,
+        subcommands: [Status.self, Logs.self, Config.self, Spaces.self, Displays.self, State.self, ReloadConfig.self, System.self, Context.self, Doctor.self, DebugMarker.self, Apps.self],
         defaultSubcommand: Status.self
     )
 }
@@ -601,6 +602,75 @@ struct DisplaysConfigure: ParsableCommand {
     }
 }
 
+// MARK: - State
+
+struct State: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Query and inspect Tilr state.",
+        subcommands: [StateView.self, StateExport.self]
+    )
+}
+
+struct StateView: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "view", abstract: "Display current state as a formatted tree.")
+
+    func run() throws {
+        let client = SocketClient()
+        let response: TilrStateResponse
+        do {
+            response = try client.send(TilrStateRequest(action: "view"))
+        } catch SocketError.notRunning {
+            print("Tilr.app is not running.\n\n  Start with: open -a Tilr.app")
+            throw ExitCode(1)
+        } catch {
+            print("Error: \(error)")
+            throw ExitCode(1)
+        }
+
+        guard response.ok, let snapshot = response.snapshot else {
+            print("Error: \(response.error ?? "unknown")")
+            throw ExitCode(1)
+        }
+
+        let formatter = StateFormatter()
+        print(formatter.formatAsTree(snapshot))
+        print()
+        print(formatter.formatMetadata(snapshot))
+    }
+}
+
+struct StateExport: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "export", abstract: "Export current state as JSON.")
+
+    func run() throws {
+        let client = SocketClient()
+        let response: TilrStateResponse
+        do {
+            response = try client.send(TilrStateRequest(action: "export"))
+        } catch SocketError.notRunning {
+            print("Tilr.app is not running.\n\n  Start with: open -a Tilr.app")
+            throw ExitCode(1)
+        } catch {
+            print("Error: \(error)")
+            throw ExitCode(1)
+        }
+
+        guard response.ok, let snapshot = response.snapshot else {
+            print("Error: \(response.error ?? "unknown")")
+            throw ExitCode(1)
+        }
+
+        do {
+            let formatter = StateFormatter()
+            let json = try formatter.formatAsJSON(snapshot)
+            print(json)
+        } catch {
+            print("Error formatting JSON: \(error)")
+            throw ExitCode(1)
+        }
+    }
+}
+
 // MARK: - Context
 
 struct Context: ParsableCommand {
@@ -825,9 +895,99 @@ struct DebugMarker: ParsableCommand {
 
     func run() throws {
         TilrLogger.shared.marker(description)
-        // TilrLogger writes are async through a serial queue; give it a moment to flush.
-        Thread.sleep(forTimeInterval: 0.1)
+        // TilrLogger writes are async through a serial queue; give it time to flush.
+        // Using a longer sleep since FileHandle.write is deferred on the queue.
+        Thread.sleep(forTimeInterval: 1.0)
         print("[tilr] marker written: \(description)")
+    }
+}
+
+// MARK: - Apps
+
+func resolveApp(_ nameOrBundleId: String) -> NSRunningApplication? {
+    let running = NSWorkspace.shared.runningApplications.filter { $0.activationPolicy == .regular }
+    // Exact bundle ID match first
+    if let exact = running.first(where: { $0.bundleIdentifier == nameOrBundleId }) { return exact }
+    // Case-insensitive name match
+    let lower = nameOrBundleId.lowercased()
+    return running.first(where: { $0.localizedName?.lowercased().contains(lower) == true })
+}
+
+@discardableResult
+func runOsascript(_ source: String) -> Int32 {
+    let task = Process()
+    task.launchPath = "/usr/bin/osascript"
+    task.arguments = ["-e", source]
+    let errPipe = Pipe()
+    task.standardError = errPipe
+    try? task.run()
+    task.waitUntilExit()
+    let errOut = String(data: errPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+    if !errOut.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        print("  osascript stderr: \(errOut.trimmingCharacters(in: .whitespacesAndNewlines))")
+    }
+    return task.terminationStatus
+}
+
+struct Apps: ParsableCommand {
+    static let configuration = CommandConfiguration(
+        abstract: "Show or hide a running app via socket delegation to Tilr.app."
+    )
+
+    @Argument(help: "App display name (case-insensitive contains) or exact bundle ID.")
+    var nameOrBundleId: String
+
+    @Argument(help: "Action: 'show' to unhide or 'hide' to hide.")
+    var action: String
+
+    func run() throws {
+        // Resolve app name/bundle ID to bundle ID
+        guard let app = resolveApp(nameOrBundleId) else {
+            let running = NSWorkspace.shared.runningApplications
+                .filter { $0.activationPolicy == .regular }
+                .compactMap { $0.localizedName }
+                .sorted()
+            print("Error: no running app matched '\(nameOrBundleId)'")
+            print("Running apps: \(running.joined(separator: ", "))")
+            throw ExitCode(1)
+        }
+
+        guard let bundleID = app.bundleIdentifier else {
+            print("Error: could not determine bundle ID for app")
+            throw ExitCode(1)
+        }
+
+        let name = app.localizedName ?? "(unknown)"
+        let actionLower = action.lowercased()
+
+        guard actionLower == "show" || actionLower == "hide" else {
+            print("Error: action must be 'show' or 'hide', got '\(action)'")
+            throw ExitCode(1)
+        }
+
+        print("Found: \(name) (\(bundleID))")
+        print("Sending \(actionLower) command via socket...")
+
+        // Send socket command to running Tilr.app
+        let client = SocketClient()
+        let cmd = actionLower == "hide" ? "apps-hide" : "apps-show"
+        let response: TilrResponse
+        do {
+            response = try client.send(TilrRequest(cmd: cmd, bundleID: bundleID))
+        } catch SocketError.notRunning {
+            print("Tilr.app is not running.\n\n  Start with: open -a Tilr.app")
+            throw ExitCode(1)
+        } catch {
+            print("Error: \(error)")
+            throw ExitCode(1)
+        }
+
+        if response.ok {
+            print(response.message ?? "Command sent.")
+        } else {
+            print("Error: \(response.error ?? "unknown")")
+            throw ExitCode(1)
+        }
     }
 }
 

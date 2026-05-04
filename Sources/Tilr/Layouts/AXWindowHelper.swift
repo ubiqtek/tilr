@@ -68,46 +68,76 @@ func setWindowFrame(bundleID: String, frame: CGRect) -> Bool {
     return posResult == .success && sizeResult1 == .success
 }
 
-/// Sets or clears the hidden state of all running instances of an app.
-/// The hide path is guarded by `isHidden`. The unhide path is not — this
-/// matches the Hammerspoon reference implementation and produces more
-/// reliable unhide behaviour in practice. After the initial call, schedules
-/// up to 2 retries (~300 ms apart) if the actual state doesn't match the
-/// intent — some apps (Ghostty, Zen, Marq) don't honour the first
-/// hide/unhide AppleEvent reliably.
+/// Tracks the most recent intended visible state per bundle ID.
+/// `scheduleHiddenStateRetry` checks this to self-cancel if a subsequent
+/// space switch has reversed the intent (e.g. Coding shows Marq after Scratch hid it).
+@MainActor var intendedVisibleState: [String: Bool] = [:]
+
+/// Hides all running instances of an app. Tries AppKit `app.hide()` first,
+/// then falls back to osascript via `setHiddenViaOsascript()` if state drifts
+/// during the retry chain. Records intent in `intendedVisibleState` so retry
+/// chains self-cancel if a subsequent space switch reverses the intent.
+/// Schedules up to 5 retries at 0.3s intervals.
 @MainActor
-func setAppHidden(bundleID: String, hidden: Bool) {
+func hideApp(bundleID: String) {
+    intendedVisibleState[bundleID] = false
     let instances = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
     for app in instances {
-        if hidden {
-            guard !app.isHidden else { continue }
-            app.hide()
-        } else {
-            app.unhide()
-        }
-        scheduleHiddenStateRetry(bundleID: bundleID, desiredHidden: hidden, attemptsRemaining: 2)
+        let isVisible = !app.isHidden
+        Logger.windows.info("[hide] hideApp: '\(bundleID, privacy: .public)' isVisible=\(isVisible)")
+        TilrLogger.shared.log("[hide] hideApp: '\(bundleID)' isVisible=\(isVisible)", category: "windows")
+        Logger.windows.info("[hide] AppKit: calling app.hide()")
+        TilrLogger.shared.log("[hide] AppKit: calling app.hide()", category: "windows")
+        app.hide()
+        scheduleHiddenStateRetry(bundleID: bundleID, desiredVisible: false, attemptsRemaining: 5)
+    }
+}
+
+/// Shows all running instances of an app via AppKit unhide.
+/// Records intent in `intendedVisibleState` so retry chains self-cancel if a
+/// subsequent space switch reverses the intent.
+@MainActor
+func showApp(bundleID: String) {
+    intendedVisibleState[bundleID] = true
+    let instances = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+    for app in instances {
+        let isVisible = !app.isHidden
+        Logger.windows.info("[show] showApp: '\(bundleID, privacy: .public)' isVisible=\(isVisible)")
+        TilrLogger.shared.log("[show] showApp: '\(bundleID)' isVisible=\(isVisible)", category: "windows")
+        Logger.windows.info("[show] AppKit: calling app.unhide()")
+        TilrLogger.shared.log("[show] AppKit: calling app.unhide()", category: "windows")
+        app.unhide()
+        scheduleHiddenStateRetry(bundleID: bundleID, desiredVisible: true, attemptsRemaining: 5)
     }
 }
 
 @MainActor
-private func scheduleHiddenStateRetry(bundleID: String, desiredHidden: Bool, attemptsRemaining: Int) {
+private func scheduleHiddenStateRetry(bundleID: String, desiredVisible: Bool, attemptsRemaining: Int) {
     guard attemptsRemaining > 0 else { return }
-    let isFinalAttempt = attemptsRemaining == 1
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        let tag = desiredVisible ? "[show]" : "[hide]"
+        guard intendedVisibleState[bundleID] == desiredVisible else {
+            let currentIntent = intendedVisibleState[bundleID]
+            let msg = "\(tag) INTERRUPT: intent changed to \(String(describing: currentIntent)) (was \(desiredVisible)), cancelling retry chain"
+            Logger.windows.info("\(msg, privacy: .public)")
+            TilrLogger.shared.log(msg, category: "windows")
+            return
+        }
         let apps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
         guard let app = apps.first else { return }
+        Logger.windows.info("\(tag, privacy: .public) retry: '\(bundleID, privacy: .public)' isVisible=\(!app.isHidden) remaining=\(attemptsRemaining)")
+        TilrLogger.shared.log("\(tag) retry: '\(bundleID)' isVisible=\(!app.isHidden) remaining=\(attemptsRemaining)", category: "windows")
 
-        let current = app.isHidden
-        if current == desiredHidden { return }
-
-        if isFinalAttempt {
-            setHiddenViaSystemEvents(bundleID: bundleID, hidden: desiredHidden)
-        } else if desiredHidden {
-            app.hide()
-        } else {
-            app.unhide()
+        if !app.isHidden != desiredVisible {
+            if !desiredVisible {
+                Logger.windows.info("[hide] osascript fallback: firing osascript (state drifted from AppKit)")
+                TilrLogger.shared.log("[hide] osascript fallback: firing osascript (state drifted from AppKit)", category: "windows")
+                setHiddenViaOsascript(bundleID: bundleID, hidden: true)
+            } else {
+                app.unhide()
+            }
         }
-        scheduleHiddenStateRetry(bundleID: bundleID, desiredHidden: desiredHidden, attemptsRemaining: attemptsRemaining - 1)
+        scheduleHiddenStateRetry(bundleID: bundleID, desiredVisible: desiredVisible, attemptsRemaining: attemptsRemaining - 1)
     }
 }
 
@@ -170,8 +200,14 @@ func retryUntilWindowMatches(
     }
 }
 
-private func setHiddenViaSystemEvents(bundleID: String, hidden: Bool) {
-    guard let name = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first?.localizedName else { return }
+/// Fallback hide mechanism using osascript / System Events. Called only when
+/// AppKit `app.hide()` has been tried first and the hidden state has since
+/// drifted back to visible. Fire-and-forget; errors are swallowed silently.
+private func setHiddenViaOsascript(bundleID: String, hidden: Bool) {
+    let appName = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first?.localizedName
+    Logger.windows.info("[hide] osascript: '\(bundleID, privacy: .public)' appName=\(appName ?? "nil", privacy: .public)")
+    TilrLogger.shared.log("[hide] osascript: '\(bundleID)' appName=\(appName ?? "nil")", category: "windows")
+    guard let name = appName else { return }
     let escapedName = name.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
     let visibleValue = hidden ? "false" : "true"
     let source = "tell application \"System Events\" to set visible of process \"\(escapedName)\" to \(visibleValue)"

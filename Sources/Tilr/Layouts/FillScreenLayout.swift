@@ -33,7 +33,7 @@ struct FillScreenLayout: LayoutStrategy {
             // Move-into: hide all other space apps, apply fill-screen frame only to moved app.
             let others = space.apps.filter { $0 != movedBundleID }
             for bundleID in others {
-                setAppHidden(bundleID: bundleID, hidden: true)
+                hideApp(bundleID: bundleID)
                 Logger.layout.info("fill-screen move: hiding competitor '\(bundleID, privacy: .public)'")
             }
 

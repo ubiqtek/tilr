@@ -18,12 +18,14 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 8 | Moving apps to a space | ✅ | 2026-04-25 |
 | 9 | Follow focus on CMD-TAB | ✅ | 2026-04-25 |
 | 10 | Sidebar layout on app activate/close | ✅ | 2026-04-27 |
-| 11 | Multi-display support | ⬜ | — |
+| 11 | Multi-display support | 🟡 | — |
+| 12a | Version management | ✅ | 2026-05-03 |
+| Rearchitect | Rearchitect to pipeline | 🟡 | — |
 | 12 | State file | ⬜ | — |
 | 13 | Polish | ⬜ | — |
 | 14 | Release on App Store | ⬜ | — |
 
-**Current focus:** Delta 11 — Multi-display support
+**Current focus:** Rearchitect to pipeline (Milestone 1: app startup + state initialization + CLI observability)
 
 ---
 
@@ -50,6 +52,8 @@ lands — check boxes, add a dated note, link the commit/PR.
 - [Delta 9: Follow focus on CMD-TAB](delta-9.md)
 - [Delta 10: Sidebar layout on app activate/close](delta-10.md)
 - [Delta 11: Multi-display support](delta-11.md)
+- [Delta 12a: Version management](delta-12a.md)
+- [Rearchitect: Rearchitect to pipeline](delta-rearchitect-to-pipeline.md)
 - [Delta 12: State file](delta-12.md)
 - [Delta 13: Polish](delta-13.md)
 - [Delta 14: Release on App Store](delta-14.md)
@@ -71,6 +75,9 @@ lands — check boxes, add a dated note, link the commit/PR.
 - ~~**BUG-8**: moveCurrentApp's deferred layout never ran after Delta 9~~ — **Fixed (2026-04-25)**
   - Root cause: removed `.receive(on:)` hop from SpaceService's onSpaceActivated subscriber (see decision log). That hop was queuing `handleSpaceActivated` to the next runloop tick, breaking the capture order of the generation token in `moveCurrentApp`.
   - Fix: run `handleSpaceActivated` synchronously within the subscription's `send()` call. Adjusted `moveCurrentApp` gen capture position to AFTER switchToSpace (now matches what `handleSpaceActivated` set).
+- **BUG-9**: Zen not hidden when switching to Coding after Reference → Scratch → Coding sequence — *fix applied 2026-05-03, needs testing*
+  - Root cause: `guard !app.isHidden else { continue }` in `setAppHidden` skipped both the hide call AND retry scheduling when Zen was already hidden (from Scratch). When Coding fired, no safety net existed.
+  - Fix: Removed the guard; added immediate `setHiddenViaSystemEvents` call on hide path. `NSRunningApplication.hide()` is silently ignored by Zen (Firefox/Gecko arch) — SystemEvents is the only reliable mechanism. See `doc/implementation-notes/003-zen-browser-hide-unreliability.md`.
 
 ---
 
@@ -81,3 +88,5 @@ ADR in `doc/adr/` if the change is architectural.
 
 - **2026-04-25:** Adopted generation-token pattern (UInt64 counter in AppWindowManager, captured by asyncAfter blocks, guards against stale work from rapid space switches). See `doc/arch/async-and-races.md`.
 - **2026-04-25:** Removed `.receive(on:)` hop from SpaceService's onSpaceActivated subscriber; handlers must run synchronously inside `send()` for generation-token capture order to be correct. See `doc/arch/async-and-races.md`.
+- **2026-05-02:** Delta 11 display identity foundation complete. `DisplayStateStore` + stable UUID→integerID mapping landed; `tilr displays list/configure/identify/config` all working. Per-display active space in `SpaceService` is next.
+- **2026-05-02:** Delta 11 step 2 complete. DisplayResolver shim landed; 6 NSScreen.main call sites in AppWindowManager refactored. Behavior unchanged (resolver returns .main).

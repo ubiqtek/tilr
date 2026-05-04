@@ -1,0 +1,11 @@
+2026-05-03T13:50:18.728Z [MARKER] --- START[HST-69e0d9] ---
+2026-05-03T13:50:20.788Z [MARKER] --- [HST-69e0d9] Zen show/hide ---
+2026-05-03T13:50:21.848Z [windows] [hide] setAppHidden: 'app.zen-browser.zen' hidden=false isHidden=true
+2026-05-03T13:50:21.881Z [windows] [hide] setAppHidden: 'app.zen-browser.zen' hidden=true isHidden=false
+2026-05-03T13:50:21.882Z [windows] [hide] SystemEvents: 'app.zen-browser.zen' hidden=true appName=Zen
+2026-05-03T13:50:22.194Z [windows] [hide] retry: 'app.zen-browser.zen' desiredHidden=true isHidden=true remaining=5
+2026-05-03T13:50:22.509Z [windows] [hide] retry: 'app.zen-browser.zen' desiredHidden=true isHidden=true remaining=4
+2026-05-03T13:50:22.818Z [windows] [hide] retry: 'app.zen-browser.zen' desiredHidden=true isHidden=true remaining=3
+2026-05-03T13:50:23.134Z [windows] [hide] retry: 'app.zen-browser.zen' desiredHidden=true isHidden=true remaining=2
+2026-05-03T13:50:23.443Z [windows] [hide] retry: 'app.zen-browser.zen' desiredHidden=true isHidden=true remaining=1
+2026-05-03T13:50:29.025Z [MARKER] --- END[HST-69e0d9] ---

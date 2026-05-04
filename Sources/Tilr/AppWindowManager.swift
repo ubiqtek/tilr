@@ -28,6 +28,7 @@ final class AppWindowManager {
 
     private let configStore: ConfigStore
     private let service: SpaceService
+    private let displayResolver: DisplayResolver
     private var cancellables = Set<AnyCancellable>()
     private let sidebarLayout = SidebarLayout()
     private let fillScreenLayout = FillScreenLayout()
@@ -64,9 +65,10 @@ final class AppWindowManager {
     private var hideObserverToken: NSObjectProtocol?
     private var unhideObserverToken: NSObjectProtocol?
 
-    init(configStore: ConfigStore, service: SpaceService) {
+    init(configStore: ConfigStore, service: SpaceService, displayResolver: DisplayResolver) {
         self.configStore = configStore
         self.service = service
+        self.displayResolver = displayResolver
 
         // Seed live membership from config: every configured space gets a set entry,
         // and every pinned app is added to its space's set.
@@ -254,7 +256,7 @@ final class AppWindowManager {
             // it synchronously. Used by the retry callback to detect supersession.
             let gen = activationGeneration
 
-            let screen = NSScreen.main ?? NSScreen.screens[0]
+            let screen = displayResolver.screen(forSpace: targetName)
             let targetSize: CGSize = {
                 if let space = config.spaces[targetName], space.layout?.type == .sidebar {
                     return sidebarLayout.frame(for: bundleID, in: space, spaceName: targetName, screen: screen).size
@@ -346,7 +348,7 @@ final class AppWindowManager {
                 let previousApp = fillScreenLastApp[spaceName]
                 if let prev = previousApp, prev != bundleID {
                     Logger.windows.info("hiding previous fill-screen app '\(prev, privacy: .public)' in space '\(spaceName, privacy: .public)'")
-                    setAppHidden(bundleID: prev, hidden: true)
+                    hideApp(bundleID: prev)
                 }
 
                 fillScreenLastApp[spaceName] = bundleID
@@ -391,7 +393,7 @@ final class AppWindowManager {
         activationResetWorkItem?.cancel()
         let resetWork = DispatchWorkItem { [weak self] in self?.isTilrActivating = false }
         activationResetWorkItem = resetWork
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: resetWork)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: resetWork)
 
         currentSpaceName = name
         previousSidebarSlotApp = nil
@@ -467,7 +469,7 @@ final class AppWindowManager {
         // Show the visible apps first — so macOS has a foreground target before
         // we hide the old space's foreground app. Matches Hammerspoon's ordering.
         for bundleID in visibleApps {
-            setAppHidden(bundleID: bundleID, hidden: false)
+            showApp(bundleID: bundleID)
         }
 
         // Hide apps not visible in this space.
@@ -476,7 +478,7 @@ final class AppWindowManager {
         // sidebar reflows during the space-switch settle period.
         for bundleID in hidingApps {
             suppressHideEvent(for: bundleID)
-            setAppHidden(bundleID: bundleID, hidden: true)
+            hideApp(bundleID: bundleID)
         }
 
         // Decide which app to bring to the front. For fill-screen that's the single
@@ -521,7 +523,7 @@ final class AppWindowManager {
             self.applyLayout(name: name, config: config)
 
             if space?.layout?.type == .fillScreen, let targetBundleID = activateBundleID {
-                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let screen = displayResolver.screen(forSpace: name)
                 let targetSize = screen.frame.size
                 retryUntilWindowMatches(bundleID: targetBundleID, targetSize: targetSize) { [weak self] in
                     guard let self, self.activationGeneration == gen else { return }
@@ -534,7 +536,7 @@ final class AppWindowManager {
     private func applyLayout(name: String, config: TilrConfig, operation: OperationType = .spaceSwitch(spaceName: "")) {
         guard let space = config.spaces[name], let layout = space.layout else { return }
 
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = displayResolver.screen(forSpace: name)
 
         // Resolve the operation's spaceName default when caller used the bare default.
         let resolvedOperation: OperationType
@@ -620,7 +622,7 @@ final class AppWindowManager {
                 Logger.windows.info("reflow: slot '\(triggerBundleID, privacy: .public)' activated — hiding prev '\(prev ?? "none", privacy: .public)'")
 
                 // Frame the new slot app into its sidebar frame.
-                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let screen = self.displayResolver.screen(forSpace: spaceName)
                 let targetFrame = self.sidebarLayout.frame(
                     for: triggerBundleID, in: currentSpace, spaceName: spaceName, screen: screen)
 
@@ -643,7 +645,7 @@ final class AppWindowManager {
                 // Hide the previous slot app.
                 if let prev, prev != triggerBundleID, prev != mainBundleID {
                     self.suppressHideEvent(for: prev)
-                    setAppHidden(bundleID: prev, hidden: true)
+                    hideApp(bundleID: prev)
                 }
 
                 // Update which slot app is currently visible.
@@ -656,7 +658,7 @@ final class AppWindowManager {
 
             // Retry until the main app's window width matches the target.
             if let mainBundleID = currentSpace.layout?.main {
-                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let screen = self.displayResolver.screen(forSpace: spaceName)
                 let targetFrame = self.sidebarLayout.frame(
                     for: mainBundleID, in: currentSpace, spaceName: spaceName, screen: screen)
                 retryUntilWindowMatches(bundleID: mainBundleID, targetSize: targetFrame.size) {
@@ -670,7 +672,7 @@ final class AppWindowManager {
             // may not honour the first AX setFrame (e.g. Marq comes up at default
             // height and width matches but height doesn't).
             if triggerBundleID != currentSpace.layout?.main {
-                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let screen = self.displayResolver.screen(forSpace: spaceName)
                 let triggerFrame = self.sidebarLayout.frame(
                     for: triggerBundleID, in: currentSpace, spaceName: spaceName, screen: screen)
                 retryUntilWindowMatches(bundleID: triggerBundleID, targetSize: triggerFrame.size) {

@@ -66,6 +66,23 @@ final class CommandHandler {
             }
             return (TilrResponse(ok: true, message: "Identifying displays"), postSend)
 
+        case "apps-show", "apps-hide":
+            guard let bundleID = request.bundleID, !bundleID.isEmpty else {
+                return (TilrResponse(ok: false, error: "missing bundleID parameter"), nil)
+            }
+            let hidden = request.cmd == "apps-hide"
+            let postSend: (() -> Void)? = {
+                DispatchQueue.main.async {
+                    if hidden {
+                        hideApp(bundleID: bundleID)
+                    } else {
+                        showApp(bundleID: bundleID)
+                    }
+                }
+            }
+            let action = hidden ? "hide" : "show"
+            return (TilrResponse(ok: true, message: "Queued \(action) for \(bundleID)"), postSend)
+
         default:
             return (TilrResponse(ok: false, error: "unknown command: \(request.cmd)"), nil)
         }

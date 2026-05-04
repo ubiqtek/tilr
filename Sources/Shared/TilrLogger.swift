@@ -40,9 +40,17 @@ public final class TilrLogger {
     }
 
     /// Write a visually distinct marker line: `<timestamp> [MARKER] --- text ---`
+    /// Markers are synchronous to ensure they're flushed immediately.
     public func marker(_ text: String) {
         let line = "\(timestamp()) [MARKER] --- \(text) ---\n"
-        write(line)
+        // Use sync to ensure markers are written immediately before returning
+        queue.sync { [weak self] in
+            guard let self else { return }
+            guard let data = line.data(using: .utf8) else { return }
+            self.rollIfNeeded()
+            self.handle?.write(data)
+            self.handle?.synchronizeFile()
+        }
     }
 
     // MARK: - Private helpers
@@ -61,14 +69,19 @@ public final class TilrLogger {
         let dir = logURL.deletingLastPathComponent()
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
 
-        // Create file if absent
-        if !FileManager.default.fileExists(atPath: logURL.path) {
-            FileManager.default.createFile(atPath: logURL.path, contents: nil)
-        }
-
-        if let fh = try? FileHandle(forWritingTo: logURL) {
-            fh.seekToEndOfFile()
-            handle = fh
+        // Open with O_APPEND so the kernel atomically positions every write
+        // at EOF. This is essential because both the running Tilr.app and the
+        // short-lived `tilr` CLI process may hold their own log handles
+        // concurrently. Without O_APPEND, FileHandle's internal write offset
+        // can lag behind the actual file size, causing one process to
+        // overwrite lines another process just appended (observed: CLI
+        // markers vanishing because the daemon's stale offset stomped on
+        // them).
+        let fd = open(logURL.path,
+                      O_WRONLY | O_APPEND | O_CREAT,
+                      0o644)
+        if fd >= 0 {
+            handle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)
         }
     }
 

@@ -104,6 +104,8 @@ This allows cmd-tabbing between apps in the same fill-screen space to hide the p
 
 **Workaround notes:** The current approach (fixed delay) is simpler and matches Hammerspoon's behavior. It feels acceptable in practice for most apps; only high-frequency CMD+TAB mashing feels laggy.
 
+**Zen Browser (app.zen-browser.zen):** `NSRunningApplication.hide()` is silently ignored — `isHidden` stays `false` even 500ms after the call. `setAppHidden` works around this by calling `setHiddenViaSystemEvents` only (not alongside `app.hide()`, as pairing them causes Zen to fight back and remain visible). See `doc/implementation-notes/003-zen-browser-hide-unreliability.md` for the investigation. Any future hide logic for Zen must go through SystemEvents, not AppKit.
+
 ## Implementation checklist (Delta 0+)
 
 - [x] Hide all non-space apps on activation

@@ -7,6 +7,7 @@ final class MenuBarController {
 
     private let statusItem: NSStatusItem
     private var cancellable: AnyCancellable?
+    private var aboutOverlay: AboutOverlayWindow?
 
     init(service: SpaceService) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -24,6 +25,11 @@ final class MenuBarController {
 
     private func buildMenu() -> NSMenu {
         let menu = NSMenu()
+        let aboutItem = NSMenuItem(title: "About Tilr\u{2026}", action: #selector(showAbout), keyEquivalent: "")
+        aboutItem.target = self
+        aboutItem.isEnabled = true
+        menu.addItem(aboutItem)
+        menu.addItem(.separator())
         let helpItem = NSMenuItem(title: "Help", action: #selector(showHelp), keyEquivalent: "")
         helpItem.target = self
         helpItem.isEnabled = true
@@ -33,6 +39,13 @@ final class MenuBarController {
         quitItem.target = self
         menu.addItem(quitItem)
         return menu
+    }
+
+    @objc private func showAbout() {
+        let overlay = AboutOverlayWindow()
+        self.aboutOverlay = overlay
+        let screen = NSScreen.main ?? NSScreen.screens[0]
+        overlay.show(on: screen)
     }
 
     @objc private func showHelp() {

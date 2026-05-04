@@ -70,3 +70,6 @@ tsk/
 
 # Local ops secrets (team IDs, credentials)
 ops/local/
+
+# Generated version xcconfig (written by scripts/stamp-version.sh at build time)
+build/Generated/

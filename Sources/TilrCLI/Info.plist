@@ -4,30 +4,18 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleDisplayName</key>
-	<string>Tilr</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIconFile</key>
-	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>io.ubiqtek.tilr</string>
+	<string>io.ubiqtek.tilr-cli</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Tilr</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
+	<string>tilr</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)$(TILR_VERSION_SUFFIX)</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>LSUIElement</key>
-	<true/>
-	<key>NSHighResolutionCapable</key>
-	<true/>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>TILRBuildDate</key>
 	<string>$(TILR_BUILD_DATE)</string>
 </dict>

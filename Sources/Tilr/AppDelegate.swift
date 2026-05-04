@@ -12,10 +12,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var socketServer: SocketServer?
     private var sigintSource: DispatchSourceSignal?
     private var sigtermSource: DispatchSourceSignal?
+    private var statusOverlay: StatusOverlayWindow?
+    private var stateCoordinator: StateCoordinator?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Logger.app.info("Tilr starting")
-        TilrLogger.shared.log("Tilr starting", category: "app")
+        Logger.app.info("Tilr \(Version.full, privacy: .public) starting")
+        TilrLogger.shared.log("Tilr v\(Version.full) starting", category: "app")
 
         let axTrusted: Bool
         if configStore.current.accessibility.promptOnLaunch {
@@ -31,20 +33,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Logger.windows.info("AX trusted: \(axTrusted, privacy: .public)")
         TilrLogger.shared.log("AX trusted: \(axTrusted)", category: "windows")
 
+        // Initialize state from config and current system state
+        let stateInit = StateInitializer(configStore: configStore)
+        let (initialState, initCommand) = stateInit.initializeState()
+        let initialSnapshot = TilrStateSnapshot(
+            timestamp: Date(),
+            command: initCommand,
+            state: initialState
+        )
+        let coordinator = StateCoordinator(initialState: initialState, initialSnapshot: initialSnapshot)
+        self.stateCoordinator = coordinator
+
         let svc = SpaceService(configStore: configStore)
         self.service = svc
 
         let popup = PopupWindow()
+        let displayResolver = DisplayResolver()
         userNotifier      = UserNotifier(configStore: configStore, service: svc, popup: popup)
         menuBarController = MenuBarController(service: svc)
         hotKeyManager     = HotKeyManager(configStore: configStore, service: svc)
-        appWindowManager  = AppWindowManager(configStore: configStore, service: svc)
+        appWindowManager  = AppWindowManager(configStore: configStore, service: svc, displayResolver: displayResolver)
+        statusOverlay     = StatusOverlayWindow()
 
         hotKeyManager?.moveAppHandler = { [weak appWindowManager] spaceName in
             appWindowManager?.moveCurrentApp(toSpaceName: spaceName)
         }
 
-        let server = SocketServer(configStore: configStore, service: svc, appWindowManager: appWindowManager, popup: popup)
+        hotKeyManager?.statusOverlayHandler = { [weak self] in
+            self?.toggleStatusOverlay()
+        }
+
+        let server = SocketServer(configStore: configStore, service: svc, appWindowManager: appWindowManager, popup: popup, stateCoordinator: coordinator)
         self.socketServer = server
         server.start()
 
@@ -61,6 +80,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotKeyManager = nil
         appWindowManager = nil
         userNotifier = nil
+    }
+
+    @MainActor
+    private func toggleStatusOverlay() {
+        let content = buildStatusContent()
+        let focusedScreen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) }
+            ?? NSScreen.main
+            ?? NSScreen.screens[0]
+        statusOverlay?.toggle(content: content, on: focusedScreen)
+    }
+
+    @MainActor
+    private func buildStatusContent() -> String {
+        let displayState = DisplayStateStore.load()
+        let displays = configStore.current.displays
+        let currentSpace = service?.activeSpace ?? "—"
+
+        let idWidth    = 2
+        let nameWidth  = 18
+        let spaceWidth = 13
+
+        let connectedUUIDs = Set(NSScreen.screens.compactMap { displayUUID(for: $0) })
+
+        let rows = displayState.uuidToId
+            .filter { (uuid, _) in connectedUUIDs.contains(uuid) }
+            .map { (_, intID) in intID }
+            .sorted()
+            .map { intID -> String in
+                let name = displays["\(intID)"]?.name ?? "Display \(intID)"
+                let idStr   = String(intID).padding(toLength: idWidth,   withPad: " ", startingAt: 0)
+                let nameStr = name.padding(toLength: nameWidth,          withPad: " ", startingAt: 0)
+                return "\(idStr)  \(nameStr)  \(currentSpace)"
+            }
+
+        let header = "ID".padding(toLength: idWidth,   withPad: " ", startingAt: 0) + "  "
+                   + "Display".padding(toLength: nameWidth, withPad: " ", startingAt: 0) + "  "
+                   + "Current Space"
+        let sep    = String(repeating: "-", count: idWidth)   + "  "
+                   + String(repeating: "-", count: nameWidth)  + "  "
+                   + String(repeating: "-", count: spaceWidth)
+        return ([header, sep] + rows).joined(separator: "\n")
     }
 
     private func installSignalHandlers() {

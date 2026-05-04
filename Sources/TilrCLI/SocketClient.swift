@@ -8,6 +8,22 @@ enum SocketError: Error {
 
 final class SocketClient {
     func send(_ request: TilrRequest) throws -> TilrResponse {
+        let responseData = try sendAndReceiveData(request)
+        guard let response = try? JSONDecoder().decode(TilrResponse.self, from: responseData) else {
+            throw SocketError.io("Failed to decode response")
+        }
+        return response
+    }
+
+    func send(_ request: TilrStateRequest) throws -> TilrStateResponse {
+        let responseData = try sendAndReceiveData(request)
+        guard let response = try? JSONDecoder().decode(TilrStateResponse.self, from: responseData) else {
+            throw SocketError.io("Failed to decode response")
+        }
+        return response
+    }
+
+    private func sendAndReceiveData<T: Encodable>(_ request: T) throws -> Data {
         let socketPath = TilrPaths.socket.path
 
         guard FileManager.default.fileExists(atPath: socketPath) else {
@@ -52,9 +68,6 @@ final class SocketClient {
             responseData.append(byte)
         }
 
-        guard let response = try? JSONDecoder().decode(TilrResponse.self, from: responseData) else {
-            throw SocketError.io("Failed to decode response")
-        }
-        return response
+        return responseData
     }
 }

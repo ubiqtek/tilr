@@ -7,9 +7,11 @@ final class SocketServer {
     private var source: DispatchSourceRead?
     private let queue = DispatchQueue(label: "io.ubiqtek.tilr.socket", qos: .utility)
     private let handler: CommandHandler
+    private let stateCoordinator: StateCoordinator?
 
-    init(configStore: ConfigStore, service: SpaceService, appWindowManager: AppWindowManager? = nil, popup: PopupWindow? = nil) {
+    init(configStore: ConfigStore, service: SpaceService, appWindowManager: AppWindowManager? = nil, popup: PopupWindow? = nil, stateCoordinator: StateCoordinator? = nil) {
         self.handler = CommandHandler(configStore: configStore, service: service, appWindowManager: appWindowManager, popup: popup)
+        self.stateCoordinator = stateCoordinator
     }
 
     func start() {
@@ -94,6 +96,13 @@ final class SocketServer {
             buffer.append(byte)
         }
 
+        // Try to decode as TilrStateRequest first
+        if let stateRequest = try? JSONDecoder().decode(TilrStateRequest.self, from: buffer) {
+            handleStateRequest(stateRequest, client: client)
+            return
+        }
+
+        // Fall back to legacy TilrRequest
         guard let request = try? JSONDecoder().decode(TilrRequest.self, from: buffer) else {
             Logger.socket.warning("Failed to decode request")
             return
@@ -104,5 +113,38 @@ final class SocketServer {
         data.append(UInt8(ascii: "\n"))
         data.withUnsafeBytes { _ = send(client, $0.baseAddress!, data.count, 0) }
         postSend?()
+    }
+
+    private func handleStateRequest(_ request: TilrStateRequest, client: Int32) {
+        guard let coordinator = stateCoordinator else {
+            let response = TilrStateResponse(ok: false, error: "State coordinator not available")
+            sendStateResponse(response, to: client)
+            return
+        }
+
+        // Use a semaphore to wait for the async snapshot call to complete
+        let semaphore = DispatchSemaphore(value: 0)
+        var responseToSend: TilrStateResponse?
+
+        Task {
+            let snapshot = await coordinator.snapshot()
+            responseToSend = TilrStateResponse(ok: true, snapshot: snapshot)
+            semaphore.signal()
+        }
+
+        // Wait for the snapshot, with timeout
+        let waitResult = semaphore.wait(timeout: .now() + 5)
+        if waitResult == .timedOut {
+            let response = TilrStateResponse(ok: false, error: "Timeout getting state snapshot")
+            sendStateResponse(response, to: client)
+        } else if let response = responseToSend {
+            sendStateResponse(response, to: client)
+        }
+    }
+
+    private func sendStateResponse(_ response: TilrStateResponse, to client: Int32) {
+        guard var data = try? JSONEncoder().encode(response) else { return }
+        data.append(UInt8(ascii: "\n"))
+        data.withUnsafeBytes { _ = send(client, $0.baseAddress!, data.count, 0) }
     }
 }

@@ -1,0 +1,15 @@
+2026-05-03T21:58:46.460Z [MARKER] --- START[HST-333acd] ---
+2026-05-03T21:58:48.507Z [MARKER] --- [HST-333acd] Zen show/hide ---
+2026-05-03T21:58:49.556Z [windows] [show] showApp: 'app.zen-browser.zen' isVisible=false
+2026-05-03T21:58:49.556Z [windows] [show] AppKit: calling app.unhide()
+2026-05-03T21:58:49.872Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=5
+2026-05-03T21:58:50.188Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=4
+2026-05-03T21:58:50.504Z [windows] [show] retry: 'app.zen-browser.zen' isVisible=true remaining=3
+2026-05-03T21:58:50.620Z [windows] [hide] hideApp: 'app.zen-browser.zen' isVisible=true
+2026-05-03T21:58:50.620Z [windows] [hide] AppKit: calling app.hide()
+2026-05-03T21:58:50.933Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=5
+2026-05-03T21:58:51.250Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=4
+2026-05-03T21:58:51.567Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=3
+2026-05-03T21:58:51.883Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=2
+2026-05-03T21:58:52.196Z [windows] [hide] retry: 'app.zen-browser.zen' isVisible=false remaining=1
+2026-05-03T21:58:57.748Z [MARKER] --- END[HST-333acd] ---

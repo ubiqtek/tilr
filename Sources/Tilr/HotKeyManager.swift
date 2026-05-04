@@ -11,6 +11,7 @@ final class HotKeyManager {
     private var cancellable: AnyCancellable?
 
     var moveAppHandler: ((String) -> Void)?
+    var statusOverlayHandler: (() -> Void)?
 
     init(configStore: ConfigStore, service: SpaceService) {
         self.configStore = configStore
@@ -44,11 +45,10 @@ final class HotKeyManager {
     }
 
     private func register(config: TilrConfig) {
-        // Overview hotkey: cmd+opt+space → notification "Tilr"
         let overview = HotKey(key: .space, modifiers: [.command, .option])
         overview.keyDownHandler = { [weak self] in
             DispatchQueue.main.async {
-                self?.service.sendNotification("Tilr")
+                self?.statusOverlayHandler?()
             }
         }
         hotKeys.append(overview)

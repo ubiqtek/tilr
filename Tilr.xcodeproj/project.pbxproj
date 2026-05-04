@@ -7,32 +7,49 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0094B5DC798F5F3D48E386F6 /* StateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3D706CC27DAE7DC3C799FD /* StateFormatter.swift */; };
+		04F78FFCED39A01B74E8288C /* StateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A29021390EC4262F0A6836 /* StateCoordinator.swift */; };
+		066E850903009A200948994A /* StateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3D706CC27DAE7DC3C799FD /* StateFormatter.swift */; };
 		07B350237A28183D14F28172 /* TilrCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */; };
 		0904FA541B1A8BC6924CF077 /* Protocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 107A98FA7DFAD3B0C72DF305 /* Protocol.swift */; };
 		0B38CE60432BB7869AD2C6AB /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
 		0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D591EB97A8285386E320E7A1 /* AppDelegate.swift */; };
 		13E910F2510F5063A5BAFE8E /* DisplayStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */; };
+		1421D6A502B70689FAF71E26 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630323703F9EEBF2E64D12E1 /* Version.swift */; };
+		171FFA08D59594A6FB5642CF /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630323703F9EEBF2E64D12E1 /* Version.swift */; };
 		1757134B0FBBE8F270642C77 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = 37F0E62234354AFC0109FC05 /* HotKey */; };
 		17CB9065CB4E3C1DCA8E17CF /* ConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */; };
+		1DC6077B2AAC5A74C4F065BB /* StatusOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A06B3712C2F45BB321F53662 /* StatusOverlayWindow.swift */; };
+		204823A9452E3437EC497F03 /* StateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A29021390EC4262F0A6836 /* StateCoordinator.swift */; };
 		2C584E84F3F20076D243A7BE /* AXWindowFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CAE599B01BA6AA1A9258DC8 /* AXWindowFinder.swift */; };
+		2C5BF4813D48518145A770F1 /* Version.swift in Sources */ = {isa = PBXBuildFile; fileRef = 630323703F9EEBF2E64D12E1 /* Version.swift */; };
 		2D55E81C071208DFE4E3B8B7 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
 		2D5EF2D6EDE2C1F6D8676944 /* ConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD73C3E61369CF9E9A088950 /* ConfigTests.swift */; };
 		3487264C1D9A996204B83EB0 /* SocketClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DA24F8994DA197871EC4F7 /* SocketClient.swift */; };
 		34B29F9D09169D21B43E2960 /* ConfigPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */; };
 		34EB5BA4E7A81B262464D261 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B84695773403E5189D2283 /* main.swift */; };
+		38931A75E5211D3BBBFE55C7 /* StateCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A29021390EC4262F0A6836 /* StateCoordinator.swift */; };
+		415BE01F241E2C6B13283628 /* TilrState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5A50BB16A98E8C47C9F9EF /* TilrState.swift */; };
 		47841DC6765B676345C49ADF /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0600E20FC18AECBBF9615CA4 /* MenuBarController.swift */; };
 		4B6CB820CB7A0661BAB40021 /* HotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BCA9D611D2A1EE6CBE9B96E /* HotKeyManager.swift */; };
 		4C627C20925E32CE59343BE3 /* SocketServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */; };
+		50EEB963F1EB0AE07C19ED5E /* AboutOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B76829200A7BE779E52D1F /* AboutOverlayWindow.swift */; };
 		534924DA94E3EF4350060E83 /* TilrLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9364FEE061EA809066EFFB9B /* TilrLogger.swift */; };
+		61D383AE5B01210C745B50DE /* DisplayResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88391DA63F8ED3C34C6AE33 /* DisplayResolver.swift */; };
 		6590DE422F823AC133BAF9B4 /* FillScreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3269A5CC9642D65D8DBB09AA /* FillScreenLayout.swift */; };
+		6B7DF680D45298992EAB4105 /* DisplayResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88391DA63F8ED3C34C6AE33 /* DisplayResolver.swift */; };
+		6D16A7C6B58543A7D885F486 /* TilrState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5A50BB16A98E8C47C9F9EF /* TilrState.swift */; };
 		6D3FCEDF811B35AC17F6930D /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA4954960D225425A4DC46AB /* Config.swift */; };
+		76374964B131F3F3C5B0F6CE /* StateInitializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD642656E3D6BBBB001B7D3 /* StateInitializer.swift */; };
 		7C15D612D624963154D47DA4 /* DisplayIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */; };
 		7CE12D1A18EC94B3F94ACC67 /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = F5B9438894D8D7F5E60A0A8C /* Yams */; };
+		8296268A88DFEE90646FEA3D /* StateInitializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD642656E3D6BBBB001B7D3 /* StateInitializer.swift */; };
 		84A812BF0C0DB21CE80D8F73 /* AppWindowManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C9DE747423AFE90BD2B410 /* AppWindowManager.swift */; };
 		84DCEB885A50EC3B9174EECC /* Yams in Frameworks */ = {isa = PBXBuildFile; productRef = F4A7A23332D8A25DFB330647 /* Yams */; };
 		8E51978AA47050C39A510714 /* AXWindowHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B11539077F40F015167E985B /* AXWindowHelper.swift */; };
 		8EFB57F4C04046C26FB5AFC8 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = 1B151DB749C6B6DB7A4A49B0 /* ArgumentParser */; };
 		8F2E3B6B538E2E1C0E8A2FAA /* DisplayIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */; };
+		933E9A0D8F6258E9F4145335 /* DisplayResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D88391DA63F8ED3C34C6AE33 /* DisplayResolver.swift */; };
 		93A5412573B4534F774B61D0 /* DisplayStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */; };
 		957DA36FB21BBF85E9A940E6 /* DisplayStateStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */; };
 		974ED4F42FBB8CC66FE95B5B /* SpaceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26A0E2C3C1A9CC939C4627AB /* SpaceService.swift */; };
@@ -56,6 +73,9 @@
 		EAD8FE660F8955E7E69CDD3A /* UserNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90384F2DAE9BC22F1BB5EBF /* UserNotifier.swift */; };
 		F3F1430FD3A5751E0DB9562C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */; };
 		FA28CFCC9A2D0BC7B792DCA2 /* CommandHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = F51A4F1B8D1867958C73EF18 /* CommandHandler.swift */; };
+		FB49FAC6D8B9E145C65DCCA5 /* StateFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3D706CC27DAE7DC3C799FD /* StateFormatter.swift */; };
+		FB9D179BD4E4C736118624DF /* TilrState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5A50BB16A98E8C47C9F9EF /* TilrState.swift */; };
+		FD915E02E5950CF528554A29 /* StateInitializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD642656E3D6BBBB001B7D3 /* StateInitializer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,13 +89,20 @@
 		3269A5CC9642D65D8DBB09AA /* FillScreenLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FillScreenLayout.swift; sourceTree = "<group>"; };
 		32A6D361035A8E67B904B35F /* Tilr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Tilr.entitlements; sourceTree = "<group>"; };
 		331BA5ACDFB0F4CFC957B1A7 /* ActivationReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivationReason.swift; sourceTree = "<group>"; };
+		36B76829200A7BE779E52D1F /* AboutOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutOverlayWindow.swift; sourceTree = "<group>"; };
+		3AD642656E3D6BBBB001B7D3 /* StateInitializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateInitializer.swift; sourceTree = "<group>"; };
 		42EBC4FFCF19EB3875D4FAB9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		52A29021390EC4262F0A6836 /* StateCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateCoordinator.swift; sourceTree = "<group>"; };
+		630323703F9EEBF2E64D12E1 /* Version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Version.swift; sourceTree = "<group>"; };
 		6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayIdentity.swift; sourceTree = "<group>"; };
+		744C0C8108B744FB0D68A6D1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		774587E1F3A5F2E01A1C9E2B /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
 		8A5000BC4CB2632C66661403 /* SidebarLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarLayout.swift; sourceTree = "<group>"; };
 		8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketServer.swift; sourceTree = "<group>"; };
 		8F4EB64639CC193477ED3D56 /* SidebarResizeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarResizeObserver.swift; sourceTree = "<group>"; };
 		9364FEE061EA809066EFFB9B /* TilrLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilrLogger.swift; sourceTree = "<group>"; };
 		9C01B9671B7AE4AB62FBF9ED /* OperationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationType.swift; sourceTree = "<group>"; };
+		A06B3712C2F45BB321F53662 /* StatusOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusOverlayWindow.swift; sourceTree = "<group>"; };
 		A2C26C3A022E722BB2141506 /* PopupWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopupWindow.swift; sourceTree = "<group>"; };
 		A2DA24F8994DA197871EC4F7 /* SocketClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketClient.swift; sourceTree = "<group>"; };
 		A31BA873E7DDD31C99FD1C25 /* TilrApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TilrApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -84,10 +111,13 @@
 		B11539077F40F015167E985B /* AXWindowHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AXWindowHelper.swift; sourceTree = "<group>"; };
 		B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilrCLI.swift; sourceTree = "<group>"; };
 		B7B84695773403E5189D2283 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		BF3D706CC27DAE7DC3C799FD /* StateFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateFormatter.swift; sourceTree = "<group>"; };
 		C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayStateStore.swift; sourceTree = "<group>"; };
+		CD5A50BB16A98E8C47C9F9EF /* TilrState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TilrState.swift; sourceTree = "<group>"; };
 		CD73C3E61369CF9E9A088950 /* ConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigTests.swift; sourceTree = "<group>"; };
 		CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigPaths.swift; sourceTree = "<group>"; };
 		D591EB97A8285386E320E7A1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D88391DA63F8ED3C34C6AE33 /* DisplayResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayResolver.swift; sourceTree = "<group>"; };
 		E0C9DE747423AFE90BD2B410 /* AppWindowManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppWindowManager.swift; sourceTree = "<group>"; };
 		E90384F2DAE9BC22F1BB5EBF /* UserNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserNotifier.swift; sourceTree = "<group>"; };
 		EC864E8DB4EFA2E99ACD386F /* Logging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logging.swift; sourceTree = "<group>"; };
@@ -129,6 +159,7 @@
 		099D0009317806730ABA46D1 = {
 			isa = PBXGroup;
 			children = (
+				D305B5D9EC68178D9D0EDAE4 /* Generated */,
 				DF070FAEB67DC5C1AC7390DF /* Shared */,
 				630CCF912635A633CA4B848C /* Tilr */,
 				26A13A3B9040FFBD2EEC8439 /* TilrCLI */,
@@ -140,6 +171,7 @@
 		26A13A3B9040FFBD2EEC8439 /* TilrCLI */ = {
 			isa = PBXGroup;
 			children = (
+				744C0C8108B744FB0D68A6D1 /* Info.plist */,
 				A2DA24F8994DA197871EC4F7 /* SocketClient.swift */,
 				B41B0D5C6FE827DA9198BA29 /* TilrCLI.swift */,
 			);
@@ -163,6 +195,7 @@
 		630CCF912635A633CA4B848C /* Tilr */ = {
 			isa = PBXGroup;
 			children = (
+				36B76829200A7BE779E52D1F /* AboutOverlayWindow.swift */,
 				331BA5ACDFB0F4CFC957B1A7 /* ActivationReason.swift */,
 				D591EB97A8285386E320E7A1 /* AppDelegate.swift */,
 				E0C9DE747423AFE90BD2B410 /* AppWindowManager.swift */,
@@ -177,6 +210,7 @@
 				A2C26C3A022E722BB2141506 /* PopupWindow.swift */,
 				8DDEACAD09AA42370D4E2F57 /* SocketServer.swift */,
 				26A0E2C3C1A9CC939C4627AB /* SpaceService.swift */,
+				A06B3712C2F45BB321F53662 /* StatusOverlayWindow.swift */,
 				32A6D361035A8E67B904B35F /* Tilr.entitlements */,
 				E90384F2DAE9BC22F1BB5EBF /* UserNotifier.swift */,
 				5F4D31370E3B4ECFA4D1CD3A /* Layouts */,
@@ -195,6 +229,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		D305B5D9EC68178D9D0EDAE4 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				774587E1F3A5F2E01A1C9E2B /* Version.xcconfig */,
+			);
+			name = Generated;
+			path = build/Generated;
+			sourceTree = "<group>";
+		};
 		DF070FAEB67DC5C1AC7390DF /* Shared */ = {
 			isa = PBXGroup;
 			children = (
@@ -202,9 +245,15 @@
 				CDFDE7495CC8BF94B187F25E /* ConfigPaths.swift */,
 				0FA3F757BEB7EBB5D91A066D /* ConfigStore.swift */,
 				6BCC4B02638D235AAF2FB3D7 /* DisplayIdentity.swift */,
+				D88391DA63F8ED3C34C6AE33 /* DisplayResolver.swift */,
 				C8A0E46CEFD565B23397A51C /* DisplayStateStore.swift */,
 				107A98FA7DFAD3B0C72DF305 /* Protocol.swift */,
+				52A29021390EC4262F0A6836 /* StateCoordinator.swift */,
+				BF3D706CC27DAE7DC3C799FD /* StateFormatter.swift */,
+				3AD642656E3D6BBBB001B7D3 /* StateInitializer.swift */,
 				9364FEE061EA809066EFFB9B /* TilrLogger.swift */,
+				CD5A50BB16A98E8C47C9F9EF /* TilrState.swift */,
+				630323703F9EEBF2E64D12E1 /* Version.swift */,
 			);
 			name = Shared;
 			path = Sources/Shared;
@@ -226,6 +275,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2A95D07D8CD26CC78A3D10AA /* Build configuration list for PBXNativeTarget "TilrApp" */;
 			buildPhases = (
+				2E208EBCA01A583369C274A3 /* Stamp Version */,
 				7C59EFB9C2645341A470B714 /* Sources */,
 				D00CB0A05C4361D0E4EE48F9 /* Resources */,
 				69181A6F9B398AEF4E61C527 /* Frameworks */,
@@ -247,6 +297,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BC2096E0CE52002F94DCE88C /* Build configuration list for PBXNativeTarget "TilrCLI" */;
 			buildPhases = (
+				1C74E98FB73337BCC08257CB /* Stamp Version */,
 				6F8C1B92535CDBCFA961BBE8 /* Sources */,
 				76B927C778BE6F975D8094A7 /* Frameworks */,
 			);
@@ -292,15 +343,15 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					035154A5253B50ABE1C82A31 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = MX95X5U6HA;
 						ProvisioningStyle = Automatic;
 					};
 					4FEC5CAE213FF6DE0F80B5B7 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = MX95X5U6HA;
 						ProvisioningStyle = Automatic;
 					};
 					D1E0AEA9CF0330D5B65704AC = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = MX95X5U6HA;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -342,6 +393,47 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		1C74E98FB73337BCC08257CB /* Stamp Version */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Stamp Version";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/scripts/stamp-version.sh\"\n";
+		};
+		2E208EBCA01A583369C274A3 /* Stamp Version */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Stamp Version";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/scripts/stamp-version.sh\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		06A79CDA363AA52DE6A8B5B0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -352,9 +444,15 @@
 				0B38CE60432BB7869AD2C6AB /* ConfigStore.swift in Sources */,
 				2D5EF2D6EDE2C1F6D8676944 /* ConfigTests.swift in Sources */,
 				7C15D612D624963154D47DA4 /* DisplayIdentity.swift in Sources */,
+				61D383AE5B01210C745B50DE /* DisplayResolver.swift in Sources */,
 				957DA36FB21BBF85E9A940E6 /* DisplayStateStore.swift in Sources */,
 				B368092F5A42CCD5D0025C23 /* Protocol.swift in Sources */,
+				204823A9452E3437EC497F03 /* StateCoordinator.swift in Sources */,
+				0094B5DC798F5F3D48E386F6 /* StateFormatter.swift in Sources */,
+				FD915E02E5950CF528554A29 /* StateInitializer.swift in Sources */,
 				B5CCA132984F8C61D558C1C4 /* TilrLogger.swift in Sources */,
+				415BE01F241E2C6B13283628 /* TilrState.swift in Sources */,
+				171FFA08D59594A6FB5642CF /* Version.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -366,11 +464,17 @@
 				34B29F9D09169D21B43E2960 /* ConfigPaths.swift in Sources */,
 				17CB9065CB4E3C1DCA8E17CF /* ConfigStore.swift in Sources */,
 				E17D8CB3B584BF59A9BD4556 /* DisplayIdentity.swift in Sources */,
+				6B7DF680D45298992EAB4105 /* DisplayResolver.swift in Sources */,
 				93A5412573B4534F774B61D0 /* DisplayStateStore.swift in Sources */,
 				0904FA541B1A8BC6924CF077 /* Protocol.swift in Sources */,
 				3487264C1D9A996204B83EB0 /* SocketClient.swift in Sources */,
+				04F78FFCED39A01B74E8288C /* StateCoordinator.swift in Sources */,
+				FB49FAC6D8B9E145C65DCCA5 /* StateFormatter.swift in Sources */,
+				8296268A88DFEE90646FEA3D /* StateInitializer.swift in Sources */,
 				07B350237A28183D14F28172 /* TilrCLI.swift in Sources */,
 				534924DA94E3EF4350060E83 /* TilrLogger.swift in Sources */,
+				FB9D179BD4E4C736118624DF /* TilrState.swift in Sources */,
+				1421D6A502B70689FAF71E26 /* Version.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -380,6 +484,7 @@
 			files = (
 				2C584E84F3F20076D243A7BE /* AXWindowFinder.swift in Sources */,
 				8E51978AA47050C39A510714 /* AXWindowHelper.swift in Sources */,
+				50EEB963F1EB0AE07C19ED5E /* AboutOverlayWindow.swift in Sources */,
 				C39854C517831B944B5A4645 /* ActivationReason.swift in Sources */,
 				0ECED4821C9AB08D28074144 /* AppDelegate.swift in Sources */,
 				84A812BF0C0DB21CE80D8F73 /* AppWindowManager.swift in Sources */,
@@ -388,6 +493,7 @@
 				E1E1FD7CE8252824FF90186B /* ConfigPaths.swift in Sources */,
 				A82AD978B5B34EED78AAF494 /* ConfigStore.swift in Sources */,
 				8F2E3B6B538E2E1C0E8A2FAA /* DisplayIdentity.swift in Sources */,
+				933E9A0D8F6258E9F4145335 /* DisplayResolver.swift in Sources */,
 				13E910F2510F5063A5BAFE8E /* DisplayStateStore.swift in Sources */,
 				6590DE422F823AC133BAF9B4 /* FillScreenLayout.swift in Sources */,
 				4B6CB820CB7A0661BAB40021 /* HotKeyManager.swift in Sources */,
@@ -401,8 +507,14 @@
 				E377ED23CAD122AF26638FAB /* SidebarResizeObserver.swift in Sources */,
 				4C627C20925E32CE59343BE3 /* SocketServer.swift in Sources */,
 				974ED4F42FBB8CC66FE95B5B /* SpaceService.swift in Sources */,
+				38931A75E5211D3BBBFE55C7 /* StateCoordinator.swift in Sources */,
+				066E850903009A200948994A /* StateFormatter.swift in Sources */,
+				76374964B131F3F3C5B0F6CE /* StateInitializer.swift in Sources */,
+				1DC6077B2AAC5A74C4F065BB /* StatusOverlayWindow.swift in Sources */,
 				BB400C3B0E2FDF49B5ACA3FC /* TilrLogger.swift in Sources */,
+				6D16A7C6B58543A7D885F486 /* TilrState.swift in Sources */,
 				EAD8FE660F8955E7E69CDD3A /* UserNotifier.swift in Sources */,
+				2C5BF4813D48518145A770F1 /* Version.swift in Sources */,
 				34EB5BA4E7A81B262464D261 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -412,8 +524,11 @@
 /* Begin XCBuildConfiguration section */
 		0AC2734DDD2764E8976AE4F2 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 774587E1F3A5F2E01A1C9E2B /* Version.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
+				INFOPLIST_FILE = Sources/TilrCLI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -460,7 +575,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = MX95X5U6HA;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -478,6 +593,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.0.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -487,6 +603,8 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
+				TILR_BUILD_DATE = "";
+				TILR_VERSION_SUFFIX = "";
 			};
 			name = Debug;
 		};
@@ -526,7 +644,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = MX95X5U6HA;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -538,6 +656,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 0.0.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.ubiqtek.tilr;
@@ -546,6 +665,8 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
+				TILR_BUILD_DATE = "";
+				TILR_VERSION_SUFFIX = "";
 			};
 			name = Release;
 		};
@@ -567,6 +688,7 @@
 		};
 		A81FB526AB40D1ADD849E16B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 774587E1F3A5F2E01A1C9E2B /* Version.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Tilr/Tilr.entitlements;
@@ -599,8 +721,11 @@
 		};
 		B61C2DED50E3F8D342E1F7AC /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 774587E1F3A5F2E01A1C9E2B /* Version.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
+				CREATE_INFOPLIST_SECTION_IN_BINARY = YES;
+				INFOPLIST_FILE = Sources/TilrCLI/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -613,6 +738,7 @@
 		};
 		C887E500C925D516BEC8CFCF /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 774587E1F3A5F2E01A1C9E2B /* Version.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Sources/Tilr/Tilr.entitlements;

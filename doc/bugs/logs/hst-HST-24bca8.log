@@ -1,0 +1,92 @@
+2026-05-03T22:05:44.783Z [MARKER] --- START[HST-24bca8] ---
+2026-05-03T22:05:46.847Z [MARKER] --- [HST-24bca8] Marq hide/show ---
+2026-05-03T22:05:47.906Z [windows] [hide] hideApp: 'com.jimbarritt.marq' isVisible=true
+2026-05-03T22:05:47.907Z [windows] [hide] AppKit: calling app.hide()
+2026-05-03T22:05:47.920Z [windows] reflow: app-hidden for 'com.jimbarritt.marq' in 'Coding'
+2026-05-03T22:05:48.076Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.081Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:48.083Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.085Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.085Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.098Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.102Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:48.104Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.111Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.130Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.135Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:48.136Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.139Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.190Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.195Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:48.197Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.204Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.223Z [windows] [hide] retry: 'com.jimbarritt.marq' isVisible=false remaining=5
+2026-05-03T22:05:48.307Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.310Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:48.311Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.314Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.524Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.528Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:48.529Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.533Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.534Z [windows] [hide] retry: 'com.jimbarritt.marq' isVisible=false remaining=4
+2026-05-03T22:05:48.744Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.749Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:48.750Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.754Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.848Z [windows] [hide] retry: 'com.jimbarritt.marq' isVisible=false remaining=3
+2026-05-03T22:05:48.964Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:48.967Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:48.968Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.972Z [layout] setWindowFrame: no content window for 'com.jimbarritt.marq'
+2026-05-03T22:05:48.973Z [windows] [show] showApp: 'com.jimbarritt.marq' isVisible=false
+2026-05-03T22:05:48.973Z [windows] [show] AppKit: calling app.unhide()
+2026-05-03T22:05:48.975Z [windows] reflow: app-unhidden for 'com.jimbarritt.marq' in 'Coding'
+2026-05-03T22:05:49.130Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.135Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:49.137Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.139Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.140Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.150Z [windows] [hide] INTERRUPT: intent changed to Optional(true) (was false), cancelling retry chain
+2026-05-03T22:05:49.151Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.154Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:49.157Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.161Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.181Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.185Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:49.187Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.193Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.194Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.199Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:49.201Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.207Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.257Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.262Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:49.266Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.270Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.289Z [windows] [show] retry: 'com.jimbarritt.marq' isVisible=true remaining=5
+2026-05-03T22:05:49.374Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.378Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:49.383Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.387Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.594Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.599Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:49.601Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.610Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.610Z [windows] [show] retry: 'com.jimbarritt.marq' isVisible=true remaining=4
+2026-05-03T22:05:49.815Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:49.820Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:49.824Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.828Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:49.926Z [windows] [show] retry: 'com.jimbarritt.marq' isVisible=true remaining=3
+2026-05-03T22:05:50.036Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:50.042Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:50.044Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:50.049Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:50.243Z [windows] [show] retry: 'com.jimbarritt.marq' isVisible=true remaining=2
+2026-05-03T22:05:50.257Z [layout] DisplayResolver: space='Coding' screen='Built-in Retina Display' frame=(0.0, 0.0, 1728.0, 1117.0)
+2026-05-03T22:05:50.261Z [layout] setWindowFrame: 'com.mitchellh.ghostty' pos=0 size=0
+2026-05-03T22:05:50.263Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:50.267Z [layout] setWindowFrame: 'com.jimbarritt.marq' pos=0 size=0
+2026-05-03T22:05:50.560Z [windows] [show] retry: 'com.jimbarritt.marq' isVisible=true remaining=1
+2026-05-03T22:05:56.110Z [MARKER] --- END[HST-24bca8] ---

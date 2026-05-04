@@ -99,7 +99,7 @@ final class SidebarLayout: LayoutStrategy {
         let others = space.apps.filter { $0 != movedBundleID && $0 != mainBundleID }
         for bundleID in others {
             resizeObserver.setFrameAndSuppress(bundleID: bundleID, frame: sidebarFrame)
-            setAppHidden(bundleID: bundleID, hidden: true)
+            hideApp(bundleID: bundleID)
             Logger.layout.info("sidebar move-into: resizing and hiding slot app '\(bundleID, privacy: .public)'")
         }
 
@@ -133,12 +133,12 @@ final class SidebarLayout: LayoutStrategy {
     /// Hide the moved app, find the next sidebar window to promote, and re-apply the sidebar layout.
     private func applySidebarMoveOut(movedBundleID: String, sourceSpace: String?, name: String, space: SpaceDefinition, config: TilrConfig, screen: NSScreen, layout: Layout) {
         // Hide the departing app.
-        setAppHidden(bundleID: movedBundleID, hidden: true)
+        hideApp(bundleID: movedBundleID)
         Logger.layout.info("sidebar move-out: hiding departed app '\(movedBundleID, privacy: .public)'")
 
         // Find the next sidebar window to promote.
         if let nextID = nextWindowInSidebar(space: space, movedBundleID: movedBundleID) {
-            setAppHidden(bundleID: nextID, hidden: false)
+            showApp(bundleID: nextID)
             Logger.layout.info("sidebar move-out: unhiding next sidebar window '\(nextID, privacy: .public)'")
         }
 
