@@ -1,101 +1,76 @@
-# Delta 14 — Release on App Store
+# Delta 12 — State file
 
-**Goal:** publish Tilr 1.0 to the macOS App Store under Ubiqtek Ltd.
+**Goal:** persist runtime state to `~/Library/Application Support/tilr/state.toml`
+so that user actions (active space, sidebar ratios, runtime app moves) survive
+a Tilr restart.
 
-**Status:** backlog
+**Status:** planned
 
-**Depends on:** Delta 13 (polish) — features must be feature-complete and
-stable before submission.
+**Depends on:** Delta 11 (multi-display) — state schema must be per-display
+from the start to avoid a second migration.
 
 ## Scope
 
-### App Store Connect setup
+State is split into two files (see `doc/arch/state-and-config.md`):
 
-- [ ] Create App Store Connect record under Ubiqtek Ltd team
-- [ ] Bundle ID `io.ubiqtek.tilr` registered (already done per CLAUDE.md;
-      verify in App Store Connect)
-- [ ] Reserve app name "Tilr"
-- [ ] Category: Productivity / Developer Tools (decide)
-- [ ] Pricing: free / paid? (decide; affects review path)
+- `~/.config/tilr/config.toml` — user-owned, never written by Tilr
+- `~/Library/Application Support/tilr/state.toml` — app-owned runtime state
 
-### Compliance & sandboxing
+This delta wires up the second file. The store loads on launch, saves on
+mutation, and survives both clean exit and crash (atomic write via temp file +
+rename).
 
-- [ ] Audit current entitlements — App Store requires sandbox enabled
-- [ ] Accessibility API access: requires user-prompted permission, must
-      include `NSAccessibilityUsageDescription` with clear rationale
-- [ ] AppleEvents (used by `setHiddenViaSystemEvents` fallback): may be
-      blocked under sandbox — investigate alternatives
-- [ ] File access: state.toml in `~/Library/Application Support/tilr/`
-      sits inside the sandbox container automatically; config.toml in
-      `~/.config/tilr/` is *outside* — needs user-selected file or
-      `com.apple.security.files.user-selected.read-write` entitlement
-- [ ] Hotkey registration: Carbon `RegisterEventHotKey` may need review
-- [ ] Privacy manifest (`PrivacyInfo.xcprivacy`) — required for new
-      submissions; declare API usage categories
+### Persisted fields
 
-### Code signing & build
+- **`activeSpace` per display** — `[state.displaySpaces]` keyed by
+  display identifier (introduced in Delta 11). Restored on launch.
+- **`liveSpaceMembership`** — `[state.liveSpaceMembership]` keyed by space
+  name → list of bundle IDs. Captures runtime moves (e.g. Zen moved into
+  Coding via `tilr move-current`) so the move survives restart.
+- **`sidebarRatios`** — `[state.sidebarRatios]` keyed by `(display, space)` →
+  ratio (Float). Already partly implemented; formalise here.
+- **`fillScreenLastApp`** — `[state.fillScreenApps]` keyed by space name →
+  bundle ID. Restores last-focused app per fill-screen space.
 
-- [ ] Ubiqtek Developer ID + Mac App Store distribution certificates on
-      build machine
-- [ ] Provisioning profiles for Mac App Store
-- [ ] Notarization not required for App Store (App Store review handles
-      it), but keep Developer ID build for direct distribution
-- [ ] CI/CD: GitHub Actions or local script to produce signed `.pkg`
-      ready for upload via Transporter
+### Load / save semantics
 
-### App metadata & marketing
+- **Load:** on `AppWindowManager.init()`, read state.toml *after* config is
+  loaded; union live membership (config-pinned ∪ persisted) so newly
+  config-pinned apps still appear without manual save.
+- **Save:** on every mutation that changes a persisted field, debounce-write
+  (250ms) to disk. Atomic via temp file + rename.
+- **Schema versioning:** add `schema_version = 1` at top of state.toml. On
+  load, if version mismatches, log a warning and discard incompatible
+  sections rather than crash.
 
-- [ ] App icon (1024×1024 + all required sizes)
-- [ ] Screenshots: at least 1 for each required display size
-- [ ] App description, keywords, support URL, marketing URL
-- [ ] Privacy policy URL (required even if no data is collected)
-- [ ] Release notes for 1.0
+## Implementation steps
 
-### Distribution coordination
+- [ ] Define `StateFile` struct mirroring the TOML schema; use `TOMLKit` (or
+      whatever the config side uses) for codec.
+- [ ] `StateStore`: add load/save plumbing; expose Combine publishers per
+      field.
+- [ ] Wire `AppWindowManager.liveSpaceMembership` mutations →
+      `stateStore.updateLiveMembership(...)` → debounced save.
+- [ ] Wire `SidebarResizeObserver` ratio updates → state save.
+- [ ] On launch, seed `liveSpaceMembership` from union of config + persisted.
+- [ ] Atomic write helper: write to `state.toml.tmp`, fsync, rename.
+- [ ] Migration: if existing `state.toml` has single-string `activeSpace`
+      (pre-Delta 11), promote it under `NSScreen.main`'s display key.
 
-- [ ] Decide: keep Homebrew cask `ubiqtek/tap/tilr` available alongside
-      App Store, or deprecate?
-- [ ] If keeping both: document migration path (config/state files are
-      identical, but App Store version may have stricter file access)
-- [ ] Update README and project landing page with App Store badge once
-      live
+## Verification
 
-### Submission & review
-
-- [ ] Test build via TestFlight with 2–3 internal users
-- [ ] Submit for review; expect 1–7 day turnaround
-- [ ] Anticipate rejection reasons: AX permission rationale, sandbox file
-      access, or "system utility" classification questions
-- [ ] Plan a v1.0.1 hotfix slot for any review-driven changes
-
-## Implementation notes
-
-The biggest unknown is **whether App Store sandboxing breaks Tilr's
-window-management features.** AX API works under sandbox with the right
-entitlement; the riskier areas are:
-
-- AppleEvents (used as a fallback when `app.hide()` fails)
-- Reading config from `~/.config/tilr/` (outside sandbox container)
-- Bundle ID lookups via `NSRunningApplication.runningApplications(...)`
-  — should work but verify
-
-If sandboxing proves incompatible, fallback is **Developer ID
-distribution only** via Homebrew + direct download. Document this
-decision before sinking too much time into App Store work.
+- [ ] Move Zen into Coding → quit Tilr → relaunch → Zen still listed in
+      Coding's live membership.
+- [ ] Drag sidebar ratio → quit → relaunch → ratio restored.
+- [ ] Switch to space A on display 1, B on display 2 → quit → relaunch →
+      both displays restore to their respective spaces.
+- [ ] Corrupt state.toml manually → relaunch → Tilr logs warning and starts
+      with defaults (no crash).
 
 ## Open questions
 
-1. Free or paid? Affects review scrutiny and user expectations.
-2. App Store *and* Homebrew, or App Store only? Maintenance cost of two
-   channels vs. user reach.
-3. Does Apple consider Tilr a "system utility" requiring the special
-   review track, or a normal productivity app?
-4. Do we need a website (marketing URL, privacy policy host) before
-   submission, or can we use GitHub Pages?
-
-## Out of scope
-
-- Paid features / IAP — keep 1.0 simple.
-- Auto-update outside the App Store (Sparkle, etc.) — App Store handles
-  updates.
-- Localisation beyond English — defer to post-1.0.
+1. Save cadence: 250ms debounce ok, or save on every mutation? (Concern:
+   slot-activated reflows could fire many writes per second.)
+2. Should config-pinned apps be persisted in `liveSpaceMembership`, or only
+   computed on-the-fly as the union? (Storing them is redundant but
+   simplifies load logic.)

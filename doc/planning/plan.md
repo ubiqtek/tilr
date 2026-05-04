@@ -19,13 +19,13 @@ lands — check boxes, add a dated note, link the commit/PR.
 | 9 | Follow focus on CMD-TAB | ✅ | 2026-04-25 |
 | 10 | Sidebar layout on app activate/close | ✅ | 2026-04-27 |
 | 11 | Multi-display support | 🟡 | — |
-| 12a | Version management | ✅ | 2026-05-03 |
-| Rearchitect | Rearchitect to pipeline | 🟡 | — |
-| 12 | State file | ⬜ | — |
-| 13 | Polish | ⬜ | — |
-| 14 | Release on App Store | ⬜ | — |
+| 12 | Version management | ✅ | 2026-05-03 |
+| 13 | Rearchitect to pipeline | 🟡 | — |
+| 14 | State file | ⬜ | — |
+| 15 | Polish | ⬜ | — |
+| 16 | Release on App Store | ⬜ | — |
 
-**Current focus:** Rearchitect to pipeline (Milestone 1: app startup + state initialization + CLI observability)
+**Current focus:** Delta 13: Rearchitect to pipeline (Delta 1: app startup + state initialization + CLI observability)
 
 ---
 
@@ -52,11 +52,11 @@ lands — check boxes, add a dated note, link the commit/PR.
 - [Delta 9: Follow focus on CMD-TAB](delta-9.md)
 - [Delta 10: Sidebar layout on app activate/close](delta-10.md)
 - [Delta 11: Multi-display support](delta-11.md)
-- [Delta 12a: Version management](delta-12a.md)
-- [Rearchitect: Rearchitect to pipeline](delta-rearchitect-to-pipeline.md)
-- [Delta 12: State file](delta-12.md)
-- [Delta 13: Polish](delta-13.md)
-- [Delta 14: Release on App Store](delta-14.md)
+- [Delta 12: Version management](delta-12.md)
+- [Delta 13: Rearchitect to pipeline](delta-13.md)
+- [Delta 14: State file](delta-14.md)
+- [Delta 15: Polish](delta-15.md)
+- [Delta 16: Release on App Store](delta-16.md)
 
 ---
 

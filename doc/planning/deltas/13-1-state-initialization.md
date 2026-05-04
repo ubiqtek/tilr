@@ -1,35 +1,24 @@
-# Delta: Rearchitect to Pipeline
+# Delta 13-1: App Startup & State Initialization + Observability
 
-**Status: PLANNING**
+## Design decisions for Delta 13-1
 
-Refactor Tilr's core architecture to the **Input → Plan → Execute → Record** pipeline model defined in `doc/arch/tilr-arch-v2.md`. This eliminates redundant state diffing, preserves command intent through all phases, and makes state a trailing record of what AX actually achieved (crucial for Zen hide and other AX quirks).
-
-## Design decisions for Milestone 1
-
-- **App enumeration**: Track all running apps via `NSRunningApplication`. Filter criteria can be refined in later milestones if needed.
+- **App enumeration**: Track all running apps via `NSRunningApplication`. Filter criteria can be refined in later deltas if needed.
 - **Active state tracking**: Parent container tracks active child state (fractal pattern). Displays track which space is active; spaces track which apps are visible. Each object is responsible for its own active-child tracking.
 - **Display identity**: Use existing `DisplayStateStore` UUID→ID mapping (hardware-level CGDisplay UUIDs persisted in `~/.local/share/tilr/display-state.json`, with numeric IDs in config). StateInitializer calls `DisplayStateStore.resolveId()` for each connected display.
-- **CLI state access**: Client/server arrangement only. `tilr state view` queries the running app via socket; if app not running, fail gracefully. All-in-memory state (no persistence yet; that's Milestone 2).
+- **CLI state access**: Client/server arrangement only. `tilr state view` queries the running app via socket; if app not running, fail gracefully. All-in-memory state (no persistence yet; that's Delta 15-2).
 - **State storage**: `StateCoordinator` actor holds mutable state and immutable history. No singletons. Injected explicitly into collaborators (SocketServer, CommandHandler, pipeline phases). `TilrStateSnapshot` (Sendable value type) used for read paths and cross-process communication.
 - **State mutations**: Via `StateCoordinator.record(plan:, outcomes:)` — creates new snapshot from execution outcomes, appends to immutable history. Record phase bridges Execute phase outcomes to state evolution. Audit trail of all state changes with timestamps and reasons.
 
-The pipeline has three core phases:
-1. **Plan**: Translate input (Command or Event) + current state → ExecutionPlan (what actions to take)
-2. **Execute**: Run the plan, collect outcomes (succeeded/failed/timeout for each action)
-3. **Record**: `StateCoordinator.record(plan:, outcomes:)` — create immutable snapshot from outcomes, append to history (state mirrors what AX confirmed, not what was predicted)
-
-## Milestone 1: App Startup & State Initialization + Observability
-
 **Goal:** Get the app to start up, initialize TilrState from config, and expose it via a CLI command for inspection.
 
-### What we're building
+## What we're building
 
 1. **TilrState initialization** (app startup) — read displays, load space config, initialize state
 2. **State persistence** — store state to disk after each successful execution (allows recovery on crash)
 3. **CLI observability** — `tilr state view` displays state as a tree (displays → spaces → apps)
 4. **JSON export** — `tilr state export` for scripting / testing
 
-### State storage architecture (StateCoordinator actor)
+## State storage architecture (StateCoordinator actor)
 
 State is owned by a `StateCoordinator` actor, held by AppDelegate as the single root reference. Explicit injection into collaborators (no singletons).
 
@@ -38,7 +27,7 @@ State is owned by a `StateCoordinator` actor, held by AppDelegate as the single 
 - **Record phase** — `StateCoordinator.record(plan:, outcomes:)` evolves state from execution outcomes (not predictions), creates snapshot, appends to history.
 - **Future-proof for mutations** — Pipeline phases call `await coordinator.record(...)` atomically; undo/redo becomes possible from history.
 
-### Architecture pieces involved
+## Architecture pieces involved
 
 - `StateCoordinator` — actor owning mutable state and immutable history; held by AppDelegate
 - `TilrState` struct (already defined in arch doc) representing displays, spaces, and apps
@@ -47,7 +36,7 @@ State is owned by a `StateCoordinator` actor, held by AppDelegate as the single 
 - `StateFormatter` — renders state as human-readable tree for the CLI
 - New CLI subcommand: `tilr state` with `view` and `export` actions
 
-### Implementation sequence
+## Implementation sequence
 
 1. **Define Swift types for TilrState and snapshots** (`Sources/Shared/TilrState.swift`):
    - `struct TilrState` — mutable current state (displays, spaces, apps, active children)
@@ -115,7 +104,7 @@ State is owned by a `StateCoordinator` actor, held by AppDelegate as the single 
    - Response contains `TilrStateSnapshot` (the Sendable value type)
    - SocketServer deserializes request, awaits `coordinator.snapshot()`, serializes response
 
-### Files to create
+## Files to create
 
 | Path | Purpose |
 |---|---|
@@ -124,7 +113,7 @@ State is owned by a `StateCoordinator` actor, held by AppDelegate as the single 
 | `Sources/Shared/StateCoordinator.swift` | Actor owning mutable state and immutable history; exposes `snapshot()` and `record(plan:, outcomes:)` |
 | `Sources/Shared/StateFormatter.swift` | Renders state as ASCII tree or JSON |
 
-### Files to modify
+## Files to modify
 
 | Path | Change |
 |---|---|
@@ -133,7 +122,7 @@ State is owned by a `StateCoordinator` actor, held by AppDelegate as the single 
 | `Sources/Tilr/SocketServer.swift` | Accept coordinator reference. On `TilrStateRequest`, await `coordinator.snapshot()` and respond with snapshot. |
 | `Sources/TilrCLI/TilrCLI.swift` | Add `state` subcommand with `view` and `export` actions. Query running app via socket for snapshot. |
 
-### Acceptance criteria
+## Acceptance criteria
 
 - **App startup initializes state** from config + displays without crashing, creates `StateCoordinator`, creates initial snapshot
 - **`tilr state view`** queries running app via socket, receives snapshot, displays as tree (at least 3 levels: Display → Space → App with visibility and active-child tracking)
@@ -144,7 +133,7 @@ State is owned by a `StateCoordinator` actor, held by AppDelegate as the single 
 - **No state diffing in the code** — only initialization and snapshot formatting. Pipeline phases (Plan, Execute, Record) come in later deltas.
 - **CLI fails gracefully** if app is not running (clear error message, not a crash)
 
-### Notes / non-goals
+## Notes / non-goals
 
 - Not yet executing commands or updating state (that's the next delta: `Input → Plan`)
 - Not persisting state to disk yet (that comes after we have a working pipeline)
