@@ -14,5 +14,5 @@ The pipeline has three core phases:
 ## Deltas
 
 - [Delta 13-1: State Initialization and Observability](deltas/13-1-state-initialization.md)
-- [Delta 13-2: State Persistence and Pipeline Phases](deltas/13-2-persistence-and-pipeline.md) — placeholder, to be designed
+- [Delta 13-2: Apply Default Config Command](deltas/13-2-apply-default-config-command.md) — pipeline harness and config application
 - [Delta 13-3: ...](deltas/13-3-...) — future

@@ -9,8 +9,9 @@
 2. [macOS APIs](#macos-apis)
 3. [Domain Model](#domain-model)
 4. [Commands and Events](#commands-and-events)
-5. [Key Insights Captured](#key-insights-captured)
-6. [Open Questions](#open-questions-for-next-iteration)
+5. [Command Execution & Pipeline Model](#command-execution--pipeline-model)
+6. [Key Insights Captured](#key-insights-captured)
+7. [Open Questions](#open-questions-for-next-iteration)
 
 ---
 
@@ -383,6 +384,212 @@ State update uses these outcomes to construct a trailing state that reflects rea
 - Previous approach: compute new state → execute → hope reality matches
 - New approach: execute → collect outcomes → update state to reflect what succeeded
 - Crucial for AX unreliability (Zen hide, fullscreen toggles, spaces without focus): state never drifts from observed reality
+
+---
+
+---
+
+## Command Execution & Pipeline Model
+
+The Tilr pipeline executes a **strict one-command-per-snapshot model**. Each command is an atomic unit of work that generates exactly one state snapshot, preserving the audit trail and enabling deterministic replay.
+
+### Per-Command Pipeline
+
+Every Command flows through a fixed sequence of phases, completing fully before the next command enters:
+
+1. **Plan**: `CommandPlanner.computePlan(currentState, command) → ExecutionPlan`
+   - Pure function that generates actions from command intent
+   - Examples:
+     - `SwitchSpaceCommand("Coding")` → plan with `[HideApp("zen"), HideApp("slack"), ShowApp("xcode"), ...]`
+     - `CreateSpaceCommand("NewSpace")` → plan with space creation action
+   - Plan encodes *what to do and expected outcomes*, not state predictions
+
+2. **Execute**: `PlanExecutor.execute(plan) → [ActionOutcome]`
+   - Runs the plan's actions with side effects (AX calls)
+   - Returns outcomes for each action (succeeded, failed, or timeout)
+   - No state modification occurs here; this is purely side-effect execution
+
+3. **Record**: `StateCoordinator.record(plan:, outcomes:) → Snapshot`
+   - Creates an immutable snapshot reflecting what AX confirmed
+   - Updates trailing state to match reality
+   - Appends snapshot to history (audit trail)
+
+4. **Snapshot**: One per command execution
+   - Atomic unit in the audit log
+   - Contains command intent, plan, execution outcomes, and resulting state
+   - Replaying snapshots in order recreates the exact state sequence
+
+### No Batching by Default
+
+- **One Command = One Snapshot**: Each snapshot represents a discrete, replayable state transition from a single command
+- **Audit trail stays granular**: Every action is traceable to the command that initiated it
+- **Deterministic replay**: Snapshots can be replayed in sequence to reconstruct the full state history
+- Commands that span multiple logical operations (e.g., `ApplyDefaultConfig`) are implemented as orchestrators that call multiple primitive commands sequentially through the pipeline
+
+### Fine-Grained Primitives
+
+Atomic commands form the foundation:
+- `createSpace(name: String)` — create a new Mission Control space
+- `deleteSpace(name: String)` — delete a space
+- `assignAppToSpace(bundleId: String, space: String)` — record that an app belongs to a space
+- `setActiveSpace(name: String, display: String)` — switch to a space on a display
+- `showApp(bundleId: String)` — make an app visible
+- `hideApp(bundleId: String)` — hide an app
+
+**Higher-level operations** (e.g., `switchSpace`, `applyDefaultConfig`) are *orchestrators* that compose primitives:
+```swift
+// Orchestrator: not a primitive, but calls multiple commands through the pipeline
+func switchSpace(from: String, to: String) {
+    // 1. Internally hides apps from "from" space
+    for app in state.spaceApps[from] {
+        pipeline.run(.hideApp(app.bundleId))  // 1 snapshot each
+    }
+    // 2. Shows apps in "to" space
+    for app in state.spaceApps[to] {
+        pipeline.run(.showApp(app.bundleId))  // 1 snapshot each
+    }
+    // 3. Switches the active space
+    pipeline.run(.setActiveSpace(to, display))  // 1 snapshot
+}
+```
+
+Each primitive command produces its own snapshot, giving fine-grained control and auditability.
+
+### One Command = One Snapshot Rule
+
+Example: User presses hotkey to switch to "Coding" space.
+
+```
+CommandInput: SwitchSpaceCommand("Coding")
+  │
+  ├─ PLAN: computePlan(state, command)
+  │   → ExecutionPlan([
+  │       HideAppAction("com.zen-browser.zen"),
+  │       HideAppAction("com.slack"),
+  │       ShowAppAction("com.apple.dt.Xcode"),
+  │       SetFocusAction("com.apple.dt.Xcode"),
+  │     ])
+  │
+  ├─ EXECUTE: executePlan(plan)
+  │   → [
+  │       ActionOutcome.succeeded("HideApp(zen)"),
+  │       ActionOutcome.succeeded("HideApp(slack)"),
+  │       ActionOutcome.succeeded("ShowApp(Xcode)"),
+  │       ActionOutcome.succeeded("SetFocus(Xcode)"),
+  │     ]
+  │
+  ├─ RECORD: record(plan, outcomes)
+  │   → Snapshot {
+  │       timestamp: now,
+  │       command: SwitchSpaceCommand("Coding"),
+  │       plan: [... actions ...],
+  │       outcomes: [... succeeded ...],
+  │       stateAfter: { spaces: [...], activeSpace: "Coding", ... }
+  │     }
+  │
+  └─ [Next command can enter pipeline]
+```
+
+**Critical property**: The plan may contain N actions (hide zen, hide slack, show xcode, set focus), but the entire command execution is recorded as a *single* snapshot. This is essential:
+- The snapshot is replayable (running it re-executes all N actions in the same order)
+- Intent is preserved (the snapshot records "user switched to Coding", not just individual hide/show actions)
+- Audit trail is compact but still granular (actions within the plan are visible; outcomes show what succeeded/failed)
+
+### Pipeline Phases Inside One Command
+
+A command's `ExecutionPlan` can contain multiple actions, all part of one logical command:
+
+```swift
+struct ExecutionPlan {
+    actions: [Action]  // May contain many actions (hide apps, show apps, reposition windows, etc.)
+    
+    enum Action {
+        case hideApp(bundleId: String)
+        case showApp(bundleId: String)
+        case setWindowFrame(bundleId: String, frame: NSRect)
+        case setFocus(bundleId: String)
+        case createSpace(name: String)
+        // ... more actions ...
+    }
+}
+```
+
+Execution happens in phases:
+1. **Phase 1: Issue hide/show operations** (batch, fire-and-forget)
+2. **Phase 2: Wait for AX stability** (poll until app visibility stabilizes)
+3. **Phase 3: Apply layout** (position windows)
+
+All phases are part of the *same* command execution. The plan is generated once, executed once, and recorded as one snapshot.
+
+### Executor Protocols
+
+The pipeline uses traits/protocols to decouple execution from planning:
+
+```swift
+protocol CommandPlanner {
+    func computePlan(state: TilrState, command: Command) -> ExecutionPlan
+}
+
+protocol PlanExecutor {
+    func execute(plan: ExecutionPlan) -> [ActionOutcome]
+}
+```
+
+**Multiple implementations** can exist:
+
+- **StateOnlyExecutor** — executes plans for state-only operations (config setup, app registry initialization) without AX calls
+- **AXExecutor** — executes plans that require window management (show/hide, positioning)
+- Future: **RecordingExecutor** — records execution for testing without side effects
+
+No AX coupling in the core pipeline; implementations are swappable.
+
+### Example: Startup (Apply Default Config)
+
+```
+Command: ApplyDefaultConfigCommand(config: UserConfig)
+  │
+  ├─ Orchestrator calls primitives in sequence:
+  │
+  │  1. Command: CreateSpaceCommand("Coding")
+  │     → PLAN → EXECUTE → RECORD → Snapshot 1
+  │
+  │  2. Command: CreateSpaceCommand("Reference")
+  │     → PLAN → EXECUTE → RECORD → Snapshot 2
+  │
+  │  3. Command: AssignAppToSpaceCommand(bundleId: "xcode", space: "Coding")
+  │     → PLAN → EXECUTE → RECORD → Snapshot 3
+  │
+  │  4. Command: AssignAppToSpaceCommand(bundleId: "zen", space: "Coding")
+  │     → PLAN → EXECUTE → RECORD → Snapshot 4
+  │
+  │  ... more commands ...
+  │
+  └─ End: State now reflects configured spaces and app assignments
+     (4+ snapshots in audit log, each one replayable)
+```
+
+**Key insight**: The orchestrator is *not* a command itself; it's a coordination function that submits multiple commands to the pipeline in sequence. Each primitive command gets its own snapshot, making the startup process fully auditable and replayable.
+
+### Example: Runtime (Switch Space Hotkey)
+
+```
+User presses Hotkey: Cmd+Opt+C (switch to "Coding")
+  │
+  └─ Command: SwitchSpaceCommand("Coding")
+     → PLAN: computePlan(state, command)
+        Generates: [HideApp(...), HideApp(...), ShowApp(...), SetFocus(...)]
+     → EXECUTE: executePlan
+        Returns: [succeeded, succeeded, succeeded, succeeded]
+     → RECORD: record(plan, outcomes)
+        Creates: Snapshot(command, plan, outcomes, newState)
+     → [Ready for next input]
+
+[Snapshot 1]
+  command: SwitchSpaceCommand("Coding")
+  actions: [HideApp(zen), HideApp(slack), ShowApp(xcode), SetFocus(xcode)]
+  outcomes: [succeeded, succeeded, succeeded, succeeded]
+  stateAfter: {activeSpace: "Coding", ...}
+```
 
 ---
 
